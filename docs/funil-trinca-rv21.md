@@ -21,18 +21,36 @@
 
 - `lead_created`: disparado quando a landing salva um novo lead.
 - `checkout_started`: disparado quando a lead clica no link da Kiwify.
-- `purchase_approved`: recebido via webhook da Kiwify.
+- `purchase_approved`: recebido via webhook da Kiwify e marcado como `comprou`.
+- `payment_pending`: recebido via webhook quando Pix ou boleto forem gerados.
+- `cart_abandoned`: recebido via webhook da Kiwify e marcado para recuperacao.
 - `purchase_refused`: recebido via webhook da Kiwify para recuperacao.
 - `group_joined`: atualizado manualmente ou por automacao.
 
-## Proximo encaixe com Kiwify
+## Webhook da Kiwify
 
-Quando o checkout estiver criado, salvar o link em uma variavel de ambiente e trocar os CTAs de compra para uma pagina intermediaria de rastreio. Isso permite marcar quem clicou no checkout mesmo antes da compra.
+URL de producao:
+
+- `https://trinca-rv21.vercel.app/api/kiwify/webhook`
+
+Eventos recomendados:
+
+- `Compra aprovada`
+- `Compra recusada`
+- `Carrinho abandonado`
+- `Pix gerado`
+- `Boleto gerado`
+
+O token gerado pela Kiwify deve ser salvo como `KIWIFY_WEBHOOK_SECRET` no ambiente da Vercel. Enquanto a variavel estiver vazia, a rota recebe os eventos sem bloquear por token, o que ajuda nos primeiros testes.
+
+## Variaveis preparadas
 
 Variavel preparada na landing:
 
 - `NEXT_PUBLIC_KIWIFY_CHECKOUT_URL`: link publico do checkout Kiwify.
 - `NEXT_PUBLIC_WHATSAPP_GROUP_URL`: link do grupo oficial enviado no pos-compra.
+- `KIWIFY_WEBHOOK_SECRET`: token do webhook criado na Kiwify.
+- `AUTOMATION_WEBHOOK_URL`: URL futura do Make, n8n ou plataforma de WhatsApp.
 
 ## Grupo oficial recomendado
 
