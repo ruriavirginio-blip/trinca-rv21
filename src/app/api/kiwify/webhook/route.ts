@@ -189,6 +189,25 @@ export async function POST(request: Request) {
     },
   });
 
+  const { error: eventError } = await supabase.from("kiwify_events").insert({
+    email,
+    whatsapp,
+    nome: nome || "Cliente Kiwify",
+    evento: normalizedEvent.evento,
+    status,
+    etapa_funil: etapaFunil,
+    order_id: orderId || null,
+    order_status: orderStatus || null,
+    payment_method: paymentMethod || null,
+    product_name: productName || null,
+    payload,
+    recebido_em: normalizedEvent.receivedAt,
+  });
+
+  if (eventError) {
+    console.error("Erro ao salvar historico da Kiwify", eventError.message);
+  }
+
   const leadUpdate = {
     nome: nome || "Cliente Kiwify",
     email,
