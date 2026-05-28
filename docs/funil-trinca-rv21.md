@@ -50,7 +50,37 @@ Variavel preparada na landing:
 - `NEXT_PUBLIC_KIWIFY_CHECKOUT_URL`: link publico do checkout Kiwify.
 - `NEXT_PUBLIC_WHATSAPP_GROUP_URL`: link do grupo oficial enviado no pos-compra.
 - `KIWIFY_WEBHOOK_SECRET`: token do webhook criado na Kiwify.
+- `AUTOMATION_API_SECRET`: token para Make/n8n buscar mensagens pendentes e atualizar status.
 - `AUTOMATION_WEBHOOK_URL`: URL futura do Make, n8n ou plataforma de WhatsApp.
+
+## Ponte com Make/n8n
+
+URL para buscar mensagens prontas para envio:
+
+- `GET https://trinca-rv21.vercel.app/api/automation/messages?token=SEU_TOKEN&limit=10`
+
+Resposta esperada:
+
+- `messages`: lista de mensagens com `id`, `nome`, `whatsapp`, `email`, `mensagem`, `etapa` e `enviar_em`.
+
+Depois que o Make/n8n enviar a mensagem, marcar como enviada:
+
+- `POST https://trinca-rv21.vercel.app/api/automation/messages?token=SEU_TOKEN`
+
+Corpo:
+
+```json
+{
+  "action": "mark_sent",
+  "ids": ["id-da-mensagem"]
+}
+```
+
+Acoes aceitas:
+
+- `mark_sent`: marca como `enviada`.
+- `mark_failed`: marca como `erro`.
+- `cancel`: marca como `cancelada`.
 
 ## Grupo oficial recomendado
 
