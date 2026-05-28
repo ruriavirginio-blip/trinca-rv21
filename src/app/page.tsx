@@ -55,7 +55,7 @@ const pillars = [
   {
     icon: HeartPulse,
     title: "Alimentação guiada",
-    text: "Dieta específica para cada participante conforme o objetivo selecionado, elaborada por nutricionista da equipe RVHEALTH.",
+    text: "Dieta específica para cada participante conforme o objetivo selecionado, elaborada por nutricionista conceituada.",
   },
   {
     icon: Users,
@@ -75,7 +75,7 @@ const pillars = [
   {
     icon: Crown,
     title: "Pós-desafio",
-    text: "Ao finalizar, você recebe o cupom TRINCA PREMIUM50% para continuar sua evolução na Plataforma RV ONLINE.",
+    text: "Ao finalizar, você recebe o cupom TRINCA PREMIUM50% para continuar sua evolução dentro da sistematização online RV.",
   },
 ];
 
@@ -99,7 +99,7 @@ const journey = [
   {
     step: "01",
     title: "Inscrição",
-    text: "Você preenche o formulário e é direcionada para o checkout seguro da Kiwify.",
+    text: "Você preenche seus dados e segue para finalizar sua entrada com pagamento seguro.",
   },
   {
     step: "02",
@@ -109,7 +109,7 @@ const journey = [
   {
     step: "03",
     title: "Boas-vindas",
-    text: "Você recebe a mensagem inicial, vídeo de boas-vindas e acesso ao grupo oficial.",
+    text: "Você recebe um vídeo de boas-vindas do idealizador do TRINCA RV21, Ruriá Virgínio, e acesso ao grupo oficial.",
   },
   {
     step: "04",
@@ -139,12 +139,12 @@ const faqItems = [
   {
     question: "A dieta é igual para todo mundo?",
     answer:
-      "Não. A proposta é direcionar uma dieta específica conforme o objetivo escolhido pela participante, com elaboração de nutricionista conceituada da equipe RVHEALTH.",
+      "Não. A proposta é direcionar uma dieta específica conforme o objetivo escolhido pela participante, com elaboração de nutricionista conceituada.",
   },
   {
     question: "O valor parcelado tem juros?",
     answer:
-      "Sim. O valor à vista é R$ 37,89 e o parcelamento pode ser feito em até 8x no cartão, com juros aplicados pela plataforma de pagamento.",
+      "Sim. O valor à vista é R$ 37,89 e a entrada pode ser parcelada em até 8x no cartão. O parcelamento tem juros da Kiwify e o valor final aparece antes da confirmação.",
   },
   {
     question: "Quando recebo os materiais?",
@@ -159,7 +159,7 @@ const faqItems = [
   {
     question: "O cupom de 50% pode ser usado quando?",
     answer:
-      "O cupom TRINCA PREMIUM50% é pensado para o pós-desafio, como incentivo para continuar evoluindo na Plataforma RV ONLINE.",
+      "O cupom TRINCA PREMIUM50% é pensado para o pós-desafio, como incentivo para continuar evoluindo dentro da sistematização online RV.",
   },
   {
     question: "E se eu começar e perder o ritmo?",
@@ -230,7 +230,7 @@ export default function Home() {
         </a>
 
         <nav aria-label="Navegação principal">
-          <a href="#metodo">Método</a>
+          <a href="#metodo">Protocolo</a>
           <a href="#resultados">Resultados</a>
           <a href="#oferta">Oferta</a>
           <a href="#faq">Dúvidas</a>
@@ -262,7 +262,7 @@ export default function Home() {
               <ArrowRight size={18} />
             </a>
             <a className="button button-secondary" href="#metodo">
-              Ver como funciona
+              Ver o protocolo
             </a>
           </div>
 
@@ -280,9 +280,9 @@ export default function Home() {
 
         <aside className="hero-offer" aria-label="Resumo da oferta">
           <p>Sua decisão pelos próximos 21 dias</p>
-          <strong>até 8x no cartão</strong>
+          <strong>8x de R$ 4,74 + juros</strong>
           <span>R$ 37,89 à vista</span>
-          <small>Parcelamento com juros da Kiwify.</small>
+          <small>O parcelamento tem juros e o valor final aparece antes da confirmação.</small>
 
           <div className="offer-divider" />
 
@@ -334,24 +334,26 @@ export default function Home() {
         </div>
 
         <div className="authority-copy">
-          <p className="eyebrow">Por trás do método</p>
+          <p className="eyebrow">Por trás do protocolo</p>
           <h2>Ruriá Virgínio</h2>
           <p>
-            Há 14 anos ajudando mulheres a reconstruírem autoestima,
-            condicionamento, disciplina e confiança através de estratégia,
+            Criador e idealizador do TRINCA RV21, Ruriá Virgínio reúne 14 anos
+            de experiência conduzindo mulheres a reconstruírem autoestima,
+            condicionamento, disciplina e confiança com estratégia,
             acompanhamento e constância.
           </p>
           <p>
-            O desafio une experiência prática, estrutura online e suporte para
-            que a participante saiba exatamente o que fazer nos próximos 21
-            dias.
+            O protocolo nasce da vivência prática com transformações reais em
+            mais de 10 países, unindo treino, direcionamento e uma experiência
+            online organizada para que a participante saiba exatamente o que
+            fazer nos próximos 21 dias.
           </p>
 
           <div className="authority-stats">
             <span>14 anos de experiência</span>
-            <span>Plataforma RV ONLINE</span>
-            <span>Equipe RVHEALTH</span>
-            <span>Método com direção diária</span>
+            <span>Transformações reais em +10 países</span>
+            <span>Sistematização online de treinos reais e individualizados</span>
+            <span>Criador e idealizador do protocolo TRINCA RV21</span>
           </div>
         </div>
       </section>
@@ -386,8 +388,9 @@ export default function Home() {
           <p className="eyebrow">Jornada organizada</p>
           <h2>Do cadastro ao grupo oficial, cada etapa tem função.</h2>
           <p>
-            A automação será pensada para capturar, acompanhar, recuperar e
-            conduzir cada lead até a compra e a experiência de boas-vindas.
+            A experiência foi desenhada para acompanhar sua decisão desde a
+            inscrição até a entrada no grupo, com orientação clara, retomada
+            quando necessário e uma recepção cuidadosa após a confirmação.
           </p>
         </div>
 
@@ -408,7 +411,7 @@ export default function Home() {
           <h2>Mulheres reais, histórias reais e uma decisão em comum.</h2>
           <p>
             Resultados reais elevam confiança e mostram que a transformação é
-            possível quando existe método, acompanhamento e compromisso.
+            possível quando existe protocolo, acompanhamento e compromisso.
           </p>
         </div>
 
@@ -441,8 +444,8 @@ export default function Home() {
           <div className="price-row">
             <div>
               <span>Investimento de entrada no desafio</span>
-              <strong>até 8x no cartão</strong>
-              <small>R$ 37,89 à vista. Parcelamento com juros.</small>
+              <strong>8x de R$ 4,74 + juros</strong>
+              <small>R$ 37,89 à vista. Valor final parcelado exibido pela Kiwify antes da confirmação.</small>
             </div>
             <WalletCards size={34} />
           </div>
@@ -459,10 +462,10 @@ export default function Home() {
 
         <form className="lead-form" id="inscricao" onSubmit={handleLeadSubmit}>
           <p className="form-kicker">Inscrição rápida</p>
-          <h3>Preencha para seguir ao checkout seguro.</h3>
+          <h3>Preencha para garantir sua entrada no desafio.</h3>
           <p>
-            Seus dados ficam registrados para que a equipe RV acompanhe sua
-            entrada e recupere seu processo caso você pare no meio do caminho.
+            Seus dados permitem acompanhar sua inscrição, orientar os próximos
+            passos e retomar sua decisão caso você pare antes de finalizar.
           </p>
 
           <label>
@@ -496,8 +499,9 @@ export default function Home() {
           <label className="consent">
             <input type="checkbox" required />
             <span>
-              Concordo em receber comunicações sobre o TRINCA RV21, conteúdos,
-              recuperação de checkout e ofertas da Plataforma RV ONLINE.
+              Autorizo receber mensagens sobre minha inscrição, pagamento,
+              orientações do TRINCA RV21 e próximos passos pelo WhatsApp e
+              e-mail.
             </span>
           </label>
 
@@ -532,10 +536,11 @@ export default function Home() {
           </article>
           <article>
             <Video size={26} />
-            <h3>Apresentação do método</h3>
+            <h3>Apresentação do protocolo</h3>
             <p>
-              Um vídeo curto do Ruriá Virgínio explicando a proposta, o
-              compromisso dos 21 dias e como aproveitar melhor a jornada.
+              Um vídeo de boas-vindas do criador e idealizador do TRINCA RV21,
+              Ruriá Virgínio, explicando a proposta, o compromisso dos 21 dias
+              e como aproveitar melhor a jornada.
             </p>
           </article>
           <article>
@@ -586,7 +591,7 @@ export default function Home() {
       <footer className="footer">
         <div>
           <strong>TRINCA RV21</strong>
-          <p>Desafio feminino oficial da Plataforma RV ONLINE.</p>
+          <p>Desafio feminino oficial da sistematização online RV.</p>
         </div>
         <span>© 2026 Ruriá Virgínio. Todos os direitos reservados.</span>
       </footer>
