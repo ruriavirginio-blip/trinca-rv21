@@ -34,13 +34,31 @@ Se voce ainda quer participar, finalize sua entrada aqui: [link_checkout]
 
 ## Checkout iniciado sem pagamento aprovado
 
-### 15 minutos
+Essa sequencia vale para Pix, boleto e cartao. A mensagem muda apenas o detalhe do metodo de pagamento para parecer cuidado real, nao texto automatico generico.
 
-[nome], sua tentativa de pagamento do TRINCA RV21 nao foi finalizada.
+### Pix ou boleto gerado - 20 minutos
 
-Se foi algum erro no cartao ou no Pix, voce pode tentar novamente pelo checkout seguro: [link_checkout]
+[nome], vi que sua inscricao no TRINCA RV21 ficou quase finalizada, mas [o Pix/o boleto] ainda nao foi confirmado.
 
-Assim que aprovar, voce recebe a mensagem de boas-vindas e os proximos passos.
+Sua vaga ainda pode ser concluida para liberar o grupo oficial, a dieta por objetivo e os materiais dos 21 dias.
+
+Concluir inscricao: [link_checkout]
+
+### Cartao recusado - 5 minutos
+
+[nome], vi que sua tentativa de entrada no TRINCA RV21 nao foi aprovada pela forma de pagamento.
+
+Isso costuma acontecer por limite, validacao do banco ou dados do cartao. Sua vaga ainda pode ser concluida pelo checkout seguro:
+
+[link_checkout]
+
+### Carrinho abandonado - 15 minutos
+
+[nome], sua inscricao no TRINCA RV21 ficou quase pronta, mas ainda nao foi finalizada.
+
+O desafio foi criado para mulheres que querem direcao por 21 dias, com treino, alimentacao, suporte e grupo oficial. Voce pode retomar por aqui:
+
+[link_checkout]
 
 ### 6 horas
 
@@ -49,6 +67,14 @@ Sua vaga no TRINCA RV21 ainda nao foi confirmada.
 Quero muito te ver dentro do grupo oficial, porque a estrutura dos 21 dias foi pensada para te tirar do improviso e te colocar em acao.
 
 Finalizar inscricao: [link_checkout]
+
+### 24 horas
+
+[nome], sua decisao de entrar no TRINCA RV21 ainda pode ser retomada.
+
+Se voce quer viver os proximos 21 dias com direcao, constancia e suporte, finalize sua entrada por aqui:
+
+[link_checkout]
 
 ## Pagamento aprovado
 

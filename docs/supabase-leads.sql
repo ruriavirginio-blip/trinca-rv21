@@ -39,3 +39,28 @@ create index if not exists kiwify_events_order_id_idx on public.kiwify_events (o
 create index if not exists kiwify_events_evento_idx on public.kiwify_events (evento);
 create index if not exists kiwify_events_status_idx on public.kiwify_events (status);
 create index if not exists kiwify_events_recebido_em_idx on public.kiwify_events (recebido_em desc);
+
+create table if not exists public.automation_messages (
+  id uuid primary key default gen_random_uuid(),
+  dedupe_key text not null unique,
+  email text,
+  whatsapp text,
+  nome text,
+  order_id text,
+  payment_method text,
+  trigger_event text not null,
+  etapa text not null,
+  canal text not null default 'whatsapp',
+  mensagem text not null,
+  delay_minutos integer not null default 0,
+  enviar_em timestamptz not null,
+  status text not null default 'pendente',
+  metadata jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists automation_messages_email_idx on public.automation_messages (email);
+create index if not exists automation_messages_whatsapp_idx on public.automation_messages (whatsapp);
+create index if not exists automation_messages_order_id_idx on public.automation_messages (order_id);
+create index if not exists automation_messages_status_idx on public.automation_messages (status);
+create index if not exists automation_messages_enviar_em_idx on public.automation_messages (enviar_em);

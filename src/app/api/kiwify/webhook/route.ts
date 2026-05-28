@@ -1,7 +1,50 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 type JsonObject = Record<string, unknown>;
+type SupabaseTable = {
+  Row: JsonObject;
+  Insert: JsonObject;
+  Update: JsonObject;
+  Relationships: [];
+};
+type LeadTable = {
+  Row: { id: string } & JsonObject;
+  Insert: JsonObject;
+  Update: JsonObject;
+  Relationships: [];
+};
+
+type Database = {
+  public: {
+    Tables: {
+      automation_messages: SupabaseTable;
+      kiwify_events: SupabaseTable;
+      leads: LeadTable;
+    };
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
+  };
+};
+
+type AppSupabaseClient = SupabaseClient<Database>;
+
+type NormalizedEvent = {
+  evento: string;
+  orderId: string;
+  orderStatus: string;
+  paymentMethod: string;
+  installments: unknown;
+  chargeAmount: unknown;
+  productName: string;
+  nome: string;
+  email: string;
+  whatsapp: string;
+  status: string;
+  etapaFunil: string;
+  tracking: JsonObject;
+  receivedAt: string;
+};
 
 function asObject(value: unknown): JsonObject {
   return value && typeof value === "object" && !Array.isArray(value)
@@ -99,6 +142,189 @@ async function forwardToAutomation(payload: JsonObject) {
   }
 }
 
+function firstName(nome: string) {
+  return nome.split(" ").filter(Boolean)[0] || "Oi";
+}
+
+function paymentMethodLabel(paymentMethod: string) {
+  const method = paymentMethod.toLowerCase();
+
+  if (method.includes("pix")) {
+    return "Pix";
+  }
+
+  if (method.includes("boleto") || method.includes("billet")) {
+    return "boleto";
+  }
+
+  if (method.includes("card") || method.includes("cartao") || method.includes("cartão")) {
+    return "cartao";
+  }
+
+  return "pagamento";
+}
+
+function buildMessageQueue(normalizedEvent: NormalizedEvent) {
+  const checkoutUrl =
+    process.env.NEXT_PUBLIC_KIWIFY_CHECKOUT_URL || "https://pay.kiwify.com.br/mEhmYNt";
+  const whatsappGroupUrl = process.env.NEXT_PUBLIC_WHATSAPP_GROUP_URL || "";
+  const nome = firstName(normalizedEvent.nome);
+  const paymentLabel = paymentMethodLabel(normalizedEvent.paymentMethod);
+  const productName = normalizedEvent.productName || "TRINCA RV21";
+  const base = {
+    email: normalizedEvent.email,
+    whatsapp: normalizedEvent.whatsapp,
+    nome: normalizedEvent.nome || "Cliente Kiwify",
+    order_id: normalizedEvent.orderId || null,
+    payment_method: normalizedEvent.paymentMethod || null,
+    trigger_event: normalizedEvent.evento,
+    status: "pendente",
+    canal: "whatsapp",
+    metadata: {
+      orderStatus: normalizedEvent.orderStatus,
+      etapaFunil: normalizedEvent.etapaFunil,
+      source: "kiwify",
+    },
+  };
+
+  if (normalizedEvent.status === "compra-aprovada") {
+    return [
+      {
+        ...base,
+        etapa: "boas-vindas",
+        delay_minutos: 0,
+        mensagem:
+          `${nome}, sua inscricao no ${productName} foi aprovada. Seja bem-vinda ao desafio oficial.\n\n` +
+          "Agora voce entra na etapa de orientacao, grupo oficial e recebimento dos materiais dos 21 dias." +
+          (whatsappGroupUrl ? `\n\nEntre no grupo oficial por aqui: ${whatsappGroupUrl}` : ""),
+      },
+    ];
+  }
+
+  if (normalizedEvent.status === "compra-recusada") {
+    return [
+      {
+        ...base,
+        etapa: "pagamento-recusado-5min",
+        delay_minutos: 5,
+        mensagem:
+          `${nome}, vi que sua tentativa de entrada no ${productName} nao foi aprovada pela forma de pagamento.\n\n` +
+          "Isso costuma acontecer por limite, validacao do banco ou dados do cartao. Sua vaga ainda pode ser concluida pelo checkout seguro:\n" +
+          checkoutUrl,
+      },
+      {
+        ...base,
+        etapa: "pagamento-recusado-2h",
+        delay_minutos: 120,
+        mensagem:
+          `${nome}, passando para te ajudar a nao perder sua decisao de entrar no ${productName}.\n\n` +
+          "Se o cartao nao aprovou, voce pode tentar novamente ou escolher Pix/boleto no checkout. Assim que confirmar, voce recebe os proximos passos do desafio.\n" +
+          checkoutUrl,
+      },
+    ];
+  }
+
+  if (normalizedEvent.status === "carrinho-abandonado") {
+    return [
+      {
+        ...base,
+        etapa: "carrinho-abandonado-15min",
+        delay_minutos: 15,
+        mensagem:
+          `${nome}, sua inscricao no ${productName} ficou quase pronta, mas ainda nao foi finalizada.\n\n` +
+          "O desafio foi criado para mulheres que querem direcao por 21 dias, com treino, alimentacao, suporte e grupo oficial. Voce pode retomar por aqui:\n" +
+          checkoutUrl,
+      },
+      {
+        ...base,
+        etapa: "carrinho-abandonado-6h",
+        delay_minutos: 360,
+        mensagem:
+          `${nome}, sua entrada no ${productName} continua pendente.\n\n` +
+          "Se essa decisao ainda faz sentido para voce, finalize agora e garanta acesso ao grupo oficial, dieta por objetivo e materiais do desafio.\n" +
+          checkoutUrl,
+      },
+      {
+        ...base,
+        etapa: "carrinho-abandonado-24h",
+        delay_minutos: 1440,
+        mensagem:
+          `${nome}, talvez essa seja exatamente a hora de parar de adiar voce.\n\n` +
+          "O TRINCA RV21 nao e sobre perfeicao. E sobre entrar em movimento com estrutura, suporte e compromisso por 21 dias.\n" +
+          checkoutUrl,
+      },
+    ];
+  }
+
+  if (normalizedEvent.status === "pagamento-pendente") {
+    const pendingAction =
+      paymentLabel === "Pix"
+        ? "o Pix ainda nao foi confirmado"
+        : paymentLabel === "boleto"
+          ? "o boleto ainda nao foi confirmado"
+          : "o pagamento ainda nao foi confirmado";
+
+    return [
+      {
+        ...base,
+        etapa: "pagamento-pendente-20min",
+        delay_minutos: 20,
+        mensagem:
+          `${nome}, vi que sua inscricao no ${productName} ficou quase finalizada, mas ${pendingAction}.\n\n` +
+          "Sua vaga ainda pode ser concluida para liberar o grupo oficial, a dieta por objetivo e os materiais dos 21 dias.\n" +
+          checkoutUrl,
+      },
+      {
+        ...base,
+        etapa: "pagamento-pendente-2h",
+        delay_minutos: 120,
+        mensagem:
+          `${nome}, passando para te lembrar que sua inscricao no ${productName} segue pendente.\n\n` +
+          "Esse desafio foi pensado para mulheres que querem sair do improviso e voltar a se sentir firmes, confiantes e em movimento.\n" +
+          checkoutUrl,
+      },
+      {
+        ...base,
+        etapa: "pagamento-pendente-24h",
+        delay_minutos: 1440,
+        mensagem:
+          `${nome}, sua decisao de entrar no ${productName} ainda pode ser retomada.\n\n` +
+          "Se voce quer viver os proximos 21 dias com direcao, constancia e suporte, finalize sua entrada por aqui:\n" +
+          checkoutUrl,
+      },
+    ];
+  }
+
+  return [];
+}
+
+async function enqueueMessages(supabase: AppSupabaseClient, normalizedEvent: NormalizedEvent) {
+  const messages = buildMessageQueue(normalizedEvent);
+
+  if (!messages.length) {
+    return;
+  }
+
+  const now = Date.now();
+  const rows = messages.map((message) => ({
+    ...message,
+    enviar_em: new Date(now + message.delay_minutos * 60 * 1000).toISOString(),
+    dedupe_key: [
+      normalizedEvent.orderId || normalizedEvent.email,
+      normalizedEvent.evento,
+      message.etapa,
+    ].join(":"),
+  }));
+
+  const { error } = await supabase
+    .from("automation_messages")
+    .upsert(rows, { onConflict: "dedupe_key", ignoreDuplicates: true });
+
+  if (error) {
+    console.error("Erro ao montar fila de mensagens", error.message);
+  }
+}
+
 export async function POST(request: Request) {
   let payload: JsonObject;
 
@@ -183,11 +409,33 @@ export async function POST(request: Request) {
     );
   }
 
-  const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
+  const supabase = createClient<Database>(supabaseUrl, supabaseServiceRoleKey, {
     auth: {
       persistSession: false,
     },
   });
+
+  if (status === "compra-aprovada") {
+    const pendingQuery = supabase
+      .from("automation_messages")
+      .update({
+        status: "cancelada",
+        metadata: {
+          motivo: "Compra aprovada antes do envio de recuperacao.",
+          orderId,
+        },
+      })
+      .eq("status", "pendente")
+      .neq("etapa", "boas-vindas");
+
+    const { error: cancelError } = orderId
+      ? await pendingQuery.eq("order_id", orderId)
+      : await pendingQuery.eq("email", email);
+
+    if (cancelError) {
+      console.error("Erro ao cancelar recuperacoes pendentes", cancelError.message);
+    }
+  }
 
   const { error: eventError } = await supabase.from("kiwify_events").insert({
     email,
@@ -207,6 +455,8 @@ export async function POST(request: Request) {
   if (eventError) {
     console.error("Erro ao salvar historico da Kiwify", eventError.message);
   }
+
+  await enqueueMessages(supabase, normalizedEvent);
 
   const leadUpdate = {
     nome: nome || "Cliente Kiwify",
