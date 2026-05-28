@@ -144,7 +144,7 @@ const faqItems = [
   {
     question: "O valor parcelado tem juros?",
     answer:
-      "Sim. O valor à vista é R$ 37,89 e a entrada pode ser parcelada em até 8x no cartão. O parcelamento tem juros da Kiwify e o valor final aparece antes da confirmação.",
+      "Sim. O valor à vista é R$ 37,89 e a entrada pode ser parcelada em até 8x no cartão. O parcelamento está sujeito a acréscimos da Kiwify.",
   },
   {
     question: "Quando recebo os materiais?",
@@ -280,9 +280,9 @@ export default function Home() {
 
         <aside className="hero-offer" aria-label="Resumo da oferta">
           <p>Sua decisão pelos próximos 21 dias</p>
-          <strong>8x de R$ 4,74 + juros</strong>
+          <strong>8x de R$ 4,74</strong>
           <span>R$ 37,89 à vista</span>
-          <small>O parcelamento tem juros e o valor final aparece antes da confirmação.</small>
+          <small>Parcelamento sujeito a acréscimos da Kiwify.</small>
 
           <div className="offer-divider" />
 
@@ -444,8 +444,8 @@ export default function Home() {
           <div className="price-row">
             <div>
               <span>Investimento de entrada no desafio</span>
-              <strong>8x de R$ 4,74 + juros</strong>
-              <small>R$ 37,89 à vista. Valor final parcelado exibido pela Kiwify antes da confirmação.</small>
+              <strong>8x de R$ 4,74</strong>
+              <small>R$ 37,89 à vista. Parcelamento sujeito a acréscimos da Kiwify.</small>
             </div>
             <WalletCards size={34} />
           </div>
