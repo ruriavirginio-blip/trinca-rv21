@@ -1035,8 +1035,11 @@ a {
   }
 
   .site-header {
+    position: absolute;
     top: 8px;
+    left: 14px;
     width: calc(100% - 28px);
+    transform: none;
     gap: 10px;
     padding: 8px;
   }
@@ -1101,7 +1104,7 @@ a {
   .hero-mobile-photo {
     object-fit: cover;
     object-position: 50% 24%;
-    filter: brightness(1.32) contrast(1.08) saturate(1.04);
+    filter: brightness(1.42) contrast(1.08) saturate(1.04);
   }
 
   .hero-lead {
