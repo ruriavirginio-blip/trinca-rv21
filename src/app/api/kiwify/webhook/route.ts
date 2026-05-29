@@ -164,6 +164,79 @@ function paymentMethodLabel(paymentMethod: string) {
   return "pagamento";
 }
 
+function templateForStep(etapa: string) {
+  if (etapa.startsWith("pagamento-pendente")) {
+    return {
+      name: "trinca_pagamento_pendente",
+      category: "UTILITY",
+    };
+  }
+
+  if (etapa.startsWith("pagamento-recusado")) {
+    return {
+      name: "trinca_pagamento_recusado",
+      category: "UTILITY",
+    };
+  }
+
+  if (etapa.startsWith("carrinho-abandonado")) {
+    return {
+      name: "trinca_retomada_inscricao",
+      category: "MARKETING",
+    };
+  }
+
+  if (etapa === "boas-vindas") {
+    return {
+      name: "trinca_boas_vindas_aprovada",
+      category: "UTILITY",
+    };
+  }
+
+  return {
+    name: "trinca_aviso_oficial",
+    category: "UTILITY",
+  };
+}
+
+function withTemplateMetadata(
+  message: Record<string, unknown>,
+  normalizedEvent: NormalizedEvent,
+  values: {
+    nome: string;
+    checkoutUrl: string;
+    whatsappGroupUrl: string;
+    paymentLabel: string;
+    productName: string;
+  }
+) {
+  const etapa = cleanText(message.etapa);
+  const template = templateForStep(etapa);
+  const metadata = asObject(message.metadata);
+
+  return {
+    ...message,
+    metadata: {
+      ...metadata,
+      whatsapp_api: {
+        template_name: template.name,
+        template_category: template.category,
+        language: "pt_BR",
+        body_variables: {
+          nome: values.nome,
+          metodo_pagamento: values.paymentLabel,
+          produto: values.productName,
+        },
+        buttons: {
+          checkout_url: values.checkoutUrl,
+          group_url: values.whatsappGroupUrl,
+        },
+      },
+      original_event_status: normalizedEvent.status,
+    },
+  };
+}
+
 function buildMessageQueue(normalizedEvent: NormalizedEvent) {
   const checkoutUrl =
     process.env.NEXT_PUBLIC_KIWIFY_CHECKOUT_URL || "https://pay.kiwify.com.br/mEhmYNt";
@@ -198,7 +271,15 @@ function buildMessageQueue(normalizedEvent: NormalizedEvent) {
           "Agora voce entra na etapa de orientacao, grupo oficial e recebimento dos materiais dos 21 dias." +
           (whatsappGroupUrl ? `\n\nEntre no grupo oficial por aqui: ${whatsappGroupUrl}` : ""),
       },
-    ];
+    ].map((message) =>
+      withTemplateMetadata(message, normalizedEvent, {
+        nome,
+        checkoutUrl,
+        whatsappGroupUrl,
+        paymentLabel,
+        productName,
+      })
+    );
   }
 
   if (normalizedEvent.status === "compra-recusada") {
@@ -221,7 +302,15 @@ function buildMessageQueue(normalizedEvent: NormalizedEvent) {
           "Se o cartao nao aprovou, voce pode tentar novamente ou escolher Pix/boleto no checkout. Assim que confirmar, voce recebe os proximos passos do desafio.\n" +
           checkoutUrl,
       },
-    ];
+    ].map((message) =>
+      withTemplateMetadata(message, normalizedEvent, {
+        nome,
+        checkoutUrl,
+        whatsappGroupUrl,
+        paymentLabel,
+        productName,
+      })
+    );
   }
 
   if (normalizedEvent.status === "carrinho-abandonado") {
@@ -253,7 +342,15 @@ function buildMessageQueue(normalizedEvent: NormalizedEvent) {
           "O TRINCA RV21 nao e sobre perfeicao. E sobre entrar em movimento com estrutura, suporte e compromisso por 21 dias.\n" +
           checkoutUrl,
       },
-    ];
+    ].map((message) =>
+      withTemplateMetadata(message, normalizedEvent, {
+        nome,
+        checkoutUrl,
+        whatsappGroupUrl,
+        paymentLabel,
+        productName,
+      })
+    );
   }
 
   if (normalizedEvent.status === "pagamento-pendente") {
@@ -292,7 +389,15 @@ function buildMessageQueue(normalizedEvent: NormalizedEvent) {
           "Se voce quer viver os proximos 21 dias com direcao, constancia e suporte, finalize sua entrada por aqui:\n" +
           checkoutUrl,
       },
-    ];
+    ].map((message) =>
+      withTemplateMetadata(message, normalizedEvent, {
+        nome,
+        checkoutUrl,
+        whatsappGroupUrl,
+        paymentLabel,
+        productName,
+      })
+    );
   }
 
   return [];
@@ -306,15 +411,20 @@ async function enqueueMessages(supabase: AppSupabaseClient, normalizedEvent: Nor
   }
 
   const now = Date.now();
-  const rows = messages.map((message) => ({
-    ...message,
-    enviar_em: new Date(now + message.delay_minutos * 60 * 1000).toISOString(),
-    dedupe_key: [
-      normalizedEvent.orderId || normalizedEvent.email,
-      normalizedEvent.evento,
-      message.etapa,
-    ].join(":"),
-  }));
+  const rows = messages.map((rawMessage) => {
+    const message = rawMessage as Record<string, unknown>;
+    const delayMinutos = Number(message.delay_minutos) || 0;
+
+    return {
+      ...message,
+      enviar_em: new Date(now + delayMinutos * 60 * 1000).toISOString(),
+      dedupe_key: [
+        normalizedEvent.orderId || normalizedEvent.email,
+        normalizedEvent.evento,
+        cleanText(message.etapa),
+      ].join(":"),
+    };
+  });
 
   const { error } = await supabase
     .from("automation_messages")

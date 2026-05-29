@@ -31,6 +31,42 @@ function unauthorized() {
   return NextResponse.json({ error: "Token invalido." }, { status: 401 });
 }
 
+function onlyDigits(value: unknown) {
+  return cleanText(value).replace(/\D/g, "");
+}
+
+function asObject(value: unknown) {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function buildWhatsappLink(whatsapp: unknown, mensagem: unknown) {
+  const digits = onlyDigits(whatsapp);
+
+  if (!digits) {
+    return "";
+  }
+
+  return `https://wa.me/${digits}?text=${encodeURIComponent(cleanText(mensagem))}`;
+}
+
+function enrichMessage(message: Record<string, unknown>) {
+  const metadata = asObject(message.metadata);
+  const whatsappApi = asObject(metadata.whatsapp_api);
+
+  return {
+    ...message,
+    whatsapp_digits: onlyDigits(message.whatsapp),
+    whatsapp_link: buildWhatsappLink(message.whatsapp, message.mensagem),
+    whatsapp_template_name: whatsappApi.template_name || null,
+    whatsapp_template_category: whatsappApi.template_category || null,
+    whatsapp_template_language: whatsappApi.language || "pt_BR",
+    whatsapp_template_body_variables: whatsappApi.body_variables || {},
+    whatsapp_template_buttons: whatsappApi.buttons || {},
+  };
+}
+
 function getSupabaseClient() {
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -105,7 +141,7 @@ export async function GET(request: Request) {
   return NextResponse.json({
     ok: true,
     count: data?.length || 0,
-    messages: data || [],
+    messages: data?.map(enrichMessage) || [],
   });
 }
 

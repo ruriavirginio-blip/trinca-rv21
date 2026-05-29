@@ -10,7 +10,7 @@ O tom deve ser persistente sem parecer invasivo: acolhe, lembra a decisao inicia
 
 Oi, [nome]. Vi que voce iniciou sua inscricao no TRINCA RV21, mas ainda nao concluiu o checkout.
 
-Esse desafio foi criado para mulheres que cansaram de tentar sozinhas e querem 21 dias de direcao, treino, alimentacao e suporte.
+Esse desafio foi criado para mulheres que querem 21 dias de direcao, treino, alimentacao e suporte para sair do improviso.
 
 Sua entrada no desafio continua disponivel por aqui: [link_checkout]
 
@@ -20,7 +20,7 @@ Sua entrada no desafio continua disponivel por aqui: [link_checkout]
 
 As alunas recebem direcionamento, grupo oficial, dieta dos 21 dias, Ebook RV, Ebook Nutricional e check-ins para manter constancia.
 
-O investimento de entrada e de R$ 37,89 a vista ou em ate 8x no cartao, com juros da plataforma de pagamento.
+O investimento de entrada e de R$ 37,89 a vista ou em ate 8x no cartao, com parcelamento sujeito a acrescimos da Kiwify.
 
 Concluir agora: [link_checkout]
 
@@ -48,7 +48,7 @@ Concluir inscricao: [link_checkout]
 
 [nome], vi que sua tentativa de entrada no TRINCA RV21 nao foi aprovada pela forma de pagamento.
 
-Isso costuma acontecer por limite, validacao do banco ou dados do cartao. Sua vaga ainda pode ser concluida pelo checkout seguro:
+Isso costuma acontecer por limite, validacao do banco ou dados do cartao. Sua entrada ainda pode ser concluida com uma nova tentativa ou outro metodo disponivel:
 
 [link_checkout]
 
@@ -78,11 +78,11 @@ Se voce quer viver os proximos 21 dias com direcao, constancia e suporte, finali
 
 ## Pagamento aprovado
 
-Bem-vinda ao TRINCA RV21, [nome].
+[nome], sua inscricao no TRINCA RV21 foi aprovada. Seja bem-vinda ao desafio oficial.
 
-Sua inscricao foi aprovada. Agora voce faz parte do desafio oficial da Plataforma RV ONLINE.
+Agora voce entra na etapa de orientacao, grupo oficial e recebimento dos materiais dos 21 dias.
 
-Assista ao video de boas-vindas da Ruria: [link_video]
+Assista ao video de boas-vindas do criador e idealizador do TRINCA RV21, Ruria Virginio: [link_video]
 
 Depois entre no grupo oficial: [link_grupo]
 

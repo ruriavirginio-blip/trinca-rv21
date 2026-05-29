@@ -4,7 +4,7 @@
 
 - Banco de leads: Supabase.
 - Checkout: Kiwify.
-- Automacao: Make ou n8n no inicio; WhatsApp API oficial ou Evolution API quando o volume pedir.
+- Automacao: Make ou n8n no inicio; WhatsApp Business API oficial quando o numero estiver aprovado.
 - Landing: Next.js, com rota propria para capturar leads antes do envio ao WhatsApp.
 
 ## Etapas do lead
@@ -51,7 +51,7 @@ Variavel preparada na landing:
 - `NEXT_PUBLIC_WHATSAPP_GROUP_URL`: link do grupo oficial enviado no pos-compra.
 - `KIWIFY_WEBHOOK_SECRET`: token do webhook criado na Kiwify.
 - `AUTOMATION_API_SECRET`: token para Make/n8n buscar mensagens pendentes e atualizar status.
-- `AUTOMATION_WEBHOOK_URL`: URL futura do Make, n8n ou plataforma de WhatsApp.
+- `AUTOMATION_WEBHOOK_URL`: URL futura do Make, n8n ou plataforma oficial de WhatsApp.
 
 ## Ponte com Make/n8n
 
@@ -61,7 +61,7 @@ URL para buscar mensagens prontas para envio:
 
 Resposta esperada:
 
-- `messages`: lista de mensagens com `id`, `nome`, `whatsapp`, `email`, `mensagem`, `etapa` e `enviar_em`.
+- `messages`: lista de mensagens com `id`, `nome`, `whatsapp`, `email`, `mensagem`, `etapa`, `enviar_em`, `whatsapp_digits`, `whatsapp_link`, `whatsapp_template_name`, `whatsapp_template_language`, `whatsapp_template_body_variables` e `whatsapp_template_buttons`.
 
 Depois que o Make/n8n enviar a mensagem, marcar como enviada:
 
@@ -81,6 +81,22 @@ Acoes aceitas:
 - `mark_sent`: marca como `enviada`.
 - `mark_failed`: marca como `erro`.
 - `cancel`: marca como `cancelada`.
+
+## WhatsApp Business API
+
+O numero API novo sera usado para avisos oficiais, recuperacao de pagamento, carrinho abandonado e boas-vindas. O numero atual do grupo permanece para relacionamento humano e comunidade.
+
+Documentacao dos templates preparados:
+
+- [`docs/whatsapp-api-templates.md`](./whatsapp-api-templates.md)
+
+Fluxo recomendado no Make:
+
+1. Buscar mensagens pendentes em `/api/automation/messages`.
+2. Iterar cada mensagem.
+3. Enviar template pelo WhatsApp Business API usando `whatsapp_template_name`.
+4. Marcar como enviada com `mark_sent` apenas se a API confirmar o envio.
+5. Marcar como erro com `mark_failed` quando a API rejeitar o disparo.
 
 ## Grupo oficial recomendado
 
