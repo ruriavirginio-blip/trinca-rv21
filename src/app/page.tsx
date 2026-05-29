@@ -125,6 +125,25 @@ const bonuses = [
   "Cupom TRINCA PREMIUM50% liberado no pós-desafio",
 ];
 
+const objectiveOptions = [
+  {
+    value: "emagrecimento",
+    label: "Emagrecer e reduzir medidas",
+  },
+  {
+    value: "gluteos",
+    label: "Melhorar glúteos e firmeza corporal",
+  },
+  {
+    value: "autoestima",
+    label: "Recuperar autoestima",
+  },
+  {
+    value: "roupas",
+    label: "Voltar a usar roupas antigas",
+  },
+];
+
 const faqItems = [
   {
     question: "O desafio é para iniciantes?",
@@ -249,6 +268,17 @@ export default function Home() {
           <h1>
             TRINCA <span>RV21</span>
           </h1>
+
+          <div className="hero-mobile-portrait" aria-hidden="true">
+            <Image
+              src="/images/ruria.jpg"
+              alt=""
+              fill
+              sizes="100vw"
+              className="hero-mobile-photo"
+              priority
+            />
+          </div>
 
           <p className="hero-lead">
             21 dias para sair do ciclo de começar e desistir, recuperar
@@ -483,18 +513,17 @@ export default function Home() {
             <input type="tel" name="whatsapp" placeholder="(84) 99999-9999" required />
           </label>
 
-          <label>
-            Principal objetivo
-            <select name="objetivo" required defaultValue="">
-              <option value="" disabled>
-                Escolha seu foco principal
-              </option>
-              <option value="emagrecimento">Emagrecer e reduzir medidas</option>
-              <option value="gluteos">Melhorar glúteos e firmeza corporal</option>
-              <option value="autoestima">Recuperar autoestima</option>
-              <option value="roupas">Voltar a usar roupas antigas</option>
-            </select>
-          </label>
+          <fieldset className="objective-field">
+            <legend>Principal objetivo</legend>
+            <div className="objective-options">
+              {objectiveOptions.map((option) => (
+                <label className="objective-option" key={option.value}>
+                  <input type="radio" name="objetivo" value={option.value} required />
+                  <span>{option.label}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
 
           <label className="consent">
             <input type="checkbox" required />
