@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { qualificarLead } from "@/lib/claude-ai";
 
 type LeadPayload = {
   nome?: string;
@@ -103,6 +104,41 @@ export async function POST(request: Request) {
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  after(() => {
+    void qualificarLead({
+      ...lead,
+      etapaFunil: lead.etapa_funil,
+      checkoutUrl,
+    }).then(async (qualification) => {
+      if (qualification.skipped) {
+        return;
+      }
+
+      const metadata = {
+        ...(rawUtm ? { tracking: rawUtm } : {}),
+        claude_qualification: {
+          ...qualification,
+          analyzed_at: new Date().toISOString(),
+        },
+      };
+
+      try {
+        await supabase
+          .from("leads")
+          .update({
+            utm: JSON.stringify({
+              captured_at: new Date().toISOString(),
+              checkout_url: checkoutUrl || null,
+              ...metadata,
+            }),
+          })
+          .eq("email", lead.email);
+      } catch (qualificationError) {
+        console.error("Erro ao salvar qualificacao Claude", qualificationError);
+      }
+    });
+  });
 
   return NextResponse.json({
     ok: true,

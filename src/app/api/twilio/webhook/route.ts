@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { responderDM } from "@/lib/claude-ai";
 import {
   cleanText,
   normalizeBrazilianWhatsapp,
@@ -204,6 +205,22 @@ function buttonPayload(payload: JsonObject) {
 
 function buttonText(payload: JsonObject) {
   return firstText(payload.ButtonText, payload.ButtonTitle, payload.Body, payload.body);
+}
+
+function inboundText(payload: JsonObject) {
+  return firstText(payload.Body, payload.body, payload.Message, payload.message);
+}
+
+function claudeReplyText(response: JsonObject) {
+  const data = asObject(response.data);
+  const responder = data.responder;
+  const resposta = cleanText(data.resposta);
+
+  if (responder === false || !resposta) {
+    return "";
+  }
+
+  return resposta;
 }
 
 async function insertInteraction(
@@ -578,6 +595,63 @@ export async function POST(request: Request) {
   }
 
   if (!gate) {
+    const messageText = inboundText(payload);
+
+    if (messageText) {
+      after(() => {
+        void responderDM({
+          whatsapp: whatsappDigits,
+          mensagem: messageText,
+          buttonPayload: receivedButtonPayload,
+          buttonText: buttonText(payload),
+          rawPayload: payload,
+        }).then(async (dmResponse) => {
+          if (dmResponse.skipped) {
+            return;
+          }
+
+          const resposta = claudeReplyText(dmResponse);
+
+          if (resposta) {
+            try {
+              await sendTwilioMessage({
+                id: firstText(payload.MessageSid, payload.SmsMessageSid, payload.SmsSid),
+                whatsapp: whatsappDigits,
+                mensagem: resposta,
+                etapa: "claude-dm-resposta",
+                metadata: {
+                  source: "claude_dm",
+                  whatsapp_api: {
+                    template_name: "trinca_aviso_oficial",
+                    template_category: "UTILITY",
+                    language: "pt_BR",
+                    body_variables: {},
+                    body_variable_order: [],
+                  },
+                },
+              });
+            } catch (replyError) {
+              console.error("Erro ao enviar resposta Claude pelo Twilio", replyError);
+            }
+          }
+
+          await insertInteraction(supabase, {
+            provider: "claude",
+            from_whatsapp: whatsappDigits,
+            message_sid:
+              firstText(payload.MessageSid, payload.SmsMessageSid, payload.SmsSid) || null,
+            button_payload: receivedButtonPayload || null,
+            button_text: buttonText(payload) || null,
+            raw_payload: {
+              claude_response: dmResponse,
+              source_payload: payload,
+            },
+            received_at: new Date().toISOString(),
+          });
+        });
+      });
+    }
+
     return NextResponse.json({
       ok: true,
       ignored: "Webhook Twilio recebido sem botao mapeado para gate do fluxo.",
