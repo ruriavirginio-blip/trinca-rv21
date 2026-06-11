@@ -10,6 +10,7 @@ type LeadPayload = {
   status?: string;
   etapaFunil?: string;
   utm?: string;
+  checkoutUrl?: string;
   data?: string;
 };
 
@@ -19,6 +20,8 @@ function cleanText(value: unknown) {
 
 export async function POST(request: Request) {
   const payload = (await request.json()) as LeadPayload;
+  const rawUtm = cleanText(payload.utm);
+  const checkoutUrl = cleanText(payload.checkoutUrl);
 
   const lead = {
     nome: cleanText(payload.nome),
@@ -28,7 +31,13 @@ export async function POST(request: Request) {
     origem: cleanText(payload.origem) || "landing-trinca-rv21",
     status: cleanText(payload.status) || "novo-lead",
     etapa_funil: cleanText(payload.etapaFunil) || "captacao",
-    utm: cleanText(payload.utm),
+    utm: rawUtm
+      ? JSON.stringify({
+          captured_at: new Date().toISOString(),
+          checkout_url: checkoutUrl || null,
+          tracking: rawUtm,
+        })
+      : "",
     capturado_em: payload.data || new Date().toISOString(),
   };
 
@@ -55,11 +64,48 @@ export async function POST(request: Request) {
     },
   });
 
-  const { error } = await supabase.from("leads").insert(lead);
+  const { data: existingByEmail, error: emailLookupError } = await supabase
+    .from("leads")
+    .select("id")
+    .eq("email", lead.email)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (emailLookupError) {
+    return NextResponse.json({ error: emailLookupError.message }, { status: 500 });
+  }
+
+  let existingLead = existingByEmail;
+
+  if (!existingLead) {
+    const { data: existingByWhatsapp, error: whatsappLookupError } = await supabase
+      .from("leads")
+      .select("id")
+      .eq("whatsapp", lead.whatsapp)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (whatsappLookupError) {
+      return NextResponse.json({ error: whatsappLookupError.message }, { status: 500 });
+    }
+
+    existingLead = existingByWhatsapp;
+  }
+
+  const mutation = existingLead
+    ? supabase.from("leads").update(lead).eq("id", existingLead.id)
+    : supabase.from("leads").insert(lead);
+
+  const { error } = await mutation;
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({
+    ok: true,
+    mode: existingLead ? "updated" : "created",
+  });
 }

@@ -1,0 +1,28 @@
+{
+  "functions": {
+    "src/app/api/automation/flow-test/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/automation/panel-simulation/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/automation/dispatch/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/automation/recover-leads/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/automation/run/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/twilio/webhook/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/twilio/sync-inbound/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/twilio/configure-inbound/route.ts": {
+      "maxDuration": 60
+    }
+  }
+}

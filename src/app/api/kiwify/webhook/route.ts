@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createServerEventId, sendServerEvent } from "@/lib/meta-capi";
+import { sendTwilioMessage } from "@/lib/whatsapp/twilio";
 
 type JsonObject = Record<string, unknown>;
 type SupabaseTable = {
@@ -29,6 +31,25 @@ type Database = {
 
 type AppSupabaseClient = SupabaseClient<Database>;
 
+const RECOVERY_STEPS = [
+  "pagamento-recusado-5min",
+  "pagamento-recusado-2h",
+  "carrinho-abandonado-15min",
+  "carrinho-abandonado-6h",
+  "carrinho-abandonado-24h",
+  "pagamento-pendente-20min",
+  "pagamento-pendente-2h",
+  "pagamento-pendente-24h",
+];
+
+const LEAD_RECOVERY_STEPS = [
+  "lead-formulario-abandonado-5min",
+  "lead-formulario-abandonado-2h",
+  "lead-formulario-abandonado-24h",
+];
+
+const CANCEL_ON_APPROVAL_STEPS = [...RECOVERY_STEPS, ...LEAD_RECOVERY_STEPS];
+
 type NormalizedEvent = {
   evento: string;
   orderId: string;
@@ -54,6 +75,81 @@ function asObject(value: unknown): JsonObject {
 
 function cleanText(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
+}
+
+function normalizeObjective(value: unknown) {
+  const text = cleanText(value).toLowerCase();
+
+  if (text.includes("gluteo") || text.includes("glúteo") || text.includes("firmeza")) {
+    return "gluteos";
+  }
+
+  if (text.includes("autoestima") || text.includes("confianca") || text.includes("confiança")) {
+    return "autoestima";
+  }
+
+  if (text.includes("roupa") || text.includes("antiga")) {
+    return "roupas";
+  }
+
+  if (text.includes("emagrec") || text.includes("medida") || text.includes("reduzir")) {
+    return "emagrecimento";
+  }
+
+  return cleanText(value);
+}
+
+function publicAssetUrl(path: string) {
+  const siteUrl = cleanText(process.env.NEXT_PUBLIC_SITE_URL) || "https://trinca-rv21.vercel.app";
+  return `${siteUrl.replace(/\/+$/, "")}${path}`;
+}
+
+function dietUrlForObjective(objective: unknown) {
+  const normalizedObjective = normalizeObjective(objective);
+
+  if (normalizedObjective === "gluteos") {
+    return (
+      cleanText(process.env.TRINCA_DIET_GLUTEOS_URL) ||
+      publicAssetUrl("/materials/dieta-gluteos-firmeza.pdf")
+    );
+  }
+
+  if (normalizedObjective === "autoestima") {
+    return (
+      cleanText(process.env.TRINCA_DIET_AUTOESTIMA_URL) ||
+      publicAssetUrl("/materials/dieta-autoestima.pdf")
+    );
+  }
+
+  if (normalizedObjective === "roupas") {
+    return (
+      cleanText(process.env.TRINCA_DIET_ROUPAS_URL) ||
+      publicAssetUrl("/materials/dieta-roupas-antigas.pdf")
+    );
+  }
+
+  if (normalizedObjective === "emagrecimento") {
+    return (
+      cleanText(process.env.TRINCA_DIET_EMAGRECIMENTO_URL) ||
+      publicAssetUrl("/materials/dieta-emagrecimento.pdf")
+    );
+  }
+
+  return "";
+}
+
+function ebookRvUrl() {
+  return (
+    cleanText(process.env.TRINCA_EBOOK_RV_URL) ||
+    publicAssetUrl("/materials/ebook-rv-trinca-rv21.pdf")
+  );
+}
+
+function ebookNutritionUrl() {
+  return (
+    cleanText(process.env.TRINCA_EBOOK_NUTRITION_URL) ||
+    publicAssetUrl("/materials/ebook-nutricional-julia-macena.pdf")
+  );
 }
 
 function firstText(...values: unknown[]) {
@@ -186,9 +282,58 @@ function templateForStep(etapa: string) {
     };
   }
 
-  if (etapa === "boas-vindas") {
+  if (etapa === "compra-confirmada") {
     return {
-      name: "trinca_boas_vindas_aprovada",
+      name: "trinca_rv21_compra_confirmada",
+      category: "UTILITY",
+    };
+  }
+
+  if (etapa === "boas-vindas-video") {
+    return {
+      name: "trinca_boas_vindas_video",
+      category: "UTILITY",
+    };
+  }
+
+  if (etapa === "grupo-oficial-final") {
+    return {
+      name: "trinca_rv21_video_grupo_oficial",
+      category: "UTILITY",
+    };
+  }
+
+  if (etapa === "orientacoes-iniciais") {
+    return {
+      name: "trinca_rv21_orientacoes_iniciais",
+      category: "UTILITY",
+    };
+  }
+
+  if (etapa === "materiais-desafio") {
+    return {
+      name: "trinca_rv21_materiais_desafio",
+      category: "UTILITY",
+    };
+  }
+
+  if (etapa === "dieta-ebooks") {
+    return {
+      name: "trinca_rv21_dieta_treino",
+      category: "UTILITY",
+    };
+  }
+
+  if (etapa === "grupo-oficial-preparacao") {
+    return {
+      name: "trinca_rv21_video_grupo_oficial",
+      category: "UTILITY",
+    };
+  }
+
+  if (etapa === "grupo-oficial-link") {
+    return {
+      name: "trinca_grupo_oficial_link",
       category: "UTILITY",
     };
   }
@@ -213,6 +358,8 @@ function withTemplateMetadata(
   const etapa = cleanText(message.etapa);
   const template = templateForStep(etapa);
   const metadata = asObject(message.metadata);
+  const links = asObject(metadata.links);
+  const hasBodyVariableOrder = Array.isArray(metadata.body_variable_order);
 
   return {
     ...message,
@@ -230,17 +377,30 @@ function withTemplateMetadata(
         buttons: {
           checkout_url: values.checkoutUrl,
           group_url: values.whatsappGroupUrl,
+          asset_url: metadata.asset_url || null,
+          diet_url: links.dieta || null,
+          ebook_rv_url: links.ebook_rv || null,
+          ebook_nutrition_url: links.ebook_nutricional || null,
         },
+        ...(hasBodyVariableOrder
+          ? { body_variable_order: metadata.body_variable_order }
+          : {}),
       },
       original_event_status: normalizedEvent.status,
     },
   };
 }
 
-function buildMessageQueue(normalizedEvent: NormalizedEvent) {
+function buildMessageQueue(normalizedEvent: NormalizedEvent, leadObjective?: unknown) {
   const checkoutUrl =
     process.env.NEXT_PUBLIC_KIWIFY_CHECKOUT_URL || "https://pay.kiwify.com.br/mEhmYNt";
   const whatsappGroupUrl = process.env.NEXT_PUBLIC_WHATSAPP_GROUP_URL || "";
+  const welcomeVideoUrl = cleanText(process.env.TRINCA_WELCOME_VIDEO_URL);
+  const abandonmentVideoUrl = cleanText(process.env.TRINCA_ABANDONMENT_VIDEO_URL);
+  const groupWelcomeVideoUrl = cleanText(process.env.TRINCA_GROUP_WELCOME_VIDEO_URL);
+  const dietUrl = dietUrlForObjective(leadObjective) || cleanText(process.env.TRINCA_DIET_URL);
+  const ebookRvUrlValue = ebookRvUrl();
+  const ebookNutritionUrlValue = ebookNutritionUrl();
   const nome = firstName(normalizedEvent.nome);
   const paymentLabel = paymentMethodLabel(normalizedEvent.paymentMethod);
   const productName = normalizedEvent.productName || "TRINCA RV21";
@@ -264,12 +424,142 @@ function buildMessageQueue(normalizedEvent: NormalizedEvent) {
     return [
       {
         ...base,
-        etapa: "boas-vindas",
+        etapa: "compra-confirmada",
         delay_minutos: 0,
+        metadata: {
+          ...base.metadata,
+          sequence: "pos-compra",
+          sequence_order: 1,
+          required_previous_steps: [],
+          body_variable_order: [],
+          button_payload: "compra_confirmada_estou_pronta",
+          button_text: "Estou pronta",
+        },
         mensagem:
-          `${nome}, sua inscricao no ${productName} foi aprovada. Seja bem-vinda ao desafio oficial.\n\n` +
-          "Agora voce entra na etapa de orientacao, grupo oficial e recebimento dos materiais dos 21 dias." +
-          (whatsappGroupUrl ? `\n\nEntre no grupo oficial por aqui: ${whatsappGroupUrl}` : ""),
+          "Sua inscricao no TRINCA RV21 foi confirmada com sucesso pela equipe RV.\n\n" +
+          "Para continuar, toque no botao abaixo e receba o video de boas-vindas.",
+      },
+      {
+        ...base,
+        etapa: "clique-compra-confirmada-estou-pronta",
+        delay_minutos: 0,
+        status: "aguardando-clique",
+        metadata: {
+          ...base.metadata,
+          sequence: "pos-compra",
+          sequence_order: 1.1,
+          gate: true,
+          expected_button_payload: "compra_confirmada_estou_pronta",
+          unlocks_step: "boas-vindas-video",
+        },
+        mensagem: "Gate interno: clique em Estou pronta na compra confirmada.",
+      },
+      {
+        ...base,
+        etapa: "boas-vindas-video",
+        delay_minutos: 0,
+        metadata: {
+          ...base.metadata,
+          sequence: "pos-compra",
+          sequence_order: 2,
+          required_previous_steps: ["compra-confirmada", "clique-compra-confirmada-estou-pronta"],
+          body_variable_order: [],
+          asset_url: welcomeVideoUrl || null,
+        },
+        mensagem:
+          `${nome}, seja bem-vinda ao ${productName}.\n\n` +
+          "Assista primeiro ao video de boas-vindas do criador e idealizador do TRINCA RV21, Ruria Virginio." +
+          (welcomeVideoUrl ? `\n\nVideo: ${welcomeVideoUrl}` : ""),
+      },
+      {
+        ...base,
+        etapa: "materiais-desafio",
+        delay_minutos: 2,
+        metadata: {
+          ...base.metadata,
+          sequence: "pos-compra",
+          sequence_order: 3,
+          required_previous_steps: ["boas-vindas-video"],
+          delay_after_previous_minutes: 2,
+          body_variable_order: [],
+          asset_url: dietUrl || null,
+          asset_urls: [dietUrl, ebookRvUrlValue, ebookNutritionUrlValue].filter(Boolean),
+          links: {
+            dieta: dietUrl || null,
+            ebook_rv: ebookRvUrlValue || null,
+            ebook_nutricional: ebookNutritionUrlValue || null,
+          },
+        },
+        mensagem:
+          `${nome}, agora seguem seus materiais principais do TRINCA RV21.\n\n` +
+          "Voce recebera sua dieta de acordo com o objetivo selecionado, o Ebook RV e o Ebook Nutricional.\n\n" +
+          "Guarde esses materiais e siga a sequencia com calma.",
+      },
+      {
+        ...base,
+        etapa: "grupo-oficial-preparacao",
+        delay_minutos: 4,
+        metadata: {
+          ...base.metadata,
+          sequence: "pos-compra",
+          sequence_order: 4,
+          required_previous_steps: ["materiais-desafio"],
+          delay_after_previous_minutes: 2,
+          body_variable_order: [],
+          button_payload: "assistir_boas_vindas_grupo",
+          button_text: "Assistir boas-vindas",
+        },
+        mensagem:
+          "Agora vamos liberar sua entrada no Grupo Oficial TRINCA RV21.\n\n" +
+          "Antes de receber o link, toque no botao abaixo para assistir ao video de boas-vindas do grupo.",
+      },
+      {
+        ...base,
+        etapa: "clique-grupo-assistir-boas-vindas",
+        delay_minutos: 0,
+        status: "aguardando-clique",
+        metadata: {
+          ...base.metadata,
+          sequence: "pos-compra",
+          sequence_order: 4.1,
+          gate: true,
+          expected_button_payload: "assistir_boas_vindas_grupo",
+          unlocks_step: "grupo-oficial-final",
+        },
+        mensagem: "Gate interno: clique em Assistir boas-vindas antes do video do grupo.",
+      },
+      {
+        ...base,
+        etapa: "grupo-oficial-final",
+        delay_minutos: 0,
+        metadata: {
+          ...base.metadata,
+          sequence: "pos-compra",
+          sequence_order: 5,
+          required_previous_steps: ["clique-grupo-assistir-boas-vindas"],
+          body_variable_order: [],
+          asset_url: groupWelcomeVideoUrl || null,
+        },
+        mensagem:
+          `${nome}, assista ao video oficial de boas-vindas ao Grupo Oficial TRINCA RV21.` +
+          (groupWelcomeVideoUrl ? `\n\nVideo: ${groupWelcomeVideoUrl}` : ""),
+      },
+      {
+        ...base,
+        etapa: "grupo-oficial-link",
+        delay_minutos: 1,
+        metadata: {
+          ...base.metadata,
+          sequence: "pos-compra",
+          sequence_order: 6,
+          required_previous_steps: ["grupo-oficial-final"],
+          delay_after_previous_minutes: 1,
+          body_variable_order: [],
+        },
+        mensagem:
+          `${nome}, entre agora no Grupo Oficial TRINCA RV21 pelo link abaixo.\n\n` +
+          `${whatsappGroupUrl || "[link_grupo]"}\n\n` +
+          "De verdade, agora comeca a nossa jornada do TRINCA RV21.",
       },
     ].map((message) =>
       withTemplateMetadata(message, normalizedEvent, {
@@ -288,6 +578,10 @@ function buildMessageQueue(normalizedEvent: NormalizedEvent) {
         ...base,
         etapa: "pagamento-recusado-5min",
         delay_minutos: 5,
+        metadata: {
+          ...base.metadata,
+          asset_url: abandonmentVideoUrl || null,
+        },
         mensagem:
           `${nome}, vi que sua tentativa de entrada no ${productName} nao foi aprovada pela forma de pagamento.\n\n` +
           "Isso costuma acontecer por limite, validacao do banco ou dados do cartao. Sua vaga ainda pode ser concluida pelo checkout seguro:\n" +
@@ -319,6 +613,10 @@ function buildMessageQueue(normalizedEvent: NormalizedEvent) {
         ...base,
         etapa: "carrinho-abandonado-15min",
         delay_minutos: 15,
+        metadata: {
+          ...base.metadata,
+          asset_url: abandonmentVideoUrl || null,
+        },
         mensagem:
           `${nome}, sua inscricao no ${productName} ficou quase pronta, mas ainda nao foi finalizada.\n\n` +
           "O desafio foi criado para mulheres que querem direcao por 21 dias, com treino, alimentacao, suporte e grupo oficial. Voce pode retomar por aqui:\n" +
@@ -366,6 +664,10 @@ function buildMessageQueue(normalizedEvent: NormalizedEvent) {
         ...base,
         etapa: "pagamento-pendente-20min",
         delay_minutos: 20,
+        metadata: {
+          ...base.metadata,
+          asset_url: abandonmentVideoUrl || null,
+        },
         mensagem:
           `${nome}, vi que sua inscricao no ${productName} ficou quase finalizada, mas ${pendingAction}.\n\n` +
           "Sua vaga ainda pode ser concluida para liberar o grupo oficial, a dieta por objetivo e os materiais dos 21 dias.\n" +
@@ -403,8 +705,12 @@ function buildMessageQueue(normalizedEvent: NormalizedEvent) {
   return [];
 }
 
-async function enqueueMessages(supabase: AppSupabaseClient, normalizedEvent: NormalizedEvent) {
-  const messages = buildMessageQueue(normalizedEvent);
+async function enqueueMessages(
+  supabase: AppSupabaseClient,
+  normalizedEvent: NormalizedEvent,
+  leadObjective?: unknown,
+) {
+  const messages = buildMessageQueue(normalizedEvent, leadObjective);
 
   if (!messages.length) {
     return;
@@ -435,8 +741,212 @@ async function enqueueMessages(supabase: AppSupabaseClient, normalizedEvent: Nor
   }
 }
 
+function requiredPreviousSteps(message: JsonObject) {
+  const metadata = asObject(message.metadata);
+  const required = metadata.required_previous_steps;
+
+  return Array.isArray(required) ? required.map(cleanText).filter(Boolean) : [];
+}
+
+async function hasCompletedPreviousSteps(
+  supabase: AppSupabaseClient,
+  message: JsonObject
+) {
+  const required = requiredPreviousSteps(message);
+
+  if (!required.length) {
+    return true;
+  }
+
+  const orderId = cleanText(message.order_id);
+  const email = cleanText(message.email);
+
+  let query = supabase
+    .from("automation_messages")
+    .select("etapa,status")
+    .in("etapa", required)
+    .in("status", ["enviada", "entregue", "lida", "concluida"]);
+
+  if (orderId) {
+    query = query.eq("order_id", orderId);
+  } else if (email) {
+    query = query.eq("email", email);
+  } else {
+    return false;
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const rows = (data || []) as Array<{ etapa?: unknown }>;
+  const completed = new Set(rows.map((row) => cleanText(row.etapa)));
+
+  return required.every((step) => completed.has(step));
+}
+
+async function claimPendingMessage(supabase: AppSupabaseClient, message: JsonObject) {
+  const metadata = asObject(message.metadata);
+  const { data, error } = await supabase
+    .from("automation_messages")
+    .update({
+      status: "processando",
+      metadata: {
+        ...metadata,
+        processing: {
+          started_at: new Date().toISOString(),
+          worker: "kiwify_webhook_immediate",
+        },
+      },
+    })
+    .eq("id", cleanText(message.id))
+    .eq("status", "pendente")
+    .select("id")
+    .limit(1);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return Boolean(data?.length);
+}
+
+async function dispatchImmediateDueMessages(
+  supabase: AppSupabaseClient,
+  normalizedEvent: NormalizedEvent
+) {
+  const now = new Date().toISOString();
+  const orderId = cleanText(normalizedEvent.orderId);
+  const email = cleanText(normalizedEvent.email);
+
+  let query = supabase
+    .from("automation_messages")
+    .select(
+      "id,email,whatsapp,nome,order_id,payment_method,trigger_event,etapa,canal,mensagem,enviar_em,status,metadata"
+    )
+    .eq("status", "pendente")
+    .lte("enviar_em", now)
+    .order("enviar_em", { ascending: true })
+    .limit(5);
+
+  if (orderId) {
+    query = query.eq("order_id", orderId);
+  } else if (email) {
+    query = query.eq("email", email);
+  } else {
+    return { sent: [], skipped: [], failed: [] };
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const sent: JsonObject[] = [];
+  const skipped: JsonObject[] = [];
+  const failed: JsonObject[] = [];
+
+  for (const message of (data || []) as JsonObject[]) {
+    const messageId = cleanText(message.id);
+
+    try {
+      const previousStepsCompleted = await hasCompletedPreviousSteps(supabase, message);
+
+      if (!previousStepsCompleted) {
+        skipped.push({
+          id: message.id,
+          etapa: message.etapa,
+          reason: "required_previous_steps_pending",
+        });
+        continue;
+      }
+
+      if (!(await claimPendingMessage(supabase, message))) {
+        skipped.push({
+          id: message.id,
+          etapa: message.etapa,
+          reason: "message_already_claimed",
+        });
+        continue;
+      }
+
+      const result = await sendTwilioMessage({
+        id: messageId,
+        whatsapp: message.whatsapp,
+        mensagem: message.mensagem,
+        etapa: message.etapa,
+        metadata: message.metadata,
+      });
+      const metadata = asObject(message.metadata);
+
+      const { error: updateError } = await supabase
+        .from("automation_messages")
+        .update({
+          status: "enviada",
+          metadata: {
+            ...metadata,
+            whatsapp_provider: {
+              provider: result.provider,
+              mode: result.mode,
+              message_ids: result.messageIds,
+              sent_at: new Date().toISOString(),
+              responses: result.responses,
+              triggered_by: "kiwify_webhook_immediate_dispatch",
+            },
+          },
+        })
+        .eq("id", messageId);
+
+      if (updateError) {
+        throw new Error(updateError.message);
+      }
+
+      sent.push({
+        id: message.id,
+        etapa: message.etapa,
+        message_ids: result.messageIds,
+      });
+
+      break;
+    } catch (sendError) {
+      const errorMessage =
+        sendError instanceof Error ? sendError.message : "Erro desconhecido no envio.";
+      const metadata = asObject(message.metadata);
+
+      await supabase
+        .from("automation_messages")
+        .update({
+          status: "erro",
+          metadata: {
+            ...metadata,
+            whatsapp_provider_error: {
+              provider: "twilio",
+              failed_at: new Date().toISOString(),
+              message: errorMessage,
+              triggered_by: "kiwify_webhook_immediate_dispatch",
+            },
+          },
+        })
+        .eq("id", messageId);
+
+      failed.push({
+        id: message.id,
+        etapa: message.etapa,
+        error: errorMessage,
+      });
+    }
+  }
+
+  return { sent, skipped, failed };
+}
+
 export async function POST(request: Request) {
   let payload: JsonObject;
+  const url = new URL(request.url);
+  const dryRun = url.searchParams.get("dry_run") === "true";
 
   try {
     payload = (await request.json()) as JsonObject;
@@ -536,7 +1046,7 @@ export async function POST(request: Request) {
         },
       })
       .eq("status", "pendente")
-      .neq("etapa", "boas-vindas");
+      .in("etapa", CANCEL_ON_APPROVAL_STEPS);
 
     const { error: cancelError } = orderId
       ? await pendingQuery.eq("order_id", orderId)
@@ -566,13 +1076,28 @@ export async function POST(request: Request) {
     console.error("Erro ao salvar historico da Kiwify", eventError.message);
   }
 
-  await enqueueMessages(supabase, normalizedEvent);
+  const { data: existingLead, error: findError } = await supabase
+    .from("leads")
+    .select("id,utm,objetivo")
+    .eq("email", email)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (findError) {
+    return NextResponse.json({ error: findError.message }, { status: 500 });
+  }
+
+  const preservedObjective =
+    normalizeObjective(existingLead?.objetivo) || normalizeObjective(productName) || "Desafio TRINCA RV21";
+
+  await enqueueMessages(supabase, normalizedEvent, preservedObjective);
 
   const leadUpdate = {
     nome: nome || "Cliente Kiwify",
     email,
     whatsapp,
-    objetivo: productName || "Desafio TRINCA RV21",
+    objetivo: preservedObjective,
     origem: "kiwify",
     status,
     etapa_funil: etapaFunil,
@@ -583,20 +1108,9 @@ export async function POST(request: Request) {
       orderId,
       paymentMethod,
       tracking,
+      landing_tracking: existingLead?.utm || null,
     }),
   };
-
-  const { data: existingLead, error: findError } = await supabase
-    .from("leads")
-    .select("id")
-    .eq("email", email)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (findError) {
-    return NextResponse.json({ error: findError.message }, { status: 500 });
-  }
 
   const mutation = existingLead
     ? supabase.from("leads").update(leadUpdate).eq("id", existingLead.id)
@@ -611,10 +1125,56 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  let metaCapiEvent:
+    | {
+        ok: boolean;
+        skipped?: boolean;
+        event_id?: string;
+      }
+    | null = null;
+
+  if (status === "compra-aprovada") {
+    const metaEventId = createServerEventId("Purchase", orderId || email);
+
+    try {
+      metaCapiEvent = await sendServerEvent(
+        "Purchase",
+        {
+          email,
+          phone: whatsapp,
+        },
+        {
+          event_id: metaEventId,
+          value: 37.89,
+          currency: "BRL",
+          content_type: "product",
+          content_ids: ["trinca-rv21"],
+          content_name: productName || "TRINCA RV21",
+          order_id: orderId || null,
+        },
+      );
+    } catch (metaError) {
+      console.error("Erro ao enviar Purchase para Meta CAPI", metaError);
+      metaCapiEvent = {
+        ok: false,
+        event_id: metaEventId,
+      };
+    }
+  }
+
+  const immediateDispatch =
+    status === "compra-aprovada" && !dryRun
+      ? await dispatchImmediateDueMessages(supabase, normalizedEvent)
+      : dryRun
+        ? { dry_run: true, sent: [], skipped: [], failed: [] }
+        : null;
+
   return NextResponse.json({
     ok: true,
     saved: true,
     status,
     etapaFunil,
+    metaCapiEvent,
+    immediateDispatch,
   });
 }

@@ -1,5 +1,10 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect } from "react";
+import { gaTrackEvent, gaTrackPurchase } from "@/lib/google-analytics";
+import { trackPurchase, trackViewContent } from "@/lib/meta-pixel";
 import {
   ArrowRight,
   CheckCircle2,
@@ -9,29 +14,48 @@ import {
   Video,
 } from "lucide-react";
 
-const WHATSAPP_GROUP_URL =
-  process.env.NEXT_PUBLIC_WHATSAPP_GROUP_URL ||
-  "https://chat.whatsapp.com/GFgMskDS6DfK5Ujf29N4PE?mode=gi_t";
-
 const nextSteps = [
-  {
-    icon: MessageCircle,
-    title: "Entre no grupo oficial",
-    text: "O grupo será o ponto central de avisos, direcionamentos e acompanhamento do desafio.",
-  },
   {
     icon: Video,
     title: "Assista à apresentação",
-    text: "Você receberá a explicação do método, da proposta dos 21 dias e de como aproveitar melhor a jornada.",
+    text: "O vídeo de boas-vindas será enviado primeiro no WhatsApp cadastrado.",
   },
   {
     icon: FileText,
-    title: "Aguarde seus materiais",
-    text: "A dieta específica, Ebook RV e Ebook Nutricional serão enviados conforme a organização oficial do desafio.",
+    title: "Receba os materiais",
+    text: "Orientações, arquivos, dieta, Ebook RV e Ebook Nutricional serão enviados na sequência oficial.",
+  },
+  {
+    icon: MessageCircle,
+    title: "Entre no grupo oficial",
+    text: "O link do grupo será enviado no final da sequência individual de boas-vindas.",
   },
 ];
 
 export default function ObrigadoPage() {
+  useEffect(() => {
+    trackViewContent({
+      content_name: "TRINCA RV21 - obrigado",
+      content_category: "post_purchase",
+    });
+    gaTrackEvent("view_item", {
+      content_name: "TRINCA RV21 - obrigado",
+      content_category: "post_purchase",
+    });
+    trackPurchase({
+      value: 37.89,
+      currency: "BRL",
+      content_type: "product",
+      content_ids: ["trinca-rv21"],
+      content_name: "TRINCA RV21",
+      source: "obrigado_page",
+    });
+    gaTrackPurchase({
+      transaction_id: `obrigado-page-${Date.now()}`,
+      source: "obrigado_page",
+    });
+  }, []);
+
   return (
     <main className="thanks-page">
       <section className="thanks-hero">
@@ -51,18 +75,15 @@ export default function ObrigadoPage() {
           <p className="eyebrow">Inscrição confirmada</p>
           <h1>Bem-vinda ao desafio.</h1>
           <p>
-            Sua entrada no TRINCA RV21 foi confirmada. Agora o próximo passo é
-            entrar no grupo oficial para receber os avisos, a apresentação do
-            método e os materiais de preparação.
+            Sua entrada no TRINCA RV21 foi confirmada. Agora acompanhe o
+            WhatsApp cadastrado para receber a apresentação, as orientações, os
+            materiais e, no final da sequência, o acesso ao grupo oficial.
           </p>
 
           <div className="thanks-actions">
-            <a className="button button-primary" href={WHATSAPP_GROUP_URL}>
-              Entrar no grupo oficial
-              <ArrowRight size={18} />
-            </a>
-            <Link className="button button-secondary" href="/">
+            <Link className="button button-primary" href="/">
               Voltar para a landing
+              <ArrowRight size={18} />
             </Link>
           </div>
 

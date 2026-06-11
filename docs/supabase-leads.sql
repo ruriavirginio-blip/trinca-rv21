@@ -7,6 +7,7 @@ create table if not exists public.leads (
   origem text not null default 'landing-trinca-rv21',
   status text not null default 'novo-lead',
   etapa_funil text not null default 'captacao',
+  -- Guarda JSON serializado com origem, referrer, checkout_url e parametros de campanha.
   utm text,
   capturado_em timestamptz not null default now(),
   created_at timestamptz not null default now()
@@ -64,3 +65,19 @@ create index if not exists automation_messages_whatsapp_idx on public.automation
 create index if not exists automation_messages_order_id_idx on public.automation_messages (order_id);
 create index if not exists automation_messages_status_idx on public.automation_messages (status);
 create index if not exists automation_messages_enviar_em_idx on public.automation_messages (enviar_em);
+
+create table if not exists public.twilio_interactions (
+  id uuid primary key default gen_random_uuid(),
+  provider text not null default 'twilio',
+  from_whatsapp text,
+  message_sid text,
+  button_payload text,
+  button_text text,
+  raw_payload jsonb not null default '{}'::jsonb,
+  received_at timestamptz not null default now(),
+  created_at timestamptz not null default now()
+);
+
+create index if not exists twilio_interactions_from_whatsapp_idx on public.twilio_interactions (from_whatsapp);
+create index if not exists twilio_interactions_button_payload_idx on public.twilio_interactions (button_payload);
+create index if not exists twilio_interactions_received_at_idx on public.twilio_interactions (received_at desc);

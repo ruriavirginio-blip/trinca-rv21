@@ -78,23 +78,55 @@ Se voce quer viver os proximos 21 dias com direcao, constancia e suporte, finali
 
 ## Pagamento aprovado
 
-[nome], sua inscricao no TRINCA RV21 foi aprovada. Seja bem-vinda ao desafio oficial.
+Importante: depois da compra aprovada, o link do grupo oficial nao deve ser enviado na primeira mensagem. A aluna precisa receber a sequencia individual completa antes da entrada no grupo.
 
-Agora voce entra na etapa de orientacao, grupo oficial e recebimento dos materiais dos 21 dias.
+### 1. Video de boas-vindas apos pagamento
 
-Assista ao video de boas-vindas do criador e idealizador do TRINCA RV21, Ruria Virginio: [link_video]
+[nome], sua entrada no TRINCA RV21 foi confirmada. Seja bem-vinda ao desafio oficial.
 
-Depois entre no grupo oficial: [link_grupo]
+Assista primeiro ao video de boas-vindas do criador e idealizador do TRINCA RV21, Ruria Virginio:
 
-## Entrega de materiais
+[link_video_boas_vindas]
+
+### 2. Orientacoes iniciais
+
+[nome], agora vamos organizar seus primeiros passos dentro do TRINCA RV21.
+
+Leia as orientacoes iniciais com calma. Elas foram preparadas para que voce saiba exatamente como viver os proximos 21 dias com direcao, clareza e compromisso.
+
+[link_orientacoes]
+
+### 3. Entrega de materiais
 
 [nome], aqui estao seus materiais para iniciar o desafio:
+
+[link_materiais]
+
+### 4. Dieta e ebooks
 
 - Dieta dos 21 dias: [link_dieta]
 - Ebook RV: [link_ebook_rv]
 - Ebook Nutricional: [link_ebook_nutricional]
 
-Guarde esses links e acompanhe as orientacoes no grupo oficial.
+Guarde esses links e siga a sequencia na ordem.
+
+### 5. Mensagem final de boas-vindas ao Grupo Oficial
+
+[nome], agora que voce ja recebeu as orientacoes e os materiais necessarios, esta e a mensagem final de boas-vindas ao Grupo Oficial TRINCA RV21.
+
+Esse grupo nao e apenas um lugar de avisos. Ele e o inicio da experiencia que preparamos para voce com muito carinho, responsabilidade e atencao em cada detalhe.
+
+Tudo foi pensado para que voce se sinta acolhida, bem direcionada e segura durante esses 21 dias dentro da comunidade RV.
+
+[link_video_boas_vindas_grupo]
+
+### 6. Link do Grupo Oficial
+
+[nome], entre agora no Grupo Oficial TRINCA RV21:
+
+[link_grupo]
+
+De verdade, agora comeca a nossa jornada do TRINCA RV21.
 
 ## Pos-desafio
 

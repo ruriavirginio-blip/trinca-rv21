@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TRINCA RV21
 
-## Getting Started
+Landing, funil operacional e automacao WhatsApp do projeto TRINCA RV21.
 
-First, run the development server:
+## Visao Geral
+
+O TRINCA RV21 e um desafio feminino de 21 dias com:
+
+- landing page principal em Next.js;
+- pagina de bio para Instagram;
+- checkout Kiwify;
+- captura de leads em Supabase;
+- fluxo WhatsApp via Twilio;
+- painel operacional em `/operacao`;
+- Meta Pixel, Meta CAPI preparada e Google Analytics 4;
+- videos, dietas e ebooks hospedados em `public/`.
+
+## Stack
+
+- Next.js 16
+- React 19
+- TypeScript
+- Supabase
+- Twilio WhatsApp
+- Kiwify Webhooks
+- Vercel
+
+## Rotas Principais
+
+- `/`: landing principal.
+- `/bio`: pagina para link da bio/Instagram.
+- `/obrigado`: pagina pos-compra informativa.
+- `/aluna`: central estrutural da aluna.
+- `/operacao`: painel operacional protegido por token.
+
+## APIs Principais
+
+- `/api/leads`: captura e atualiza leads.
+- `/api/kiwify/webhook`: recebe eventos da Kiwify.
+- `/api/twilio/webhook`: recebe cliques/respostas do WhatsApp Twilio.
+- `/api/twilio/sync-inbound`: sincroniza mensagens inbound do Twilio.
+- `/api/automation/run`: executa sincronizacao, recuperacao e disparos.
+- `/api/automation/dispatch`: dispara mensagens pendentes.
+- `/api/automation/dashboard`: alimenta o painel operacional.
+- `/api/automation/readiness`: diagnostico de ambiente.
+
+## Fluxo Pos-Compra
+
+1. Kiwify confirma pagamento aprovado.
+2. Sistema cria fila pos-compra no Supabase.
+3. Lead recebe mensagem de confirmacao com botao `Estou pronta`.
+4. Clique libera video pos-compra.
+5. Depois sao enviados materiais, dieta por objetivo, Ebook RV e Ebook Nutricional.
+6. Lead recebe mensagem de preparacao para grupo com botao `Assistir boas-vindas`.
+7. Clique libera video do grupo.
+8. Depois e enviado o link final do grupo oficial.
+
+## Variaveis de Ambiente
+
+Copie `.env.example` e preencha os valores reais no ambiente local/Vercel.
+
+Nunca publique `.env.local`.
+
+## Comandos
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run lint
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Documentacao para Assistentes
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Antes de alterar o projeto, leia:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `ASSISTANT_INTEGRATION_HANDOFF.md`
+- `CHECKPOINT_RETOMADA_TRINCA_RV21.md`
+- `AUDITORIA_TECNICA_COMPLETA_TRINCA_RV21.md`
+- `RELATORIO_IMPLEMENTACAO_META_PIXEL_TRINCA_RV21.md`
+- `RELATORIO_IMPLEMENTACAO_GA4_TRINCA_RV21.md`
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

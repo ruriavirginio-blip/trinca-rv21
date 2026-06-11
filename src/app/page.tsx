@@ -1,7 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import {
+  gaTrackBeginCheckout,
+  gaTrackEvent,
+  gaTrackLead,
+} from "@/lib/google-analytics";
+import {
+  trackCustomEvent,
+  trackInitiateCheckout,
+  trackLead,
+  trackViewContent,
+} from "@/lib/meta-pixel";
 import {
   ArrowRight,
   BadgeCheck,
@@ -29,6 +40,71 @@ const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent
   WHATSAPP_MESSAGE
 )}`;
 const CHECKOUT_URL = process.env.NEXT_PUBLIC_KIWIFY_CHECKOUT_URL || WHATSAPP_URL;
+const PRODUCT_PRICE = 37.89;
+
+function buildLeadTracking() {
+  if (typeof window === "undefined") {
+    return "";
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const utm: Record<string, string> = {};
+
+  params.forEach((value, key) => {
+    if (
+      key.startsWith("utm_") ||
+      ["fbclid", "gclid", "ttclid", "src", "source", "ref"].includes(key)
+    ) {
+      utm[key] = value;
+    }
+  });
+
+  return JSON.stringify({
+    origem: "landing-trinca-rv21",
+    landing_url: window.location.href,
+    path: window.location.pathname,
+    query: window.location.search,
+    referrer: document.referrer || "",
+    user_agent: navigator.userAgent,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    utm,
+  });
+}
+
+function checkoutUrlWithTracking() {
+  if (typeof window === "undefined") {
+    return CHECKOUT_URL;
+  }
+
+  try {
+    const checkout = new URL(CHECKOUT_URL, window.location.origin);
+    const currentParams = new URLSearchParams(window.location.search);
+
+    currentParams.forEach((value, key) => {
+      if (!checkout.searchParams.has(key)) {
+        checkout.searchParams.set(key, value);
+      }
+    });
+
+    checkout.searchParams.set("origem", "landing-trinca-rv21");
+
+    return checkout.toString();
+  } catch {
+    return CHECKOUT_URL;
+  }
+}
+
+function safeParseTracking(value: string) {
+  try {
+    return value ? JSON.parse(value) : {};
+  } catch {
+    return {};
+  }
+}
+
+function objectiveLabel(value: string) {
+  return objectiveOptions.find((option) => option.value === value)?.label || value;
+}
 
 const benefits = [
   "Treinos direcionados para 21 dias",
@@ -39,11 +115,29 @@ const benefits = [
   "Cupom TRINCA PREMIUM50% pós-desafio",
 ];
 
+const heroFlow = [
+  "Inscrição segura",
+  "Boas-vindas individual",
+  "Grupo no final da sequência",
+];
+
 const painPoints = [
   "Você começa animada, mas perde ritmo quando a rotina aperta.",
   "Sente que precisa emagrecer, desinchar e voltar a gostar das fotos.",
   "Já tentou sozinha, mas faltou direção, cobrança e suporte real.",
   "Quer resultado, mas não quer um plano impossível de seguir.",
+];
+
+const fitItems = [
+  "Quer viver 21 dias com direção em vez de improvisar mais uma tentativa.",
+  "Está disposta a seguir treino, alimentação e check-ins com constância real.",
+  "Quer entrar em um ambiente acompanhado, organizado e com comunicação clara.",
+];
+
+const commitmentItems = [
+  "Não é uma promessa mágica, rápida ou sem esforço.",
+  "Não substitui acompanhamento médico quando houver necessidade clínica.",
+  "Não combina com quem quer apenas entrar no grupo sem viver a sequência.",
 ];
 
 const pillars = [
@@ -108,13 +202,31 @@ const journey = [
   },
   {
     step: "03",
-    title: "Boas-vindas",
-    text: "Você recebe um vídeo de boas-vindas do idealizador do TRINCA RV21, Ruriá Virgínio, e acesso ao grupo oficial.",
+    title: "Entrada guiada",
+    text: "Você confirma que está pronta, recebe o vídeo de boas-vindas e só então segue para orientações, materiais, dieta e ebooks.",
   },
   {
     step: "04",
-    title: "Execução",
-    text: "Durante 21 dias, você segue treino, dieta, check-ins e suporte para sair da promessa.",
+    title: "Grupo oficial",
+    text: "O link do grupo chega apenas no final da sequência individual, depois do vídeo de boas-vindas ao ambiente oficial.",
+  },
+];
+
+const guidedExperience = [
+  {
+    icon: ShieldCheck,
+    title: "Confirmação sem ansiedade",
+    text: "A compra aprovada não vira um envio frio. Você recebe uma confirmação clara e só avança quando toca em Estou pronta.",
+  },
+  {
+    icon: Video,
+    title: "Boas-vindas antes dos materiais",
+    text: "O vídeo inicial apresenta o compromisso dos 21 dias antes da entrega das orientações, dieta, ebooks e arquivos do desafio.",
+  },
+  {
+    icon: MessageCircle,
+    title: "Grupo no momento certo",
+    text: "O grupo oficial é liberado depois da sequência individual, para proteger a ordem, o acolhimento e a experiência das alunas.",
   },
 ];
 
@@ -123,6 +235,13 @@ const bonuses = [
   "Ebook RV para mentalidade e constância",
   "Ebook Nutricional para melhorar escolhas",
   "Cupom TRINCA PREMIUM50% liberado no pós-desafio",
+];
+
+const offerFlow = [
+  "Você preenche a inscrição e segue para o checkout seguro.",
+  "Após a aprovação, recebe confirmação e vídeo de boas-vindas.",
+  "Em seguida chegam orientações, materiais, dieta e ebooks.",
+  "O link do grupo oficial é liberado no final da sequência.",
 ];
 
 const objectiveOptions = [
@@ -173,7 +292,7 @@ const faqItems = [
   {
     question: "O grupo é liberado antes do pagamento?",
     answer:
-      "Não. O grupo oficial é enviado apenas após a aprovação para manter a organização e proteger a experiência das alunas.",
+      "Não. O grupo oficial é enviado apenas após o pagamento aprovado e depois da sequência individual de boas-vindas, para manter a organização e proteger a experiência das alunas.",
   },
   {
     question: "O cupom de 50% pode ser usado quando?",
@@ -190,6 +309,59 @@ const faqItems = [
 export default function Home() {
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const formStarted = useRef(false);
+
+  useEffect(() => {
+    trackViewContent({
+      content_name: "TRINCA RV21 - landing principal",
+      content_category: "landing_page",
+    });
+    gaTrackEvent("view_item", {
+      currency: "BRL",
+      value: PRODUCT_PRICE,
+      items: [
+        {
+          item_id: "trinca-rv21",
+          item_name: "TRINCA RV21",
+          item_category: "desafio_fitness",
+          price: PRODUCT_PRICE,
+          quantity: 1,
+        },
+      ],
+    });
+
+    const reachedDepths = new Set<number>();
+    const depths = [25, 50, 75, 90];
+
+    function handleScroll() {
+      const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+
+      if (scrollable <= 0) {
+        return;
+      }
+
+      const currentDepth = Math.round((window.scrollY / scrollable) * 100);
+
+      for (const depth of depths) {
+        if (currentDepth >= depth && !reachedDepths.has(depth)) {
+          reachedDepths.add(depth);
+          trackCustomEvent("ScrollDepth", {
+            content_name: "TRINCA RV21 - landing principal",
+            depth,
+          });
+          gaTrackEvent("scroll_depth", {
+            content_name: "TRINCA RV21 - landing principal",
+            depth,
+          });
+        }
+      }
+    }
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   async function handleLeadSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -197,6 +369,8 @@ export default function Home() {
     setSubmitError("");
 
     const formData = new FormData(event.currentTarget);
+    const checkoutUrl = checkoutUrlWithTracking();
+    const tracking = buildLeadTracking();
 
     const lead = {
       nome: String(formData.get("nome") || "").trim(),
@@ -206,11 +380,29 @@ export default function Home() {
       origem: "landing-trinca-rv21",
       status: "checkout-iniciado",
       etapaFunil: "checkout",
-      utm: typeof window !== "undefined" ? window.location.search : "",
+      utm: tracking,
+      checkoutUrl,
       data: new Date().toISOString(),
     };
+    const trackingData = safeParseTracking(tracking);
 
     try {
+      trackLead({
+        content_name: "TRINCA RV21 - formulario landing",
+        content_category: "lead_capture",
+        value: PRODUCT_PRICE,
+        currency: "BRL",
+        objective: lead.objetivo,
+        objective_label: objectiveLabel(lead.objetivo),
+        utm: trackingData.utm || {},
+        source: "landing-trinca-rv21",
+      });
+      gaTrackLead({
+        objective: lead.objetivo,
+        objective_label: objectiveLabel(lead.objetivo),
+        source: "landing-trinca-rv21",
+      });
+
       const response = await fetch("/api/leads", {
         method: "POST",
         headers: {
@@ -223,7 +415,22 @@ export default function Home() {
         throw new Error("Nao foi possivel registrar o lead.");
       }
 
-      window.location.href = CHECKOUT_URL;
+      trackInitiateCheckout({
+        value: PRODUCT_PRICE,
+        currency: "BRL",
+        content_ids: ["trinca-rv21"],
+        checkout_url: checkoutUrl,
+        objective: lead.objetivo,
+        objective_label: objectiveLabel(lead.objetivo),
+        utm: trackingData.utm || {},
+      });
+      gaTrackBeginCheckout({
+        checkout_url: checkoutUrl,
+        objective: lead.objetivo,
+        objective_label: objectiveLabel(lead.objetivo),
+      });
+
+      window.location.href = checkoutUrl;
     } catch (error) {
       console.error("Erro ao capturar lead:", error);
       setSubmitError(
@@ -271,7 +478,7 @@ export default function Home() {
 
           <div className="hero-mobile-portrait" aria-hidden="true">
             <Image
-              src="/images/ruria.jpg"
+              src="/images/ruria-rosto-premium.png"
               alt=""
               fill
               sizes="100vw"
@@ -305,6 +512,15 @@ export default function Home() {
               <ShieldCheck size={16} />
               Pagamento seguro via Kiwify
             </span>
+          </div>
+
+          <div className="hero-flow" aria-label="Fluxo de entrada">
+            {heroFlow.map((item, index) => (
+              <span key={item}>
+                <strong>{String(index + 1).padStart(2, "0")}</strong>
+                {item}
+              </span>
+            ))}
           </div>
         </div>
 
@@ -349,6 +565,44 @@ export default function Home() {
               <p>{item}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      <section className="section fit-section">
+        <div className="section-copy wide">
+          <p className="eyebrow">Decisão com clareza</p>
+          <h2>O TRINCA RV21 é para mulheres que querem estrutura, não promessa vazia.</h2>
+          <p>
+            A proposta é simples: durante 21 dias, você entra em uma rotina
+            guiada com treino, alimentação, materiais e um ambiente que ajuda a
+            sustentar a decisão.
+          </p>
+        </div>
+
+        <div className="fit-layout">
+          <article className="fit-card fit-card-positive">
+            <h3>Faz sentido para você se...</h3>
+            <ul>
+              {fitItems.map((item) => (
+                <li key={item}>
+                  <CheckCircle2 size={18} />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </article>
+
+          <article className="fit-card">
+            <h3>Importante saber antes de entrar</h3>
+            <ul>
+              {commitmentItems.map((item) => (
+                <li key={item}>
+                  <ShieldCheck size={18} />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </article>
         </div>
       </section>
 
@@ -435,6 +689,43 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="section guided-section">
+        <div className="section-copy wide">
+          <p className="eyebrow">Experiência premium por dentro</p>
+          <h2>Depois da compra, nada chega fora de ordem.</h2>
+          <p>
+            A entrada no TRINCA RV21 foi desenhada para reduzir ansiedade e
+            aumentar adesão. Cada mensagem tem uma função: confirmar, orientar,
+            entregar e só então abrir o ambiente oficial.
+          </p>
+        </div>
+
+        <div className="guided-layout">
+          <div className="guided-panel">
+            <span>Fluxo protegido</span>
+            <strong>2 cliques de confirmação</strong>
+            <p>
+              Antes dos vídeos e antes do grupo, a aluna confirma que está
+              pronta. Isso mantém a experiência humana, organizada e segura.
+            </p>
+          </div>
+
+          <div className="guided-grid">
+            {guidedExperience.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <article className="guided-card" key={item.title}>
+                  <Icon size={24} />
+                  <h3>{item.title}</h3>
+                  <p>{item.text}</p>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       <section className="results-section" id="resultados">
         <div className="section-copy wide">
           <p className="eyebrow">Resultados reais</p>
@@ -460,6 +751,12 @@ export default function Home() {
           ))}
           </div>
         </div>
+
+        <p className="results-note">
+          As imagens representam trajetórias reais compartilhadas com a estrutura
+          RV. Resultados variam conforme rotina, execução, alimentação, contexto
+          individual e constância.
+        </p>
       </section>
 
       <section className="section offer-section" id="oferta">
@@ -488,9 +785,37 @@ export default function Home() {
               </span>
             ))}
           </div>
+
+          <div className="offer-flow" aria-label="O que acontece depois da inscrição">
+            <h3>O que acontece depois que você entra</h3>
+            <ol>
+              {offerFlow.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ol>
+          </div>
         </div>
 
-        <form className="lead-form" id="inscricao" onSubmit={handleLeadSubmit}>
+        <form
+          className="lead-form"
+          id="inscricao"
+          onFocus={() => {
+            if (formStarted.current) {
+              return;
+            }
+
+            formStarted.current = true;
+            trackCustomEvent("FormStart", {
+              content_name: "TRINCA RV21 - formulario landing",
+              content_category: "lead_capture",
+            });
+            gaTrackEvent("form_start", {
+              content_name: "TRINCA RV21 - formulario landing",
+              content_category: "lead_capture",
+            });
+          }}
+          onSubmit={handleLeadSubmit}
+        >
           <p className="form-kicker">Inscrição rápida</p>
           <h3>Preencha para garantir sua entrada no desafio.</h3>
           <p>
@@ -542,8 +867,8 @@ export default function Home() {
           </button>
 
           <small>
-            Depois da aprovação, você recebe boas-vindas, materiais e acesso ao
-            grupo oficial.
+            Depois da aprovação, você recebe a sequência individual de
+            boas-vindas, materiais e só então o link do grupo oficial.
           </small>
         </form>
       </section>

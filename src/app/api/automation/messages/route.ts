@@ -64,6 +64,11 @@ function enrichMessage(message: Record<string, unknown>) {
     whatsapp_template_language: whatsappApi.language || "pt_BR",
     whatsapp_template_body_variables: whatsappApi.body_variables || {},
     whatsapp_template_buttons: whatsappApi.buttons || {},
+    sequence: metadata.sequence || null,
+    sequence_order: metadata.sequence_order || null,
+    required_previous_steps: metadata.required_previous_steps || [],
+    asset_url: metadata.asset_url || null,
+    material_links: metadata.links || {},
   };
 }
 
