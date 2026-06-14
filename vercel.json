@@ -23,6 +23,9 @@
     },
     "src/app/api/twilio/configure-inbound/route.ts": {
       "maxDuration": 60
+    },
+    "src/app/api/remotion/render/route.ts": {
+      "maxDuration": 300
     }
   }
 }
