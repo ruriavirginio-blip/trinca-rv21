@@ -56,10 +56,27 @@ a {
   background: var(--bg);
 }
 
+.social-proof-bar {
+  position: fixed;
+  z-index: 60;
+  top: 0;
+  left: 0;
+  right: 0;
+  min-height: 34px;
+  display: grid;
+  place-items: center;
+  background: #2b145f;
+  color: #fff;
+  padding: 8px 16px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 900;
+}
+
 .site-header {
   position: fixed;
   z-index: 50;
-  top: 16px;
+  top: 50px;
   left: 50%;
   width: calc(100% - 48px);
   max-width: 1180px;
@@ -232,12 +249,21 @@ a {
 }
 
 .button-primary {
-  background: var(--gold);
-  color: #0a0805;
+  background: #7c4dff;
+  color: #fff;
+  box-shadow: 0 16px 34px rgba(124, 77, 255, 0.28);
 }
 
 .button-primary:hover {
-  background: var(--gold-strong);
+  background: #6f3eff;
+}
+
+.launch-note {
+  margin: 12px 0 0;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 900;
+  text-align: center;
 }
 
 .button-secondary {
@@ -266,6 +292,62 @@ a {
 
 .hero-proof svg {
   color: var(--gold);
+}
+
+.hero-proof-video-card {
+  position: relative;
+  width: min(560px, 100%);
+  aspect-ratio: 16 / 9;
+  border: 1px solid rgba(124, 77, 255, 0.52);
+  border-radius: 8px;
+  background: #080806;
+  margin-top: 26px;
+  overflow: hidden;
+  box-shadow: 0 24px 74px rgba(0, 0, 0, 0.48);
+}
+
+.hero-proof-video-card video {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  filter: brightness(0.82) contrast(1.06) saturate(1.06);
+}
+
+.hero-proof-video-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, transparent 22%, rgba(5, 5, 5, 0.62) 100%),
+    linear-gradient(90deg, rgba(5, 5, 5, 0.56), transparent 56%);
+  pointer-events: none;
+}
+
+.hero-video-overlay {
+  position: absolute;
+  z-index: 1;
+  left: 16px;
+  right: 16px;
+  bottom: 14px;
+  display: grid;
+  gap: 4px;
+}
+
+.hero-video-overlay span {
+  width: fit-content;
+  border-radius: 999px;
+  background: rgba(124, 77, 255, 0.9);
+  color: #fff;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.hero-video-overlay strong {
+  color: #fff;
+  font-size: 18px;
 }
 
 .hero-flow {
@@ -712,6 +794,67 @@ a {
   background: var(--bg);
 }
 
+.proof-gallery-section {
+  background:
+    linear-gradient(180deg, rgba(124, 77, 255, 0.08), transparent 320px),
+    var(--bg-soft);
+}
+
+.proof-gallery {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  max-width: 920px;
+  margin: 48px auto 0;
+}
+
+.proof-card {
+  position: relative;
+  min-height: 460px;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #080806;
+}
+
+.proof-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, transparent 42%, rgba(5, 5, 5, 0.88) 100%),
+    linear-gradient(90deg, rgba(5, 5, 5, 0.12), transparent 42%);
+  pointer-events: none;
+}
+
+.proof-photo {
+  object-fit: contain;
+  object-position: center;
+  padding: 10px;
+}
+
+.proof-card figcaption {
+  position: absolute;
+  z-index: 1;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  display: grid;
+  gap: 4px;
+}
+
+.proof-card figcaption strong {
+  color: #fff;
+  font-size: 18px;
+}
+
+.proof-card figcaption span {
+  color: #e9dfcf;
+  font-size: 13px;
+  font-weight: 800;
+}
+
 .results-marquee {
   position: relative;
   width: 100vw;
@@ -1039,6 +1182,10 @@ a {
 .form-submit {
   width: 100%;
   margin-top: 4px;
+}
+
+.form-launch-note {
+  margin-top: -2px;
 }
 
 .form-submit:disabled {
@@ -1526,7 +1673,7 @@ a {
 
   .site-header {
     position: absolute;
-    top: 8px;
+    top: 42px;
     left: 14px;
     width: calc(100% - 28px);
     transform: none;
@@ -1558,7 +1705,7 @@ a {
 
   .hero {
     min-height: auto;
-    padding: 94px 24px 52px;
+    padding: 132px 24px 52px;
     background:
       radial-gradient(circle at 82% 10%, rgba(216, 180, 90, 0.16), transparent 32%),
       linear-gradient(180deg, #050505 0%, #0a0a08 48%, #050505 100%);
@@ -1571,7 +1718,8 @@ a {
   }
 
   .hero h1 {
-    font-size: 58px;
+    font-size: 48px;
+    line-height: 0.98;
   }
 
   .hero-mobile-portrait {
@@ -1604,6 +1752,11 @@ a {
 
   .hero-lead {
     font-size: 20px;
+  }
+
+  .hero-proof-video-card {
+    width: 100%;
+    margin-top: 22px;
   }
 
   .hero-actions,
@@ -1720,6 +1873,30 @@ a {
     height: 440px;
   }
 
+  .proof-gallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 34px;
+  }
+
+  .proof-card {
+    min-height: 280px;
+  }
+
+  .proof-card figcaption {
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+  }
+
+  .proof-card figcaption strong {
+    font-size: 14px;
+  }
+
+  .proof-card figcaption span {
+    font-size: 11px;
+  }
+
   .price-row {
     align-items: flex-start;
   }
@@ -1791,7 +1968,7 @@ a {
   }
 
   .hero h1 {
-    font-size: 50px;
+    font-size: 40px;
   }
 
   .hero-mobile-portrait {

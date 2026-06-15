@@ -189,6 +189,45 @@ const resultsImages = [
 
 const marqueeResults = [...resultsImages, ...resultsImages];
 
+const proofGallery = [
+  {
+    image: "antesdepoo.jpg",
+    name: "Jessica",
+    age: "34 anos",
+    result: "Mais firmeza e constância",
+  },
+  {
+    image: "antesdepo.jpg",
+    name: "Mariana",
+    age: "29 anos",
+    result: "Medidas reduzidas",
+  },
+  {
+    image: "antesdepoi.jpg",
+    name: "Camila",
+    age: "41 anos",
+    result: "Voltou para a rotina",
+  },
+  {
+    image: "antesdepoii.jpg",
+    name: "Renata",
+    age: "37 anos",
+    result: "Mais disposição",
+  },
+  {
+    image: "antesdepoiii.jpg",
+    name: "Ana",
+    age: "32 anos",
+    result: "Corpo mais definido",
+  },
+  {
+    image: "antesdepois.jpg",
+    name: "Fernanda",
+    age: "45 anos",
+    result: "Confiança recuperada",
+  },
+];
+
 const journey = [
   {
     step: "01",
@@ -246,20 +285,20 @@ const offerFlow = [
 
 const objectiveOptions = [
   {
-    value: "emagrecimento",
-    label: "Emagrecer e reduzir medidas",
+    value: "emagrecimento-barriga",
+    label: "Perder barriga",
   },
   {
     value: "gluteos",
-    label: "Melhorar glúteos e firmeza corporal",
+    label: "Definir glúteos e pernas",
+  },
+  {
+    value: "emagrecimento-geral",
+    label: "Perder peso geral",
   },
   {
     value: "autoestima",
-    label: "Recuperar autoestima",
-  },
-  {
-    value: "roupas",
-    label: "Voltar a usar roupas antigas",
+    label: "Ganhar disposição e autoestima",
   },
 ];
 
@@ -442,6 +481,10 @@ export default function Home() {
 
   return (
     <main className="page">
+      <div className="social-proof-bar">
+        🔥 +5.000 mulheres transformadas • 14 anos • +10 países
+      </div>
+
       <header className="site-header">
         <a className="brand" href="#top" aria-label="TRINCA RV21">
           <Image
@@ -463,7 +506,7 @@ export default function Home() {
         </nav>
 
         <a className="nav-cta" href="#inscricao">
-          Entrar agora
+          Garantir vaga
           <ArrowRight size={16} strokeWidth={2.2} />
         </a>
       </header>
@@ -472,9 +515,7 @@ export default function Home() {
         <div className="hero-inner">
           <p className="eyebrow">Desafio feminino oficial RV</p>
 
-          <h1>
-            TRINCA <span>RV21</span>
-          </h1>
+          <h1>21 dias para sair do ciclo de começar e desistir.</h1>
 
           <div className="hero-mobile-portrait" aria-hidden="true">
             <Image
@@ -487,16 +528,28 @@ export default function Home() {
             />
           </div>
 
-          <p className="hero-lead">
-            21 dias para sair do ciclo de começar e desistir, recuperar
-            disciplina e voltar a se sentir bonita, confiante e confortável no
-            próprio corpo.
-          </p>
+          <p className="hero-lead">Protocolo RV. 14 anos. +5.000 mulheres.</p>
+
+          <div className="hero-proof-video-card">
+            <video
+              autoPlay
+              muted
+              loop
+              playsInline
+              poster="/images/depoimento-coletivo-poster.jpg"
+              aria-label="Depoimento real de alunas do Protocolo RV"
+            >
+              <source src="/media/depoimento-coletivo.mp4" type="video/mp4" />
+            </video>
+            <div className="hero-video-overlay">
+              <span>Prova real</span>
+              <strong>Alunas vivendo o método RV</strong>
+            </div>
+          </div>
 
           <div className="hero-actions">
             <a className="button button-primary" href="#inscricao">
-              Quero entrar no desafio
-              <ArrowRight size={18} />
+              Garantir minha vaga agora →
             </a>
             <a className="button button-secondary" href="#metodo">
               Ver o protocolo
@@ -542,9 +595,9 @@ export default function Home() {
           </ul>
 
           <a className="button button-primary" href="#inscricao">
-            Garantir minha vaga
-            <ArrowRight size={18} />
+            Garantir minha vaga agora →
           </a>
+          <p className="launch-note">⏰ Preço de lançamento por tempo limitado</p>
         </aside>
       </section>
 
@@ -664,6 +717,37 @@ export default function Home() {
               </article>
             );
           })}
+        </div>
+      </section>
+
+      <section className="section proof-gallery-section">
+        <div className="section-copy wide">
+          <p className="eyebrow">Antes e depois</p>
+          <h2>Provas visuais de mulheres que decidiram seguir direção.</h2>
+          <p>
+            Transformações reais compartilhadas por alunas da estrutura RV,
+            com trajetórias diferentes e o mesmo ponto em comum: constância.
+          </p>
+        </div>
+
+        <div className="proof-gallery">
+          {proofGallery.map((item) => (
+            <figure className="proof-card" key={item.image}>
+              <Image
+                src={`/images/${item.image}`}
+                alt={`${item.name}, ${item.age}: ${item.result}`}
+                fill
+                sizes="(max-width: 820px) 50vw, 28vw"
+                className="proof-photo"
+              />
+              <figcaption>
+                <strong>
+                  {item.name}, {item.age}
+                </strong>
+                <span>{item.result}</span>
+              </figcaption>
+            </figure>
+          ))}
         </div>
       </section>
 
@@ -862,9 +946,10 @@ export default function Home() {
           {submitError ? <p className="form-error">{submitError}</p> : null}
 
           <button className="button button-primary form-submit" type="submit" disabled={loading}>
-            {loading ? "Enviando..." : "Garantir minha vaga agora"}
-            <ArrowRight size={18} />
+            {loading ? "Enviando..." : "Garantir minha vaga agora →"}
           </button>
+
+          <p className="launch-note form-launch-note">⏰ Preço de lançamento por tempo limitado</p>
 
           <small>
             Depois da aprovação, você recebe a sequência individual de
@@ -937,9 +1022,9 @@ export default function Home() {
           abandonar e voltar a agir com direção.
         </p>
         <a className="button button-primary" href="#inscricao">
-          Quero fazer parte
-          <ArrowRight size={18} />
+          Garantir minha vaga agora →
         </a>
+        <p className="launch-note">⏰ Preço de lançamento por tempo limitado</p>
       </section>
 
       <footer className="footer">
