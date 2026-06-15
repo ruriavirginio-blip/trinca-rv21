@@ -85,6 +85,7 @@ const contentCalendar: Array<{
   channel: string;
   status: ContentStatus;
   script: string[];
+  roteiro?: string;
 }> = [
   {
     id: "d1",
@@ -101,6 +102,12 @@ const contentCalendar: Array<{
       "Virada: O RV21 nasceu para organizar treino, dieta e constancia em passos pequenos.",
       "CTA: Comenta SEGUNDA se voce quer entrar na lista de prioridade.",
     ],
+    roteiro: `[00:00-00:03] CLOSE | "Se você já tentou emagrecer e desistiu... você não falhou."
+[00:03-00:06] CLOSE | "O método falhou por você." [PAUSA 1s]
+[00:07-00:18] MEIO CORPO | "A maioria das mulheres começa na segunda animada. Na quarta já sumiu. Não é fraqueza. É falta de direção."
+[00:18-00:27] CLOSE | "14 anos transformando mulheres que já tinham desistido de si mesmas. O Protocolo RV funciona porque é feito pra você — não pra todo mundo igual."
+[00:27-00:32] CLOSE + APONTA | "Começa segunda. Comenta SEGUNDA aqui embaixo que eu te mando o acesso antes de abrir pra todo mundo."
+TEXTO NA TELA: [00:00] "Você não falhou" | [00:03] "O método falhou" | [00:27] "Comenta SEGUNDA 👇"`,
   },
   {
     id: "d2",
@@ -117,6 +124,11 @@ const contentCalendar: Array<{
       "Virada: Metodo bom diminui decisao, encaixa rotina e mostra o proximo passo.",
       "CTA: Comenta MENTIRA se voce cansou de se culpar.",
     ],
+    roteiro: `[00:00-00:03] CLOSE | "3 mentiras que te fizeram desistir de emagrecer."
+[00:03-00:10] 1 DEDO | "Você precisa de academia pra ter resultado. MENTIRA." [SOM DE ERRO]
+[00:10-00:18] 2 DEDOS | "Você tem que cortar tudo que gosta pra emagrecer. MENTIRA." [SOM DE ERRO]
+[00:18-00:27] 3 DEDOS | "Seu metabolismo parou com a idade e seu corpo não responde mais." [PAUSA DRAMÁTICA] "TAMBÉM É MENTIRA." [SOM DE ERRO]
+[00:27-00:38] MEIO CORPO | "O que funciona de verdade? Comenta MENTIRA aqui embaixo que eu te mando no direct."`,
   },
   {
     id: "d3",
@@ -133,6 +145,11 @@ const contentCalendar: Array<{
       "Virada: O que muda primeiro e a postura diante da rotina.",
       "CTA: Responde JESSICA se voce quer receber os detalhes.",
     ],
+    roteiro: `[00:00-00:05] CLOSE SUAVE | "A Jessica me disse assim: 'Ruriá, meu corpo desistiu de mim.'" [PAUSA]
+[00:05-00:15] MEIO CORPO | "38 anos. 2 filhos. Já tinha feito 4 dietas diferentes. Ela não acreditava mais em nada."
+[00:15-00:30] CÂMERA | "21 dias depois do Protocolo RV: menos 6 quilos. 8 centímetros de barriga. Mas o que ela me mandou que mais me tocou foi isso:" [PAUSA] "'Voltei a gostar de me olhar no espelho.'"
+[00:30-00:42] CLOSE | "O corpo dela não tinha desistido. Ela só estava no método errado." [PAUSA] "Comenta JESSICA se você quer ser a próxima história assim."
+TEXTO NA TELA: [00:15] "-6kg • -8cm de barriga" (verde) | [00:30] "'Voltei a gostar de mim'" (itálico)`,
   },
   {
     id: "d4",
@@ -166,6 +183,10 @@ const contentCalendar: Array<{
       "Virada: 21 dias e um recorte curto para recuperar controle.",
       "CTA: Manda EU QUERO se voce quer ver se encaixa na sua rotina.",
     ],
+    roteiro: `[00:00-00:04] CLOSE | "O motivo científico pelo qual você não emagrece fazendo tudo certo."
+[00:04-00:18] MEIO CORPO | "Quando você corta calorias demais, seu corpo entra em modo de sobrevivência e para de queimar gordura. É fisiologia — não fraqueza. Seu corpo está te protegendo."
+[00:18-00:28] CLOSE FIRME | "O Protocolo RV não luta contra seu metabolismo. Trabalha a favor dele. Por isso funciona quando o resto falhou."
+[00:28-00:35] CLOSE | "Comenta CIÊNCIA que eu te explico como funciona na prática."`,
   },
   {
     id: "d6",
@@ -198,6 +219,11 @@ const contentCalendar: Array<{
       "Oferta: Acesso por R$37,89 com materiais e fluxo completo no WhatsApp.",
       "CTA: Vai na bio ou comenta QUERO para receber o link.",
     ],
+    roteiro: `[00:00-00:04] CLOSE SÉRIO | "Amanhã abre pra todo mundo. Mas eu preciso que você veja isso."
+[00:04-00:20] MEIO CORPO | "Durante essa semana, dezenas de mulheres já garantiram o acesso antecipado ao TRINCA RV21. Hoje à noite eu estou disparando o link de compra pra lista inteira."
+[00:20-00:32] CLOSE | "Quem está na lista paga preço de lançamento e entra primeiro. Quem não está... paga mais caro quando abrir amanhã."
+[00:32-00:40] CLOSE + APONTA | "Comenta ÚLTIMA CHANCE agora. Sua vaga ainda está aqui."
+TEXTO NA TELA: [00:04] "Lista VIP → acesso 24h antes" | [00:35] "ÚLTIMA CHANCE 👇" (pulsando)`,
   },
 ];
 
@@ -671,7 +697,7 @@ function ContentCalendar({
 
         return (
           <article className={`content-post ${status.toLowerCase()}`} key={post.id}>
-            <button className="content-post-head" onClick={() => onExpand(isExpanded ? "" : post.id)}>
+            <div className="content-post-head">
               <span className="day-pill">{post.day}</span>
               <div>
                 <strong>{post.title}</strong>
@@ -680,16 +706,23 @@ function ContentCalendar({
                 </small>
               </div>
               <b>{status}</b>
-            </button>
+              <button className="script-toggle" onClick={() => onExpand(isExpanded ? "" : post.id)} type="button">
+                {isExpanded ? "Ocultar roteiro ▲" : "Ver roteiro ▼"}
+              </button>
+            </div>
 
             {isExpanded ? (
               <div className="content-post-body">
                 <p>{post.objective}</p>
-                <ol>
-                  {post.script.map((line) => (
-                    <li key={line}>{line}</li>
-                  ))}
-                </ol>
+                {post.roteiro ? (
+                  <pre className="script-block">{post.roteiro}</pre>
+                ) : (
+                  <ol>
+                    {post.script.map((line) => (
+                      <li key={line}>{line}</li>
+                    ))}
+                  </ol>
+                )}
                 <div className="content-actions">
                   <button
                     className="secondary-action"
@@ -1000,10 +1033,7 @@ function CockpitStyles() {
       .content-post-head {
         width: 100%;
         align-items: center;
-        background: transparent;
-        border: 0;
         color: #fff;
-        cursor: pointer;
         display: grid;
         gap: 12px;
         grid-template-columns: auto minmax(0, 1fr) auto;
@@ -1059,6 +1089,34 @@ function CockpitStyles() {
         gap: 10px;
         margin: 12px 0 0;
         padding-left: 20px;
+      }
+
+      .script-toggle {
+        grid-column: 2 / -1;
+        width: fit-content;
+        border: 1px solid rgba(124, 77, 255, 0.34);
+        border-radius: 999px;
+        background: rgba(124, 77, 255, 0.16);
+        color: #fff;
+        cursor: pointer;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 900;
+        padding: 8px 11px;
+      }
+
+      .script-block {
+        white-space: pre-wrap;
+        border: 1px solid #1e1e2e;
+        border-radius: 12px;
+        background: #0a0a0f;
+        color: rgba(255, 255, 255, 0.76);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+        font-size: 12px;
+        line-height: 1.65;
+        margin: 12px 0 0;
+        overflow-x: auto;
+        padding: 12px;
       }
 
       .content-actions {
