@@ -1,0 +1,105 @@
+{
+  "name": "TRINCA RV21 - Relatorio diario 07h por Gmail",
+  "metadata": {
+    "instant": false,
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": false,
+      "confidential": false,
+      "dataloss": false,
+      "dlq": false
+    },
+    "designer": {
+      "orphans": []
+    },
+    "zone": "us1.make.com",
+    "notes": [
+      "Agendar para todos os dias as 07h no timezone America/Fortaleza.",
+      "O endpoint /api/automation/dashboard ja consolida leads, Kiwify e WhatsApp das ultimas 24h.",
+      "Substituir __AUTOMATION_API_SECRET__, __GMAIL_CONNECTION_ID__ e __NOTIFICATION_EMAIL__."
+    ]
+  },
+  "blueprint": {
+    "flow": [
+      {
+        "id": 1,
+        "module": "builtin:BasicScheduler",
+        "version": 1,
+        "parameters": {
+          "type": "daily",
+          "time": "07:00",
+          "timezone": "America/Fortaleza"
+        },
+        "mapper": {},
+        "metadata": {
+          "designer": {
+            "x": 0,
+            "y": 0
+          }
+        }
+      },
+      {
+        "id": 2,
+        "module": "http:ActionSendData",
+        "version": 3,
+        "parameters": {
+          "handleErrors": true,
+          "useNewZLibDeCompress": true
+        },
+        "mapper": {
+          "url": "https://protocolorv.com.br/api/automation/dashboard?limit=250",
+          "method": "get",
+          "headers": [
+            {
+              "name": "Authorization",
+              "value": "Bearer __AUTOMATION_API_SECRET__"
+            }
+          ],
+          "bodyType": "raw"
+        },
+        "metadata": {
+          "designer": {
+            "x": 300,
+            "y": 0
+          }
+        }
+      },
+      {
+        "id": 3,
+        "module": "google-email:ActionSendEmail",
+        "version": 2,
+        "parameters": {
+          "account": "__GMAIL_CONNECTION_ID__"
+        },
+        "mapper": {
+          "to": [
+            {
+              "email": "__NOTIFICATION_EMAIL__",
+              "name": "TRINCA RV21"
+            }
+          ],
+          "subject": "Relatorio diario TRINCA RV21 - {{formatDate(now; \"DD/MM/YYYY\")}}",
+          "content": "<h2>Relatorio diario TRINCA RV21</h2><p>Horario: {{formatDate(now; \"DD/MM/YYYY HH:mm\")}}</p><p><b>Resumo bruto do painel:</b></p><pre>{{2.body}}</pre><p>Abra o Cockpit: https://protocolorv.com.br/cockpit</p>",
+          "attachments": []
+        },
+        "metadata": {
+          "designer": {
+            "x": 600,
+            "y": 0
+          },
+          "restore": {
+            "parameters": {
+              "account": {
+                "label": "Conectar Gmail"
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}

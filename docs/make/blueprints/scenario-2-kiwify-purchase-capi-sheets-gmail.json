@@ -1,0 +1,149 @@
+{
+  "name": "TRINCA RV21 - Kiwify compra para CAPI Purchase, Sheets e Gmail",
+  "metadata": {
+    "instant": true,
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": false,
+      "confidential": false,
+      "dataloss": false,
+      "dlq": false
+    },
+    "designer": {
+      "orphans": []
+    },
+    "zone": "us1.make.com",
+    "notes": [
+      "Use a URL do Custom Webhook como webhook da Kiwify se quiser passar pelo Make antes do Vercel.",
+      "O endpoint /api/kiwify/webhook ja dispara Meta CAPI Purchase usando credenciais do Vercel.",
+      "Substituir __KIWIFY_WEBHOOK_TOKEN__, __GOOGLE_SHEETS_CONNECTION_ID__, __SPREADSHEET_ID__, __SHEET_NAME__, __GMAIL_CONNECTION_ID__ e __NOTIFICATION_EMAIL__."
+    ]
+  },
+  "blueprint": {
+    "flow": [
+      {
+        "id": 1,
+        "module": "gateway:CustomWebHook",
+        "version": 1,
+        "parameters": {
+          "hook": "__MAKE_WEBHOOK_KIWIFY_PURCHASE__",
+          "maxResults": 1
+        },
+        "mapper": {},
+        "metadata": {
+          "designer": {
+            "x": 0,
+            "y": 0
+          },
+          "restore": {
+            "parameters": {
+              "hook": {
+                "label": "TRINCA RV21 Kiwify Purchase"
+              }
+            }
+          }
+        }
+      },
+      {
+        "id": 2,
+        "module": "http:ActionSendData",
+        "version": 3,
+        "parameters": {
+          "handleErrors": true,
+          "useNewZLibDeCompress": true
+        },
+        "mapper": {
+          "url": "https://protocolorv.com.br/api/kiwify/webhook?token=__KIWIFY_WEBHOOK_TOKEN__",
+          "method": "post",
+          "headers": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "raw",
+          "contentType": "application/json",
+          "data": "{{toJSON(1)}}"
+        },
+        "metadata": {
+          "designer": {
+            "x": 300,
+            "y": 0
+          }
+        }
+      },
+      {
+        "id": 3,
+        "module": "google-sheets:addRow",
+        "version": 2,
+        "parameters": {
+          "account": "__GOOGLE_SHEETS_CONNECTION_ID__"
+        },
+        "mapper": {
+          "spreadsheetId": "__SPREADSHEET_ID__",
+          "sheetName": "__SHEET_NAME__",
+          "values": {
+            "Data": "{{now}}",
+            "Evento": "{{ifempty(1.webhook_event_type; 1.event)}}",
+            "Pedido": "{{ifempty(1.order_id; 1.order.id)}}",
+            "Nome": "{{ifempty(1.customer.name; 1.Customer.full_name)}}",
+            "Email": "{{ifempty(1.customer.email; 1.Customer.email)}}",
+            "WhatsApp": "{{ifempty(1.customer.mobile; 1.Customer.mobile)}}",
+            "Status": "{{ifempty(1.order_status; 1.status)}}",
+            "Valor": "{{ifempty(1.charge_amount; 1.order.total)}}",
+            "Resposta Vercel": "{{2.body}}"
+          }
+        },
+        "metadata": {
+          "designer": {
+            "x": 600,
+            "y": 0
+          },
+          "restore": {
+            "parameters": {
+              "account": {
+                "label": "Conectar Google Sheets"
+              }
+            }
+          }
+        }
+      },
+      {
+        "id": 4,
+        "module": "google-email:ActionSendEmail",
+        "version": 2,
+        "parameters": {
+          "account": "__GMAIL_CONNECTION_ID__"
+        },
+        "mapper": {
+          "to": [
+            {
+              "email": "__NOTIFICATION_EMAIL__",
+              "name": "TRINCA RV21"
+            }
+          ],
+          "subject": "Compra TRINCA RV21 confirmada",
+          "content": "<h2>Compra recebida pela Kiwify</h2><p><b>Cliente:</b> {{ifempty(1.customer.name; 1.Customer.full_name)}}</p><p><b>Email:</b> {{ifempty(1.customer.email; 1.Customer.email)}}</p><p><b>Pedido:</b> {{ifempty(1.order_id; 1.order.id)}}</p><p><b>Valor:</b> {{ifempty(1.charge_amount; 1.order.total)}}</p><p><b>Status:</b> {{ifempty(1.order_status; 1.status)}}</p>",
+          "attachments": []
+        },
+        "metadata": {
+          "designer": {
+            "x": 900,
+            "y": 0
+          },
+          "restore": {
+            "parameters": {
+              "account": {
+                "label": "Conectar Gmail"
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}

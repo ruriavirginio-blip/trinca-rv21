@@ -1,0 +1,120 @@
+{
+  "name": "TRINCA RV21 - Webhook lead para Meta CAPI e Gmail",
+  "metadata": {
+    "instant": true,
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": false,
+      "confidential": false,
+      "dataloss": false,
+      "dlq": false
+    },
+    "designer": {
+      "orphans": []
+    },
+    "zone": "us1.make.com",
+    "notes": [
+      "Importar no Make.com e substituir os placeholders de conexao.",
+      "Credenciais sensiveis ficam no Vercel; este blueprint encaminha o lead para o endpoint oficial.",
+      "Webhook de entrada deve ser usado como AUTOMATION_WEBHOOK_URL ou webhook de lead externo."
+    ]
+  },
+  "blueprint": {
+    "flow": [
+      {
+        "id": 1,
+        "module": "gateway:CustomWebHook",
+        "version": 1,
+        "parameters": {
+          "hook": "__MAKE_WEBHOOK_LEAD__",
+          "maxResults": 1
+        },
+        "mapper": {},
+        "metadata": {
+          "designer": {
+            "x": 0,
+            "y": 0
+          },
+          "restore": {
+            "parameters": {
+              "hook": {
+                "label": "TRINCA RV21 Lead Webhook"
+              }
+            }
+          }
+        }
+      },
+      {
+        "id": 2,
+        "module": "http:ActionSendData",
+        "version": 3,
+        "parameters": {
+          "handleErrors": true,
+          "useNewZLibDeCompress": true
+        },
+        "mapper": {
+          "url": "https://protocolorv.com.br/api/leads",
+          "method": "post",
+          "headers": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "raw",
+          "contentType": "application/json",
+          "data": "{\"nome\":\"{{1.nome}}\",\"email\":\"{{1.email}}\",\"whatsapp\":\"{{1.whatsapp}}\",\"objetivo\":\"{{1.objetivo}}\",\"origem\":\"{{ifempty(1.origem; \\\"make-webhook-lead\\\")}}\",\"status\":\"novo-lead\",\"etapaFunil\":\"captacao\",\"utm\":\"{{ifempty(1.utm; 1.utm_source)}}\",\"checkoutUrl\":\"{{ifempty(1.checkoutUrl; \\\"https://pay.kiwify.com.br/mEhmYNt\\\")}}\",\"data\":\"{{now}}\"}"
+        },
+        "metadata": {
+          "designer": {
+            "x": 300,
+            "y": 0
+          },
+          "expect": [
+            {
+              "name": "url",
+              "type": "url",
+              "required": true
+            }
+          ]
+        }
+      },
+      {
+        "id": 3,
+        "module": "google-email:ActionSendEmail",
+        "version": 2,
+        "parameters": {
+          "account": "__GMAIL_CONNECTION_ID__"
+        },
+        "mapper": {
+          "to": [
+            {
+              "email": "__NOTIFICATION_EMAIL__",
+              "name": "TRINCA RV21"
+            }
+          ],
+          "subject": "Novo lead TRINCA RV21: {{1.nome}}",
+          "content": "<h2>Novo lead capturado</h2><p><b>Nome:</b> {{1.nome}}</p><p><b>Email:</b> {{1.email}}</p><p><b>WhatsApp:</b> {{1.whatsapp}}</p><p><b>Objetivo:</b> {{1.objetivo}}</p><p><b>Origem:</b> {{ifempty(1.origem; 1.utm_source)}}</p><p><b>Resposta Vercel:</b> {{2.body}}</p>",
+          "attachments": []
+        },
+        "metadata": {
+          "designer": {
+            "x": 600,
+            "y": 0
+          },
+          "restore": {
+            "parameters": {
+              "account": {
+                "label": "Conectar Gmail"
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}

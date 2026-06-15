@@ -3,7 +3,9 @@
 import { createClient } from "@supabase/supabase-js";
 import {
   Bot,
+  CalendarDays,
   ChevronRight,
+  CheckCircle2,
   CircleDollarSign,
   Eye,
   Home,
@@ -19,7 +21,8 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import OperacaoPage from "../operacao/page";
 
-type TabKey = "hoje" | "leads" | "vendas" | "gastos" | "ao-vivo" | "ia";
+type TabKey = "hoje" | "leads" | "vendas" | "gastos" | "conteudo" | "ao-vivo" | "ia";
+type ContentStatus = "GRAVAR" | "APROVADO" | "PUBLICADO";
 
 type Lead = {
   id: string;
@@ -66,8 +69,119 @@ const tabs: Array<{ key: TabKey; label: string; icon: React.ReactNode }> = [
   { key: "leads", label: "Leads", icon: <Users size={20} /> },
   { key: "vendas", label: "Vendas", icon: <CircleDollarSign size={20} /> },
   { key: "gastos", label: "Gastos", icon: <WalletCards size={20} /> },
+  { key: "conteudo", label: "Conteúdo", icon: <CalendarDays size={20} /> },
   { key: "ao-vivo", label: "Ao Vivo", icon: <Radio size={20} /> },
   { key: "ia", label: "IA", icon: <Bot size={20} /> },
+];
+
+const contentCalendar: Array<{
+  id: string;
+  day: string;
+  title: string;
+  objective: string;
+  channel: string;
+  status: ContentStatus;
+  script: string[];
+}> = [
+  {
+    id: "d1",
+    day: "D1",
+    title: "A promessa simples do desafio",
+    objective: "Abrir curiosidade e posicionar o TRINCA RV21 como método possível para recomeçar.",
+    channel: "Reels + Stories",
+    status: "GRAVAR",
+    script: [
+      "Gancho: Voce nao precisa virar outra pessoa para voltar a cuidar do corpo.",
+      "Contexto: A maioria para porque tenta compensar tudo em uma semana.",
+      "Virada: O RV21 nasceu para organizar treino, dieta e constancia em passos pequenos.",
+      "CTA: Comenta SEGUNDA se voce quer entrar na lista de prioridade.",
+    ],
+  },
+  {
+    id: "d2",
+    day: "D2",
+    title: "Quebra da culpa",
+    objective: "Tirar peso emocional e mostrar que o problema e falta de metodo, nao falta de vontade.",
+    channel: "Reels",
+    status: "GRAVAR",
+    script: [
+      "Gancho: Voce ja comecou segunda e parou na quarta?",
+      "Contexto: Isso acontece quando o plano depende de motivacao.",
+      "Virada: Metodo bom diminui decisao, encaixa rotina e mostra o proximo passo.",
+      "CTA: Comenta MENTIRA se voce cansou de se culpar.",
+    ],
+  },
+  {
+    id: "d3",
+    day: "D3",
+    title: "Prova social Jessica",
+    objective: "Usar depoimento para mostrar transformacao real sem promessa exagerada.",
+    channel: "Depoimento + Stories",
+    status: "APROVADO",
+    script: [
+      "Gancho: A Jessica nao precisou de perfeicao. Ela precisou de direcao.",
+      "Contexto: Mostrar trecho curto do depoimento com legenda forte.",
+      "Virada: O que muda primeiro e a postura diante da rotina.",
+      "CTA: Responde JESSICA se voce quer receber os detalhes.",
+    ],
+  },
+  {
+    id: "d4",
+    day: "D4",
+    title: "O que tem dentro",
+    objective: "Explicar oferta, materiais, acompanhamento e fluxo sem parecer aula longa.",
+    channel: "Carrossel + Stories",
+    status: "GRAVAR",
+    script: [
+      "Slide 1: O que voce recebe no TRINCA RV21.",
+      "Slide 2: Treinos guiados para 21 dias.",
+      "Slide 3: Dietas por objetivo e materiais de apoio.",
+      "Slide 4: WhatsApp com etapas liberadas no momento certo.",
+      "CTA: Comenta PROTOCOLO para entrar no radar.",
+    ],
+  },
+  {
+    id: "d5",
+    day: "D5",
+    title: "Objeções comuns",
+    objective: "Responder falta de tempo, medo de nao conseguir e preco.",
+    channel: "Reels + Caixa de perguntas",
+    status: "GRAVAR",
+    script: [
+      "Gancho: Se voce acha que nao tem tempo, esse video e para voce.",
+      "Contexto: O plano nao pede rotina perfeita, pede execucao minima consistente.",
+      "Virada: 21 dias e um recorte curto para recuperar controle.",
+      "CTA: Manda EU QUERO se voce quer ver se encaixa na sua rotina.",
+    ],
+  },
+  {
+    id: "d6",
+    day: "D6",
+    title: "Urgência honesta",
+    objective: "Avisar proximidade da abertura com clareza e sem pressão falsa.",
+    channel: "Stories sequenciais",
+    status: "GRAVAR",
+    script: [
+      "Story 1: Falta pouco para abrir o TRINCA RV21.",
+      "Story 2: Quem estiver na lista recebe o caminho primeiro.",
+      "Story 3: Recapitular para quem e: recomeço, rotina e constancia.",
+      "CTA: Responde ABRIU para receber quando liberar.",
+    ],
+  },
+  {
+    id: "d7",
+    day: "D7",
+    title: "Abertura oficial",
+    objective: "Direcionar tráfego para a landing e transformar intenção em compra.",
+    channel: "Reels + Stories + Bio",
+    status: "GRAVAR",
+    script: [
+      "Gancho: O TRINCA RV21 abriu.",
+      "Contexto: 21 dias para voltar a treinar com direcao, dieta e acompanhamento.",
+      "Oferta: Acesso por R$37,89 com materiais e fluxo completo no WhatsApp.",
+      "CTA: Vai na bio ou comenta QUERO para receber o link.",
+    ],
+  },
 ];
 
 function currency(value: number) {
@@ -120,6 +234,10 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
   const [iaLoading, setIaLoading] = useState(false);
   const [iaAnalysis, setIaAnalysis] = useState("");
   const [iaError, setIaError] = useState("");
+  const [contentStatuses, setContentStatuses] = useState<Record<string, ContentStatus>>(() =>
+    Object.fromEntries(contentCalendar.map((post) => [post.id, post.status])),
+  );
+  const [expandedPostId, setExpandedPostId] = useState(contentCalendar[0]?.id || "");
 
   useEffect(() => {
     if (automationToken) {
@@ -227,6 +345,13 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
     setAutomationToken(value);
     window.localStorage.setItem(operacaoTokenStorageKey, value);
     window.sessionStorage.setItem(operacaoTokenStorageKey, value);
+  }
+
+  function updateContentStatus(postId: string, status: ContentStatus) {
+    setContentStatuses((current) => ({
+      ...current,
+      [postId]: status,
+    }));
   }
 
   async function analyzeBusiness() {
@@ -376,6 +501,21 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
           </DashboardSection>
         ) : null}
 
+        {activeTab === "conteudo" ? (
+          <DashboardSection
+            title="Conteúdo"
+            description="Calendário da semana pré-lançamento com roteiro, aprovação e publicação."
+            loading={false}
+          >
+            <ContentCalendar
+              expandedPostId={expandedPostId}
+              onExpand={setExpandedPostId}
+              onStatusChange={updateContentStatus}
+              statuses={contentStatuses}
+            />
+          </DashboardSection>
+        ) : null}
+
         {activeTab === "ao-vivo" ? (
           <DashboardSection title="Ao Vivo" description="Painel operacional atual integrado no Cockpit." loading={false}>
             <div className="token-card">
@@ -476,6 +616,69 @@ function MiniCard({ title, value }: { title: string; value: string }) {
   );
 }
 
+function ContentCalendar({
+  expandedPostId,
+  onExpand,
+  onStatusChange,
+  statuses,
+}: {
+  expandedPostId: string;
+  onExpand: (postId: string) => void;
+  onStatusChange: (postId: string, status: ContentStatus) => void;
+  statuses: Record<string, ContentStatus>;
+}) {
+  return (
+    <div className="content-calendar">
+      {contentCalendar.map((post) => {
+        const status = statuses[post.id] || post.status;
+        const isExpanded = expandedPostId === post.id;
+
+        return (
+          <article className={`content-post ${status.toLowerCase()}`} key={post.id}>
+            <button className="content-post-head" onClick={() => onExpand(isExpanded ? "" : post.id)}>
+              <span className="day-pill">{post.day}</span>
+              <div>
+                <strong>{post.title}</strong>
+                <small>{post.channel}</small>
+              </div>
+              <b>{status}</b>
+            </button>
+
+            {isExpanded ? (
+              <div className="content-post-body">
+                <p>{post.objective}</p>
+                <ol>
+                  {post.script.map((line) => (
+                    <li key={line}>{line}</li>
+                  ))}
+                </ol>
+                <div className="content-actions">
+                  <button
+                    className="secondary-action"
+                    disabled={status === "APROVADO" || status === "PUBLICADO"}
+                    onClick={() => onStatusChange(post.id, "APROVADO")}
+                  >
+                    <CheckCircle2 size={16} />
+                    Aprovar
+                  </button>
+                  <button
+                    className="secondary-action publish"
+                    disabled={status === "PUBLICADO"}
+                    onClick={() => onStatusChange(post.id, "PUBLICADO")}
+                  >
+                    <Send size={16} />
+                    Marcar como Publicado
+                  </button>
+                </div>
+              </div>
+            ) : null}
+          </article>
+        );
+      })}
+    </div>
+  );
+}
+
 function LeadList({ leads, commentLeads }: { leads: Lead[]; commentLeads: CommentLead[] }) {
   return (
     <div className="list">
@@ -525,7 +728,8 @@ function CockpitStyles() {
       .metric,
       .mini-card,
       .progress-card,
-      .token-card {
+      .token-card,
+      .content-post {
         background: #13131a;
         border: 1px solid #1e1e2e;
         border-radius: 16px;
@@ -738,6 +942,121 @@ function CockpitStyles() {
         color: #7c4dff;
       }
 
+      .content-calendar {
+        display: grid;
+        gap: 12px;
+      }
+
+      .content-post {
+        overflow: hidden;
+      }
+
+      .content-post.aprovado {
+        border-color: rgba(255, 215, 64, 0.36);
+      }
+
+      .content-post.publicado {
+        border-color: rgba(0, 230, 118, 0.36);
+      }
+
+      .content-post-head {
+        width: 100%;
+        align-items: center;
+        background: transparent;
+        border: 0;
+        color: #fff;
+        cursor: pointer;
+        display: grid;
+        gap: 12px;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        padding: 14px;
+        text-align: left;
+      }
+
+      .content-post-head strong,
+      .content-post-head small {
+        display: block;
+      }
+
+      .content-post-head small,
+      .content-post-body p,
+      .content-post-body li {
+        color: rgba(255, 255, 255, 0.68);
+      }
+
+      .content-post-head b {
+        border-radius: 999px;
+        color: #ffd740;
+        font-size: 10px;
+        padding: 7px 9px;
+        background: rgba(255, 215, 64, 0.1);
+      }
+
+      .content-post.publicado .content-post-head b {
+        background: rgba(0, 230, 118, 0.1);
+        color: #00e676;
+      }
+
+      .content-post.gravar .content-post-head b {
+        background: rgba(255, 82, 82, 0.12);
+        color: #ff8a80;
+      }
+
+      .day-pill {
+        background: rgba(124, 77, 255, 0.18);
+        border: 1px solid rgba(124, 77, 255, 0.32);
+        border-radius: 12px;
+        color: #b9a4ff;
+        font-weight: 900;
+        padding: 10px 9px;
+      }
+
+      .content-post-body {
+        border-top: 1px solid #1e1e2e;
+        padding: 0 14px 14px;
+      }
+
+      .content-post-body ol {
+        display: grid;
+        gap: 10px;
+        margin: 12px 0 0;
+        padding-left: 20px;
+      }
+
+      .content-actions {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        margin-top: 16px;
+      }
+
+      .secondary-action {
+        align-items: center;
+        background: rgba(124, 77, 255, 0.16);
+        border: 1px solid rgba(124, 77, 255, 0.3);
+        border-radius: 12px;
+        color: #fff;
+        cursor: pointer;
+        display: flex;
+        font: inherit;
+        font-size: 13px;
+        font-weight: 800;
+        gap: 8px;
+        justify-content: center;
+        min-height: 42px;
+        padding: 10px;
+      }
+
+      .secondary-action.publish {
+        background: rgba(0, 230, 118, 0.1);
+        border-color: rgba(0, 230, 118, 0.28);
+      }
+
+      .secondary-action:disabled {
+        cursor: default;
+        opacity: 0.46;
+      }
+
       .token-card input {
         margin: 0;
       }
@@ -778,7 +1097,7 @@ function CockpitStyles() {
         bottom: 0;
         z-index: 50;
         display: grid;
-        grid-template-columns: repeat(6, 1fr);
+        grid-template-columns: repeat(7, 1fr);
         gap: 4px;
         background: rgba(10, 10, 15, 0.94);
         border-top: 1px solid #1e1e2e;
@@ -804,7 +1123,7 @@ function CockpitStyles() {
       }
 
       .bottom-nav span {
-        font-size: 10px;
+        font-size: 9px;
         font-weight: 800;
       }
 
