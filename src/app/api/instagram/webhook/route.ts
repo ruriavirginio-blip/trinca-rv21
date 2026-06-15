@@ -133,11 +133,13 @@ async function sendAutoDM(userId: string, gatilho: string) {
 
 Uma pessoa comentou "${gatilho}" em um post sobre TRINCA RV21 (desafio fitness feminino 21 dias, R$37,89).
 
-Escreva uma DM curta, calorosa e direta (máx 3 linhas) que:
+Escreva exatamente uma DM curta, calorosa e direta (máx 4 linhas) que:
 1. Reconhece o comentário dela
-2. Apresenta brevemente o TRINCA RV21
-3. Direciona para o link: protocolorv.com.br/bio
+2. Diz que ela entrou no radar do acesso antecipado
+3. Informa que a abertura acontece em 23/06
+4. Direciona obrigatoriamente para: https://protocolorv.com.br/bio
 
+Obrigatório incluir as expressões "acesso antecipado", "23/06" e "protocolorv.com.br/bio".
 Tom: próximo, motivador, feminino. Sem emojis excessivos. Máx 2 emojis.`,
         },
       ],
@@ -147,7 +149,7 @@ Tom: próximo, motivador, feminino. Sem emojis excessivos. Máx 2 emojis.`,
   const data = await response.json();
   const message =
     data.content?.[0]?.text ||
-    "Oi! Vi que você comentou. O TRINCA RV21 é um desafio de 21 dias que vai transformar sua relação com o seu corpo. Acesse: protocolorv.com.br/bio 💪";
+    "Oi! Vi seu comentário e te coloquei no radar do acesso antecipado do TRINCA RV21. A abertura acontece em 23/06. Entra aqui: https://protocolorv.com.br/bio 💪";
 
   await fetch("https://graph.instagram.com/v21.0/me/messages", {
     method: "POST",

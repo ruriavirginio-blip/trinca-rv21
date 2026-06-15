@@ -22,7 +22,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import OperacaoPage from "../operacao/page";
 
 type TabKey = "hoje" | "leads" | "vendas" | "gastos" | "conteudo" | "ao-vivo" | "ia";
-type ContentStatus = "GRAVAR" | "APROVADO" | "PUBLICADO";
+type ContentStatus = "GRAVAR" | "PRONTO" | "PUBLICADO";
 
 type Lead = {
   id: string;
@@ -61,6 +61,7 @@ const GASTOS = [
 
 const authStorageKey = "trinca-rv21-cockpit-auth";
 const operacaoTokenStorageKey = "trinca-rv21-operacao-token";
+const contentStatusStorageKey = "trinca-rv21-content-statuses";
 const saleValue = 37.89;
 const leadGoal = 1000;
 
@@ -78,6 +79,8 @@ const contentCalendar: Array<{
   id: string;
   day: string;
   title: string;
+  time: string;
+  format: string;
   objective: string;
   channel: string;
   status: ContentStatus;
@@ -87,6 +90,8 @@ const contentCalendar: Array<{
     id: "d1",
     day: "D1",
     title: "A promessa simples do desafio",
+    time: "07:30",
+    format: "Reels + 3 Stories",
     objective: "Abrir curiosidade e posicionar o TRINCA RV21 como método possível para recomeçar.",
     channel: "Reels + Stories",
     status: "GRAVAR",
@@ -101,6 +106,8 @@ const contentCalendar: Array<{
     id: "d2",
     day: "D2",
     title: "Quebra da culpa",
+    time: "12:15",
+    format: "Reels curto",
     objective: "Tirar peso emocional e mostrar que o problema e falta de metodo, nao falta de vontade.",
     channel: "Reels",
     status: "GRAVAR",
@@ -115,9 +122,11 @@ const contentCalendar: Array<{
     id: "d3",
     day: "D3",
     title: "Prova social Jessica",
+    time: "19:00",
+    format: "Depoimento + bastidor",
     objective: "Usar depoimento para mostrar transformacao real sem promessa exagerada.",
     channel: "Depoimento + Stories",
-    status: "APROVADO",
+    status: "PRONTO",
     script: [
       "Gancho: A Jessica nao precisou de perfeicao. Ela precisou de direcao.",
       "Contexto: Mostrar trecho curto do depoimento com legenda forte.",
@@ -129,6 +138,8 @@ const contentCalendar: Array<{
     id: "d4",
     day: "D4",
     title: "O que tem dentro",
+    time: "08:00",
+    format: "Carrossel + Stories",
     objective: "Explicar oferta, materiais, acompanhamento e fluxo sem parecer aula longa.",
     channel: "Carrossel + Stories",
     status: "GRAVAR",
@@ -144,6 +155,8 @@ const contentCalendar: Array<{
     id: "d5",
     day: "D5",
     title: "Objeções comuns",
+    time: "12:30",
+    format: "Reels + perguntas",
     objective: "Responder falta de tempo, medo de nao conseguir e preco.",
     channel: "Reels + Caixa de perguntas",
     status: "GRAVAR",
@@ -158,6 +171,8 @@ const contentCalendar: Array<{
     id: "d6",
     day: "D6",
     title: "Urgência honesta",
+    time: "18:30",
+    format: "Sequência de Stories",
     objective: "Avisar proximidade da abertura com clareza e sem pressão falsa.",
     channel: "Stories sequenciais",
     status: "GRAVAR",
@@ -172,6 +187,8 @@ const contentCalendar: Array<{
     id: "d7",
     day: "D7",
     title: "Abertura oficial",
+    time: "07:00",
+    format: "Reels + Stories + Bio",
     objective: "Direcionar tráfego para a landing e transformar intenção em compra.",
     channel: "Reels + Stories + Bio",
     status: "GRAVAR",
@@ -234,9 +251,22 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
   const [iaLoading, setIaLoading] = useState(false);
   const [iaAnalysis, setIaAnalysis] = useState("");
   const [iaError, setIaError] = useState("");
-  const [contentStatuses, setContentStatuses] = useState<Record<string, ContentStatus>>(() =>
-    Object.fromEntries(contentCalendar.map((post) => [post.id, post.status])),
-  );
+  const [contentStatuses, setContentStatuses] = useState<Record<string, ContentStatus>>(() => {
+    const defaults = Object.fromEntries(contentCalendar.map((post) => [post.id, post.status]));
+
+    if (typeof window === "undefined") return defaults;
+
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(contentStatusStorageKey) || "{}") as Record<
+        string,
+        ContentStatus
+      >;
+
+      return { ...defaults, ...saved };
+    } catch {
+      return defaults;
+    }
+  });
   const [expandedPostId, setExpandedPostId] = useState(contentCalendar[0]?.id || "");
 
   useEffect(() => {
@@ -348,10 +378,16 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
   }
 
   function updateContentStatus(postId: string, status: ContentStatus) {
-    setContentStatuses((current) => ({
-      ...current,
-      [postId]: status,
-    }));
+    setContentStatuses((current) => {
+      const next = {
+        ...current,
+        [postId]: status,
+      };
+
+      window.localStorage.setItem(contentStatusStorageKey, JSON.stringify(next));
+
+      return next;
+    });
   }
 
   async function analyzeBusiness() {
@@ -639,7 +675,9 @@ function ContentCalendar({
               <span className="day-pill">{post.day}</span>
               <div>
                 <strong>{post.title}</strong>
-                <small>{post.channel}</small>
+                <small>
+                  {post.time} · {post.format}
+                </small>
               </div>
               <b>{status}</b>
             </button>
@@ -655,11 +693,11 @@ function ContentCalendar({
                 <div className="content-actions">
                   <button
                     className="secondary-action"
-                    disabled={status === "APROVADO" || status === "PUBLICADO"}
-                    onClick={() => onStatusChange(post.id, "APROVADO")}
+                    disabled={status === "PRONTO" || status === "PUBLICADO"}
+                    onClick={() => onStatusChange(post.id, "PRONTO")}
                   >
                     <CheckCircle2 size={16} />
-                    Aprovar
+                    Marcar como Pronto
                   </button>
                   <button
                     className="secondary-action publish"
@@ -951,7 +989,7 @@ function CockpitStyles() {
         overflow: hidden;
       }
 
-      .content-post.aprovado {
+      .content-post.pronto {
         border-color: rgba(255, 215, 64, 0.36);
       }
 
