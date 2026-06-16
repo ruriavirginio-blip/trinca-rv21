@@ -620,53 +620,75 @@ export default function Home() {
       </section>
 
       <section className="rv4-results" id="resultados">
-        <div className="rv4-section-head align-left">
-          <p className="rv4-kicker">Resultados reais</p>
-          <h2>Mulheres reais. Corpos reais. Processo guiado.</h2>
+        <div className="rv4-results-layout">
+          <div className="rv4-results-copy">
+            <div className="rv4-section-head align-left">
+              <p className="rv4-kicker">Resultados reais</p>
+              <h2>Transformações visíveis de mulheres que decidiram continuar.</h2>
+              <p>
+                Fotos e depoimentos reais do ecossistema RV. Não é sobre perfeição:
+                é sobre seguir uma rota clara até o corpo começar a responder.
+              </p>
+            </div>
+
+            <div className="rv4-stat-strip">
+              {proofStats.map((stat) => (
+                <CountUpStat key={stat.label} stat={stat} />
+              ))}
+            </div>
+
+            <div className="rv4-video-head">
+              <p className="rv4-kicker">Depoimentos em vídeo</p>
+              <h3>Quando existe direção, o processo deixa de depender só de força de vontade.</h3>
+            </div>
+            <div className="rv4-video-grid">
+              {studentVideos.map((video) => (
+                <article className="rv4-video-card" key={video.id}>
+                  <div className="rv4-video-frame">
+                    <video poster={video.poster} controls playsInline preload="metadata">
+                      <source src={video.src} type="video/mp4" />
+                    </video>
+                    <span>{video.result}</span>
+                  </div>
+                  <div className="rv4-video-copy">
+                    <strong>{video.name}</strong>
+                    <p>{video.quote}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+
+          <aside className="rv4-transform-reel" aria-label="Transformações reais TRINCA RV21">
+            <div className="rv4-reel-head">
+              <span>Antes e depois</span>
+              <strong>Prova real das alunas</strong>
+            </div>
+            <div className="rv4-reel-grid">
+              {transformationImages.map((src, index) => (
+                <article className="rv-transform-card rv4-proof-card" data-index={index} key={src}>
+                  <Image
+                    src={src}
+                    alt={`Transformação real de aluna TRINCA RV21 ${index + 1}`}
+                    width={360}
+                    height={index % 3 === 0 ? 480 : 430}
+                    sizes="(max-width: 760px) 45vw, 180px"
+                    loading="lazy"
+                  />
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                </article>
+              ))}
+            </div>
+            <a className="rv4-reel-cta" href="#inscricao">Quero minha transformação</a>
+          </aside>
         </div>
 
-        <div className="rv4-stat-strip">
-          {proofStats.map((stat) => (
-            <CountUpStat key={stat.label} stat={stat} />
-          ))}
-        </div>
-
-        <PhotoMarquee />
-
-        <div className="rv4-proof-wall" aria-label="Transformações reais TRINCA RV21">
-          {transformationImages.map((src, index) => (
-            <article className="rv-transform-card rv4-proof-card" data-index={index} key={src}>
-              <Image
-                src={src}
-                alt={`Transformação real de aluna TRINCA RV21 ${index + 1}`}
-                width={420}
-                height={index % 3 === 0 ? 560 : 500}
-                sizes="(max-width: 760px) 46vw, 18vw"
-                loading="lazy"
-              />
-            </article>
-          ))}
-        </div>
-
-        <div className="rv4-video-head">
-          <p className="rv4-kicker">Depoimentos em vídeo</p>
-          <h3>Quando existe direção, o processo deixa de depender só de força de vontade.</h3>
-        </div>
-        <div className="rv4-video-grid">
-          {studentVideos.map((video) => (
-            <article className="rv4-video-card" key={video.id}>
-              <div className="rv4-video-frame">
-                <video poster={video.poster} controls playsInline preload="metadata">
-                  <source src={video.src} type="video/mp4" />
-                </video>
-                <span>{video.result}</span>
-              </div>
-              <div className="rv4-video-copy">
-                <strong>{video.name}</strong>
-                <p>{video.quote}</p>
-              </div>
-            </article>
-          ))}
+        <div className="rv4-cloudinary-reel">
+          <div className="rv4-reel-head">
+            <span>Mais registros RV</span>
+            <strong>Alunas em movimento</strong>
+          </div>
+          <PhotoMarquee />
         </div>
       </section>
 
