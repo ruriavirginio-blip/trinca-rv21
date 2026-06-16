@@ -6225,3 +6225,324 @@ a {
     font-size: clamp(28px, 8.5vw, 38px);
   }
 }
+
+/* Landing V4.2 conversion polish */
+.rv-page {
+  background:
+    radial-gradient(circle at 18% 8%, rgba(226, 191, 95, 0.08), transparent 24%),
+    linear-gradient(180deg, #040404 0%, #090909 44%, #050505 100%);
+}
+
+.rv4-nav {
+  min-height: 62px;
+}
+
+.rv4-nav .rv-logo {
+  font-size: 16px;
+}
+
+.rv4-nav nav {
+  gap: 22px;
+}
+
+.rv4-nav nav a {
+  font-size: 13px;
+}
+
+.rv4-nav .rv-nav-cta {
+  padding: 10px 16px;
+  font-size: 13px;
+}
+
+.rv4-hero {
+  min-height: auto;
+  padding-top: 92px;
+  padding-bottom: 38px;
+}
+
+.rv4-hero-grid {
+  grid-template-columns: minmax(0, 0.9fr) minmax(250px, 0.52fr) minmax(286px, 360px);
+  gap: clamp(18px, 3.2vw, 42px);
+}
+
+.rv4-hero h1 {
+  max-width: 560px;
+  font-size: clamp(34px, 3.7vw, 54px);
+  line-height: 1.04;
+}
+
+.rv4-lead {
+  max-width: 540px;
+  margin-top: 18px;
+  font-size: clamp(15px, 1.18vw, 18px);
+  line-height: 1.62;
+}
+
+.rv4-hero-portrait {
+  min-height: 430px;
+  border-radius: 18px;
+}
+
+.rv4-offer-card {
+  align-self: center;
+}
+
+.rv4-offer-card strong,
+.rv4-final-card > strong {
+  font-size: clamp(34px, 3.4vw, 46px);
+}
+
+.rv4-offer-card p,
+.rv4-final-card p {
+  font-size: 16px;
+}
+
+.rv4-offer-card li,
+.rv4-final-card li,
+.rv4-authority-copy li {
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.rv4-diagnosis,
+.rv4-method,
+.rv4-results,
+.rv4-authority,
+.rv4-final-offer {
+  padding-top: clamp(48px, 5.4vw, 72px);
+  padding-bottom: clamp(48px, 5.4vw, 72px);
+}
+
+.rv4-diagnosis {
+  background:
+    linear-gradient(180deg, rgba(226, 191, 95, 0.045), transparent 34%),
+    linear-gradient(135deg, #070707, #030303);
+}
+
+.rv4-section-head {
+  max-width: 700px;
+  margin-bottom: 28px;
+}
+
+.rv4-section-head h2,
+.rv4-method-copy h2,
+.rv4-authority-copy h2,
+.rv4-final-offer h2 {
+  font-size: clamp(25px, 3.05vw, 40px);
+  line-height: 1.14;
+}
+
+.rv4-identity-grid {
+  max-width: 1100px;
+  margin-bottom: 28px;
+}
+
+.rv4-identity-grid article {
+  padding: 18px;
+}
+
+.rv4-identity-grid h3,
+.rv4-method-grid h3,
+.rv4-video-head h3 {
+  font-size: 17px;
+  line-height: 1.2;
+}
+
+.rv4-identity-grid p,
+.rv4-method-copy p,
+.rv4-method-grid p,
+.rv4-authority-copy p,
+.rv4-video-copy p {
+  font-size: 14px;
+  line-height: 1.58;
+}
+
+.rv4-pain-pill {
+  flex-basis: 260px;
+  padding: 14px;
+}
+
+.rv4-method {
+  grid-template-columns: minmax(0, 0.76fr) minmax(0, 1.24fr);
+}
+
+.rv4-method-copy {
+  top: 88px;
+}
+
+.rv4-method-grid {
+  gap: 10px;
+}
+
+.rv4-method-grid article {
+  padding: 16px 18px;
+  border-radius: 14px;
+}
+
+.rv4-method-grid article > div {
+  margin: 8px 0;
+  font-size: 22px;
+}
+
+.rv4-results {
+  background:
+    radial-gradient(circle at 85% 16%, rgba(226, 191, 95, 0.08), transparent 26%),
+    #040404;
+}
+
+.rv4-stat-strip {
+  max-width: 820px;
+  margin-bottom: 24px;
+}
+
+.rv4-stat-strip article {
+  padding: 14px 16px;
+}
+
+.rv4-stat-strip strong {
+  font-size: 28px;
+}
+
+.rv4-proof-wall {
+  column-count: 5;
+  column-gap: 12px;
+  margin: 28px auto 0;
+  max-width: 1180px;
+}
+
+.rv4-proof-card {
+  break-inside: avoid;
+  margin: 0 0 12px;
+  border: 1px solid rgba(226, 191, 95, 0.12);
+  border-radius: 16px;
+  background: #111;
+  box-shadow: 0 16px 46px rgba(0, 0, 0, 0.32);
+  opacity: 0;
+  overflow: hidden;
+  transform: translateY(18px);
+  transition: opacity 0.5s ease, transform 0.5s ease, border-color 0.25s ease;
+}
+
+.rv4-proof-card.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.rv4-proof-card:hover {
+  border-color: rgba(226, 191, 95, 0.34);
+}
+
+.rv4-proof-card img {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: transform 0.35s ease;
+}
+
+.rv4-proof-card:hover img {
+  transform: scale(1.025);
+}
+
+.rv4-video-head {
+  max-width: 600px;
+  margin-top: 44px;
+  margin-bottom: 20px;
+}
+
+.rv4-video-grid {
+  max-width: 780px;
+  gap: 14px;
+}
+
+.rv4-video-copy {
+  padding: 14px;
+}
+
+.rv4-authority {
+  grid-template-columns: minmax(240px, 340px) minmax(0, 1fr);
+}
+
+.rv4-authority-copy {
+  max-width: 660px;
+}
+
+.rv4-final-card {
+  max-width: 500px;
+}
+
+.rv-form-section {
+  padding-top: 64px;
+  padding-bottom: 64px;
+}
+
+.rv-form-copy h2,
+.rv-faq-section h2 {
+  font-size: clamp(28px, 3.5vw, 42px);
+}
+
+@media (max-width: 1180px) {
+  .rv4-hero-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+  }
+
+  .rv4-hero-portrait {
+    order: initial;
+    grid-column: auto;
+  }
+
+  .rv4-offer-card {
+    grid-column: 1 / -1;
+    max-width: 720px;
+  }
+}
+
+@media (max-width: 900px) {
+  .rv4-hero-grid,
+  .rv4-method,
+  .rv4-authority {
+    grid-template-columns: 1fr;
+  }
+
+  .rv4-hero-portrait {
+    max-width: 520px;
+    min-height: 360px;
+  }
+
+  .rv4-proof-wall {
+    column-count: 3;
+  }
+}
+
+@media (max-width: 760px) {
+  .rv4-hero {
+    padding-top: 84px;
+    padding-bottom: 38px;
+  }
+
+  .rv4-hero h1 {
+    font-size: clamp(30px, 8vw, 38px);
+  }
+
+  .rv4-hero-portrait {
+    min-height: 300px;
+  }
+
+  .rv4-offer-card {
+    grid-column: auto;
+  }
+
+  .rv4-identity-grid,
+  .rv4-stat-strip,
+  .rv4-video-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rv4-proof-wall {
+    column-count: 2;
+    column-gap: 10px;
+  }
+
+  .rv4-proof-card {
+    margin-bottom: 10px;
+  }
+}

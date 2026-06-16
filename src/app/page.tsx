@@ -57,16 +57,16 @@ const heroOfferItems = [
 
 const identityCards = [
   {
-    title: "Você começa forte, mas perde o eixo.",
-    text: "A rotina aperta, a energia cai e o plano some antes do corpo responder.",
+    title: "Você começa animada e se perde no meio.",
+    text: "O RV21 reduz a decisão diária: você sabe exatamente o treino, a alimentação e o próximo passo.",
   },
   {
-    title: "Você troca dieta, treino e promessa.",
-    text: "O corpo não evolui quando toda segunda-feira vira uma tentativa nova.",
+    title: "Você já tentou dieta, treino e promessa.",
+    text: "A diferença aqui é estrutura: uma sequência curta, guiada e feita para mulheres com rotina real.",
   },
   {
-    title: "Você se compara e desanima.",
-    text: "O RV21 tira a culpa do centro e coloca direção, execução e acompanhamento.",
+    title: "Você quer resultado sem virar outra pessoa.",
+    text: "Sem radicalismo. O foco é constância, estética, disposição e confiança no corpo que você vê no espelho.",
   },
 ];
 
@@ -522,21 +522,21 @@ export default function Home() {
           <div className="rv4-hero-copy">
             <p className="rv4-kicker">Protocolo RV21 · 21 dias · turma aberta</p>
             <h1>
-              Pare de começar e desistir.
-              <span> Volte a se reconhecer no espelho.</span>
+              Volte a se reconhecer no espelho.
+              <span> Com direção diária por 21 dias.</span>
             </h1>
             <p className="rv4-lead">
-              Treino, alimentação e acompanhamento diário para mulheres que querem resultado sem depender
-              de motivação perfeita.
+              Para mulheres que cansaram de começar forte e sumir no meio. O TRINCA RV21 entrega treino,
+              alimentação e acompanhamento para você executar sem adivinhar.
             </p>
             <div className="rv4-hero-actions">
               <a className="rv4-primary-link" href="#inscricao">Quero entrar no TRINCA RV21</a>
               <a className="rv4-secondary-link" href="#resultados">Ver resultados reais</a>
             </div>
             <div className="rv4-trust-row" aria-label="Pontos de confiança">
-              <span>Pagamento seguro via Kiwify</span>
-              <span>Acesso imediato após cadastro</span>
-              <span>Grupo exclusivo de acompanhamento</span>
+              <span>21 dias guiados</span>
+              <span>Rotina possível</span>
+              <span>Protocolo RV exclusivo</span>
             </div>
           </div>
 
@@ -575,8 +575,8 @@ export default function Home() {
 
       <section className="rv4-diagnosis">
         <div className="rv4-section-head">
-          <p className="rv4-kicker">O padrão que o RV21 quebra</p>
-          <h2>Você não está sem potencial. Está sem um plano que te mantenha no processo.</h2>
+          <p className="rv4-kicker">O ciclo que trava seu resultado</p>
+          <h2>Não é falta de potencial. É falta de direção quando a motivação acaba.</h2>
         </div>
         <div className="rv4-identity-grid">
           {identityCards.map((card) => (
@@ -601,10 +601,10 @@ export default function Home() {
       <section className="rv4-method" id="metodo">
         <div className="rv4-method-copy">
           <p className="rv4-kicker">Protocolo, não promessa</p>
-          <h2>O RV21 organiza o básico que faz o corpo responder.</h2>
+          <h2>Treino, alimentação e comportamento em uma rota simples.</h2>
           <p>
-            Sem dieta maluca. Sem treino impossível. O foco é execução diária com orientação clara,
-            cobrança leve e ajuste de rota.
+            O plano existe para você parar de improvisar: recebe o que fazer, quando fazer e como
+            manter o ritmo mesmo nos dias difíceis.
           </p>
         </div>
         <div className="rv4-method-grid">
@@ -622,7 +622,7 @@ export default function Home() {
       <section className="rv4-results" id="resultados">
         <div className="rv4-section-head align-left">
           <p className="rv4-kicker">Resultados reais</p>
-          <h2>Elas não precisavam de mais promessa. Precisavam de direção.</h2>
+          <h2>Mulheres reais. Corpos reais. Processo guiado.</h2>
         </div>
 
         <div className="rv4-stat-strip">
@@ -633,9 +633,24 @@ export default function Home() {
 
         <PhotoMarquee />
 
+        <div className="rv4-proof-wall" aria-label="Transformações reais TRINCA RV21">
+          {transformationImages.map((src, index) => (
+            <article className="rv-transform-card rv4-proof-card" data-index={index} key={src}>
+              <Image
+                src={src}
+                alt={`Transformação real de aluna TRINCA RV21 ${index + 1}`}
+                width={420}
+                height={index % 3 === 0 ? 560 : 500}
+                sizes="(max-width: 760px) 46vw, 18vw"
+                loading="lazy"
+              />
+            </article>
+          ))}
+        </div>
+
         <div className="rv4-video-head">
           <p className="rv4-kicker">Depoimentos em vídeo</p>
-          <h3>Mulheres reais mostrando o que muda quando existe direção.</h3>
+          <h3>Quando existe direção, o processo deixa de depender só de força de vontade.</h3>
         </div>
         <div className="rv4-video-grid">
           {studentVideos.map((video) => (
@@ -670,11 +685,11 @@ export default function Home() {
           <h2>
             Sou Ruriá Virgínio.
             <br />
-            Método direto para mulheres reais.
+            O método é direto porque sua rotina já é complicada.
           </h2>
           <p>
-            O TRINCA RV21 nasceu para tirar mulheres do ciclo de tentativa solta:
-            treino sem direção, dieta impossível e abandono no meio do caminho.
+            O TRINCA RV21 nasceu para mulheres que querem resultado, mas precisam de um plano
+            possível, acompanhado e claro o suficiente para continuar.
           </p>
           <ul>
             {authorityBullets.map((item) => (
@@ -690,7 +705,7 @@ export default function Home() {
       <section className="rv4-final-offer" id="oferta">
         <div className="rv4-section-head">
           <p className="rv4-kicker">Entrada imediata</p>
-          <h2>Comece com direção hoje. O próximo passo é simples.</h2>
+          <h2>Entre hoje e receba o caminho dos próximos 21 dias.</h2>
         </div>
 
         <div className="rv4-final-card">
