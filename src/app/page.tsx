@@ -46,6 +46,30 @@ const methodItems = [
   "Análise comportamental individualizada (só no RV)",
 ];
 
+const heroOfferItems = [
+  "Treino direcionado para casa ou academia",
+  "Dieta específica por objetivo",
+  "Grupo exclusivo com acompanhamento",
+  "Check-ins para não sumir no meio",
+  "Ebook RV + orientação de próximos passos",
+  "Cupom TRINCA para a próxima etapa",
+];
+
+const identityCards = [
+  {
+    title: "Você começa forte, mas perde o eixo",
+    text: "O problema não é falta de vontade. É não ter um plano simples o bastante para caber na sua rotina real.",
+  },
+  {
+    title: "Você troca dieta, treino e promessa",
+    text: "O corpo não responde quando cada semana começa do zero. O RV21 organiza o básico que faz resultado aparecer.",
+  },
+  {
+    title: "Você se compara e desanima",
+    text: "Aqui a comparação sai do centro. O foco é recuperar constância, medida, postura e confiança em 21 dias.",
+  },
+];
+
 const DORES = [
   { emoji: '😔', text: 'Começa segunda animada, na quarta some' },
   { emoji: '😩', text: 'Já tentou tudo e nada durou mais de 2 semanas' },
@@ -481,10 +505,10 @@ export default function Home() {
 
   return (
     <main className="rv-page">
-      <header className="rv-nav">
+      <header className="rv-nav rv4-nav">
         <a className="rv-logo" href="#top">TRINCA RV21</a>
         <nav aria-label="Navegação principal">
-          <a href="#metodo">Método</a>
+          <a href="#metodo">Protocolo</a>
           <a href="#resultados">Resultados</a>
           <a href="#oferta">Oferta</a>
           <a href="#faq">Dúvidas</a>
@@ -492,283 +516,132 @@ export default function Home() {
         <a className="rv-nav-cta" href="#inscricao">Entrar agora</a>
       </header>
 
-      <section id="top" style={{ position: 'relative', minHeight: '100vh', background: '#080808', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
-
-        {/* Glow decorativo */}
-        <div style={{
-          position: 'absolute', inset: 0, pointerEvents: 'none',
-          background: 'radial-gradient(ellipse 700px 500px at 75% 50%, rgba(245,200,66,0.06) 0%, transparent 70%)'
-        }} />
-
-        <div style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: '1280px', margin: '0 auto', padding: '120px 24px 80px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '80px', alignItems: 'center' }}
-               className="hero-grid">
-
-            {/* ESQUERDA */}
-            <div className="fade-in-up delay-1">
-
-              {/* Badge */}
-              <div style={{ display: 'inline-flex', marginBottom: '32px' }}>
-                <span style={{
-                  fontSize: '11px', fontWeight: '700', letterSpacing: '0.16em',
-                  textTransform: 'uppercase', padding: '8px 18px', borderRadius: '999px',
-                  color: '#F5C842', border: '1px solid rgba(245,200,66,0.25)',
-                  background: 'rgba(245,200,66,0.05)',
-                }}>
-                  ✦ 14 ANOS · +5.000 MULHERES TRANSFORMADAS
-                </span>
-              </div>
-
-              {/* Headline */}
-              <h1 style={{
-                fontWeight: '800', lineHeight: '1.05', marginBottom: '24px',
-                fontSize: 'clamp(42px, 5.5vw, 80px)', letterSpacing: '-0.025em', color: '#FFFFFF',
-              }}>
-                Você não falhou.<br />
-                O método falhou<br />
-                <span style={{ color: '#F5C842' }}>por você.</span>
-              </h1>
-
-              {/* Subheadline */}
-              <p style={{
-                fontSize: '17px', color: '#9CA3AF', lineHeight: '1.75',
-                maxWidth: '460px', marginBottom: '40px',
-              }}>
-                Em 21 dias, com o Protocolo RV, você finalmente tem treino
-                com direção, alimentação real e resultado que aparece no
-                espelho — sem dieta maluca, sem treino impossível.
-              </p>
-
-              {/* CTA */}
-              <a href="#inscricao" style={{
-                display: 'inline-block', background: '#F5C842', color: '#000000',
-                fontWeight: '700', fontSize: '16px', padding: '18px 42px',
-                borderRadius: '999px', textDecoration: 'none',
-                transition: 'transform 0.2s ease, filter 0.2s ease',
-              }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.02)'; (e.currentTarget as HTMLElement).style.filter = 'brightness(1.06)' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; (e.currentTarget as HTMLElement).style.filter = 'brightness(1)' }}
-              >
-                Quero entrar no TRINCA RV21
-              </a>
-
-              <p style={{ marginTop: '16px', fontSize: '12px', color: '#374151' }}>
-                🔒 Pagamento seguro via Kiwify · Acesso imediato
-              </p>
+      <section className="rv4-hero" id="top">
+        <div className="rv4-hero-bg" aria-hidden="true" />
+        <div className="rv4-hero-grid">
+          <div className="rv4-hero-copy">
+            <p className="rv4-kicker">Protocolo RV21 · 21 dias · turma aberta</p>
+            <h1>
+              Parar de começar e desistir.
+              <span> Voltar a se sentir forte, confiante e confortável no seu corpo.</span>
+            </h1>
+            <p className="rv4-lead">
+              Um desafio guiado para mulheres que já tentaram dieta, treino, promessa e motivação,
+              mas precisam de direção diária para finalmente sair do ciclo do abandono.
+            </p>
+            <div className="rv4-hero-actions">
+              <a className="rv4-primary-link" href="#inscricao">Quero entrar no TRINCA RV21</a>
+              <a className="rv4-secondary-link" href="#resultados">Ver resultados reais</a>
             </div>
-
-            {/* DIREITA — Foto */}
-            <div className="fade-in-up delay-2" style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <div style={{ position: 'relative', maxWidth: '420px', width: '100%' }}>
-
-                <div style={{ borderRadius: '24px', overflow: 'hidden', aspectRatio: '3/4' }}>
-                  <img
-                    src="https://res.cloudinary.com/drfs4s18a/image/upload/v1781613465/trinca-rv21/ruria-hero.jpg"
-                    alt="Ruriá Virgínio"
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }}
-                  />
-                  <div style={{
-                    position: 'absolute', inset: 0,
-                    background: 'linear-gradient(to top, rgba(8,8,8,0.55) 0%, transparent 45%)',
-                  }} />
-                </div>
-
-                {/* Badge stats sobre a foto */}
-                <div style={{
-                  position: 'absolute', bottom: '20px', left: '16px', right: '16px',
-                  background: 'rgba(8,8,8,0.82)', backdropFilter: 'blur(14px)',
-                  border: '1px solid rgba(245,200,66,0.12)', borderRadius: '16px',
-                  padding: '14px 20px', display: 'flex', justifyContent: 'space-around',
-                }}>
-                  {[{ n: '+5k', label: 'alunas' }, { n: '14', label: 'anos' }, { n: '+10', label: 'países' }].map(({ n, label }) => (
-                    <div key={label} style={{ textAlign: 'center' }}>
-                      <div style={{ color: '#F5C842', fontWeight: '700', fontSize: '17px' }}>{n}</div>
-                      <div style={{ color: '#6B7280', fontSize: '11px', marginTop: '2px' }}>{label}</div>
-                    </div>
-                  ))}
-                </div>
-
-              </div>
+            <div className="rv4-trust-row" aria-label="Pontos de confiança">
+              <span>Pagamento seguro via Kiwify</span>
+              <span>Acesso imediato após cadastro</span>
+              <span>Grupo exclusivo de acompanhamento</span>
             </div>
-
           </div>
-        </div>
 
-        {/* Mobile: empilhar verticalmente */}
-        <style>{`
-          @media (max-width: 768px) {
-            .hero-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
-          }
-        `}</style>
+          <aside className="rv4-offer-card" aria-label="Oferta TRINCA RV21">
+            <span className="rv4-card-eyebrow">Sua decisão pelos próximos 21 dias</span>
+            <strong>8x de R$ 5,51</strong>
+            <p>R$ 37,89 à vista</p>
+            <small>Parcelamento sujeito a acréscimos da Kiwify</small>
+            <div className="rv4-card-line" />
+            <ul>
+              {heroOfferItems.map((item) => (
+                <li key={item}>
+                  <Check size={18} />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+            <a className="rv4-offer-button" href="#inscricao">Garantir minha vaga</a>
+          </aside>
+        </div>
       </section>
 
-      <section style={{ padding: '80px 0', background: '#060606', overflow: 'hidden' }}>
-
-        <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 24px 48px', textAlign: 'center' }}>
-          <p style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(245,200,66,0.55)', marginBottom: '16px' }}>
-            ✦ VOCÊ SE IDENTIFICA COM ISSO?
-          </p>
-          <h2 style={{ fontWeight: '800', fontSize: 'clamp(28px, 4.5vw, 52px)', color: '#FFFFFF', letterSpacing: '-0.02em', lineHeight: '1.15' }}>
-            Se marcou sim em qualquer um —{' '}
-            <span style={{ color: '#F5C842' }}>o TRINCA RV21 foi feito pra você.</span>
-          </h2>
+      <section className="rv4-diagnosis">
+        <div className="rv4-section-head">
+          <p className="rv4-kicker">O padrão que o RV21 quebra</p>
+          <h2>Você não está sem potencial. Você está sem um protocolo que te segure no processo.</h2>
         </div>
-
-        <div style={{ overflow: 'hidden' }}>
+        <div className="rv4-identity-grid">
+          {identityCards.map((card) => (
+            <article key={card.title}>
+              <h3>{card.title}</h3>
+              <p>{card.text}</p>
+            </article>
+          ))}
+        </div>
+        <div className="rv4-pain-marquee" aria-label="Dores comuns das alunas">
           <div className="marquee-track">
             {[...DORES, ...DORES].map((d, i) => (
-              <div
-                key={i}
-                style={{
-                  flexShrink: 0,
-                  background: '#111111',
-                  border: '1px solid rgba(255,255,255,0.06)',
-                  borderRadius: '16px',
-                  padding: '20px 24px',
-                  minWidth: '250px',
-                  marginRight: '14px',
-                  transition: 'border-color 0.2s',
-                  cursor: 'default',
-                }}
-                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(245,200,66,0.28)')}
-                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)')}
-              >
-                <div style={{ fontSize: '26px', marginBottom: '10px' }}>{d.emoji}</div>
-                <p style={{ color: '#E5E7EB', fontSize: '14px', fontWeight: '500', lineHeight: '1.55', margin: 0 }}>
-                  {d.text}
-                </p>
+              <div className="rv4-pain-pill" key={`${d.text}-${i}`}>
+                <span>{d.emoji}</span>
+                <p>{d.text}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section id="metodo" style={{ padding: '96px 0', background: '#0A0A0A' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '80px', alignItems: 'start' }}
-               className="metodo-grid">
-
-            {/* Esquerda */}
-            <div>
-              <p style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(245,200,66,0.55)', marginBottom: '16px' }}>
-                ✦ O QUE É O TRINCA RV21
-              </p>
-              <h2 style={{ fontWeight: '800', fontSize: 'clamp(34px, 4.5vw, 56px)', color: '#FFFFFF', letterSpacing: '-0.025em', lineHeight: '1.1', marginBottom: '24px' }}>
-                21 dias.<br />Protocolo real.<br /><span style={{ color: '#F5C842' }}>Resultado visível.</span>
-              </h2>
-              <p style={{ fontSize: '17px', color: '#6B7280', lineHeight: '1.75', maxWidth: '400px' }}>
-                O plano foi desenhado para mulheres reais: rotina corrida, corpo cansado
-                de tentativas soltas e vontade de voltar a se reconhecer no espelho.
-              </p>
-            </div>
-
-            {/* Direita — cards */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              {METODO_ITENS.map((item, i) => (
-                <div key={i} style={{
-                  background: '#111111', border: '1px solid rgba(255,255,255,0.06)',
-                  borderRadius: '16px', padding: '18px 22px',
-                  display: 'flex', gap: '16px', alignItems: 'flex-start',
-                }}>
-                  <div style={{
-                    width: '42px', height: '42px', borderRadius: '10px',
-                    background: 'rgba(245,200,66,0.09)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '20px', flexShrink: 0,
-                  }}>
-                    {item.icon}
-                  </div>
-                  <div>
-                    <h3 style={{ color: '#FFFFFF', fontWeight: '600', fontSize: '15px', marginBottom: '6px', lineHeight: '1.4' }}>
-                      {item.titulo}
-                    </h3>
-                    <p style={{ color: '#6B7280', fontSize: '13px', lineHeight: '1.6', margin: 0 }}>
-                      {item.desc}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-          </div>
+      <section className="rv4-method" id="metodo">
+        <div className="rv4-method-copy">
+          <p className="rv4-kicker">Protocolo, não promessa</p>
+          <h2>O RV21 organiza treino, alimentação e comportamento para você parar de improvisar.</h2>
+          <p>
+            A transformação não vem de uma semana perfeita. Ela vem de decisões pequenas, repetidas
+            com acompanhamento, clareza e ajuste de rota.
+          </p>
         </div>
-
-        <style>{`
-          @media (max-width: 768px) {
-            .metodo-grid { grid-template-columns: 1fr !important; gap: 48px !important; }
-          }
-        `}</style>
+        <div className="rv4-method-grid">
+          {METODO_ITENS.map((item, index) => (
+            <article key={item.titulo}>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <div>{item.icon}</div>
+              <h3>{item.titulo}</h3>
+              <p>{item.desc}</p>
+            </article>
+          ))}
+        </div>
       </section>
 
-      <section id="resultados" style={{ padding: '96px 0', background: '#060606', overflow: 'hidden' }}>
-
-        {/* Header */}
-        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px 64px' }}>
-          <p style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(245,200,66,0.55)', marginBottom: '16px' }}>
-            ✦ RESULTADOS REAIS
-          </p>
-          <h2 style={{ fontWeight: '800', fontSize: 'clamp(34px, 4.5vw, 56px)', color: '#FFFFFF', letterSpacing: '-0.025em', lineHeight: '1.1' }}>
-            Elas duvidavam.<br /><span style={{ color: '#F5C842' }}>Hoje agradecem.</span>
-          </h2>
+      <section className="rv4-results" id="resultados">
+        <div className="rv4-section-head align-left">
+          <p className="rv4-kicker">Resultados reais</p>
+          <h2>Não é sobre posar para uma foto. É sobre voltar a se reconhecer.</h2>
         </div>
 
-        {/* MARQUEE DE FOTOS — sem nomes */}
-        <div style={{ marginBottom: '80px' }}>
-          <PhotoMarquee />
+        <div className="rv4-stat-strip">
+          {proofStats.map((stat) => (
+            <CountUpStat key={stat.label} stat={stat} />
+          ))}
         </div>
 
-        {/* Divisor */}
-        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px' }}>
-          <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', marginBottom: '64px' }} />
+        <PhotoMarquee />
+
+        <div className="rv4-video-head">
+          <p className="rv4-kicker">Depoimentos em vídeo</p>
+          <h3>Mulheres reais mostrando o que muda quando existe direção.</h3>
         </div>
-
-        {/* VÍDEOS — usar os src originais que você copiou acima */}
-        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px' }}>
-          <p style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.18)', marginBottom: '32px' }}>
-            ✦ DEPOIMENTOS EM VÍDEO
-          </p>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }} className="videos-grid">
-
-            {/* Vídeo 1 — src = VIDEO_SRC_1 que você copiou */}
-            <div style={{ background: '#0F0F0F', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', overflow: 'hidden', transition: 'border-color 0.3s' }}
-                 onMouseEnter={e => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(245,200,66,0.18)')}
-                 onMouseLeave={e => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)')}>
-              <div style={{ position: 'relative', aspectRatio: '9/16' }}>
-                <video src="/media/depoimento-jessica.mp4" controls playsInline preload="metadata" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+        <div className="rv4-video-grid">
+          {studentVideos.map((video) => (
+            <article className="rv4-video-card" key={video.id}>
+              <div className="rv4-video-frame">
+                <video poster={video.poster} controls playsInline preload="metadata">
+                  <source src={video.src} type="video/mp4" />
+                </video>
+                <span>{video.result}</span>
               </div>
-              <div style={{ padding: '16px 20px' }}>
-                <span style={{ fontSize: '10px', fontWeight: '700', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#F5C842', background: 'rgba(245,200,66,0.08)', padding: '5px 12px', borderRadius: '999px' }}>
-                  DEPOIMENTO REAL
-                </span>
+              <div className="rv4-video-copy">
+                <strong>{video.name}</strong>
+                <p>{video.quote}</p>
               </div>
-            </div>
-
-            {/* Vídeo 2 — src = VIDEO_SRC_2 que você copiou */}
-            <div style={{ background: '#0F0F0F', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', overflow: 'hidden', transition: 'border-color 0.3s' }}
-                 onMouseEnter={e => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(245,200,66,0.18)')}
-                 onMouseLeave={e => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)')}>
-              <div style={{ position: 'relative', aspectRatio: '9/16' }}>
-                <video src="/media/depoimento-coletivo.mp4" controls playsInline preload="metadata" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
-              </div>
-              <div style={{ padding: '16px 20px' }}>
-                <span style={{ fontSize: '10px', fontWeight: '700', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#F5C842', background: 'rgba(245,200,66,0.08)', padding: '5px 12px', borderRadius: '999px' }}>
-                  ANTES & DEPOIS
-                </span>
-              </div>
-            </div>
-
-          </div>
+            </article>
+          ))}
         </div>
-
-        <style>{`
-          @media (max-width: 768px) {
-            .videos-grid { grid-template-columns: 1fr !important; }
-          }
-        `}</style>
       </section>
 
-      <section className="rv-section rv-authority-section">
+      <section className="rv4-authority">
         <div className="rv-authority-photo">
           <Image
             src="/images/ruria-sobre.jpg"
@@ -778,12 +651,17 @@ export default function Home() {
             className="rv-authority-image"
           />
         </div>
-        <div className="rv-authority-copy">
+        <div className="rv4-authority-copy">
+          <p className="rv4-kicker">Quem conduz o processo</p>
           <h2>
             Sou Ruriá Virgínio.
             <br />
-            14 anos transformando mulheres reais.
+            14 anos transformando mulheres reais, sem discurso de guru.
           </h2>
+          <p>
+            O TRINCA RV21 nasceu para tirar mulheres do ciclo de tentativa solta:
+            treino sem direção, dieta impossível e abandono no meio do caminho.
+          </p>
           <ul>
             {authorityBullets.map((item) => (
               <li key={item}>
@@ -795,12 +673,13 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="rv-section rv-offer-section" id="oferta">
-        <div className="rv-section-head">
-          <h2>Comece hoje. Sem desculpa.</h2>
+      <section className="rv4-final-offer" id="oferta">
+        <div className="rv4-section-head">
+          <p className="rv4-kicker">Entrada imediata</p>
+          <h2>Se você esperar a motivação voltar, pode perder mais uma segunda-feira.</h2>
         </div>
 
-        <div className="rv-final-offer-card">
+        <div className="rv4-final-card">
           <h3>TRINCA RV21</h3>
           <span className="rv-old-price">De R$ 97,00</span>
           <strong>8x de R$ 5,51</strong>
@@ -808,7 +687,7 @@ export default function Home() {
           <small>Parcelamento sujeito a acréscimos da Kiwify</small>
           <CountdownTimer />
           <ul>
-            {includedItems.map((item) => (
+            {heroOfferItems.map((item) => (
               <li key={item}>
                 <Check size={16} />
                 {item}
