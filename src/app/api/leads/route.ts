@@ -1,6 +1,7 @@
 import { after, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { qualificarLead } from "@/lib/claude-ai";
+import { cockpitUrl, sendInternalRuriaNotification } from "@/lib/internal-notifications";
 
 type LeadPayload = {
   nome?: string;
@@ -106,6 +107,29 @@ export async function POST(request: Request) {
   }
 
   after(() => {
+    if (!existingLead) {
+      void supabase
+        .from("leads")
+        .select("id", { count: "exact", head: true })
+        .then(({ count, error }) => {
+          if (error || !count || count % 10 !== 0) {
+            return;
+          }
+
+          void sendInternalRuriaNotification({
+            type: "lead_milestone",
+            dedupeKey: `lead_milestone:${count}`,
+            message: `👥 *TRINCA RV21 — Leads chegando!*
+
++10 novas leads captadas.
+Total acumulado: ${count} leads
+
+👉 Veja no Cockpit:
+${cockpitUrl()}`,
+          });
+        });
+    }
+
     void qualificarLead({
       ...lead,
       etapaFunil: lead.etapa_funil,

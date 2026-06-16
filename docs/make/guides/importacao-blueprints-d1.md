@@ -180,7 +180,7 @@ Mapa:
         ↓
 [5] Supabase REST insert content_queue
         ↓
-[6] Telegram Bot notifica Ruriá
+[6] WhatsApp interno Ruriá via Twilio
 ```
 
 Configuração visual:
@@ -227,10 +227,12 @@ Configuração visual:
 
 ```text
 ┌─────────────────────────────────────────────┐
-│ [6] Telegram Bot                            │
+│ [6] HTTP - Notificação interna              │
 ├─────────────────────────────────────────────┤
-│ Token: __TELEGRAM_BOT_TOKEN__               │
-│ Chat ID: __TELEGRAM_CHAT_ID__               │
+│ URL: https://protocolorv.com.br/api/        │
+│      internal-notifications                 │
+│ Header: Authorization Bearer __SECRET__     │
+│ trigger: video_ready                        │
 │ Mensagem: 🎬 [titulo] pronto no Cockpit     │
 └─────────────────────────────────────────────┘
 ```
@@ -244,8 +246,8 @@ Variáveis:
 - `REMOTION_WORKER_URL`
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
-- `TELEGRAM_BOT_TOKEN`
-- `TELEGRAM_CHAT_ID`
+- `AUTOMATION_API_SECRET`
+- `TWILIO_CONTENT_SID_NOTIFICACAO_INTERNA_RURIA` na Vercel
 
 ## Teste final
 
@@ -254,4 +256,4 @@ Variáveis:
 3. Confirme `content_queue.status = aguardando_aprovacao`.
 4. Abra `/cockpit`.
 5. Confirme badge vermelho na aba Conteúdo.
-6. Confirme mensagem Telegram.
+6. Confirme mensagem WhatsApp interno.

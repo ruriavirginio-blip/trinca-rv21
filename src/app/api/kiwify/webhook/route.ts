@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { cockpitUrl, sendInternalRuriaNotification } from "@/lib/internal-notifications";
 import { createServerEventId, sendServerEvent } from "@/lib/meta-capi";
 import { sendTwilioMessage } from "@/lib/whatsapp/twilio";
 
@@ -1055,6 +1056,25 @@ export async function POST(request: Request) {
     if (cancelError) {
       console.error("Erro ao cancelar recuperacoes pendentes", cancelError.message);
     }
+
+    const { count: salesTodayCount } = await supabase
+      .from("leads")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "compra-aprovada")
+      .gte("updated_at", new Date(new Date().setHours(0, 0, 0, 0)).toISOString());
+    const totalToday = salesTodayCount || 1;
+
+    await sendInternalRuriaNotification({
+      type: "sale_confirmed",
+      dedupeKey: `sale_confirmed:${orderId || email}`,
+      message: `💰 *TRINCA RV21 — Venda confirmada!*
+
+${nome || "Uma compradora"} acabou de comprar.
+Total hoje: ${totalToday} vendas | R$${(totalToday * 37.89).toFixed(2).replace(".", ",")}
+
+👉 Acompanhe ao vivo:
+${cockpitUrl()}`,
+    });
   }
 
   const { error: eventError } = await supabase.from("kiwify_events").insert({

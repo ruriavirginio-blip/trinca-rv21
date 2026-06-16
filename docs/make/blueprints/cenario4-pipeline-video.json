@@ -18,9 +18,9 @@
     },
     "zone": "us1.make.com",
     "notes": [
-      "Cenario 4 D1-D7: Google Drive reels/brutos -> Cloudinary -> Remotion Worker Railway -> Supabase content_queue -> Telegram.",
-      "Substituir placeholders: __GOOGLE_DRIVE_CONNECTION_ID__, __DRIVE_REELS_BRUTOS_FOLDER_ID__, __CLOUDINARY_CLOUD_NAME__, __CLOUDINARY_UPLOAD_PRESET__, __REMOTION_WORKER_URL__, __SUPABASE_URL__, __SUPABASE_SERVICE_ROLE_KEY__, __TELEGRAM_BOT_TOKEN__, __TELEGRAM_CHAT_ID__.",
-      "O worker atual renderiza a partir de videoUrl. Se ele passar a exigir public_id, manter public_id no payload e adicionar Cloudinary delivery URL no campo videoUrl."
+      "Cenario 4 D1-D7: Google Drive reels/brutos -> Cloudinary -> Remotion Worker Railway -> Supabase content_queue -> notificacao interna WhatsApp Ruria.",
+      "Substituir placeholders: __GOOGLE_DRIVE_CONNECTION_ID__, __DRIVE_REELS_BRUTOS_FOLDER_ID__, __CLOUDINARY_CLOUD_NAME__, __CLOUDINARY_UPLOAD_PRESET__, __REMOTION_WORKER_URL__, __SUPABASE_URL__, __SUPABASE_SERVICE_ROLE_KEY__, __AUTOMATION_API_SECRET__.",
+      "A notificacao final usa /api/internal-notifications e Twilio template notificacao_interna_ruria configurado na Vercel."
     ]
   },
   "blueprint": {
@@ -178,27 +178,33 @@
       },
       {
         "id": 6,
-        "module": "telegram:sendMessage",
-        "version": 1,
+        "module": "http:ActionSendData",
+        "version": 3,
         "parameters": {
-          "token": "__TELEGRAM_BOT_TOKEN__"
+          "handleErrors": true,
+          "useNewZLibDeCompress": true
         },
         "mapper": {
-          "chatId": "__TELEGRAM_CHAT_ID__",
-          "text": "🎬 {{ifempty(1.name; \"Reel TRINCA RV21\")}} pronto no Cockpit para aprovação.\n\nAbra: https://protocolorv.com.br/cockpit",
-          "parseMode": "HTML"
+          "url": "https://protocolorv.com.br/api/internal-notifications",
+          "method": "post",
+          "headers": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer __AUTOMATION_API_SECRET__"
+            }
+          ],
+          "bodyType": "raw",
+          "contentType": "application/json",
+          "data": "{\"trigger\":\"video_ready\",\"title\":\"{{ifempty(1.name; \"Reel TRINCA RV21\")}}\",\"dedupeKey\":\"video_ready:{{ifempty(4.publicId; 3.public_id)}}\"}"
         },
         "metadata": {
           "designer": {
             "x": 1300,
             "y": 0
-          },
-          "restore": {
-            "parameters": {
-              "token": {
-                "label": "Telegram Bot TRINCA RV21"
-              }
-            }
           }
         }
       }
