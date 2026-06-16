@@ -1,8 +1,14 @@
 'use client'
 
 const FOTOS: string[] = [
-  // As URLs reais serão adicionadas após upload no Cloudinary.
-  // Enquanto vazio, exibe placeholders visuais.
+  "https://res.cloudinary.com/drfs4s18a/image/upload/w_440,h_600,c_fill,g_auto,q_auto,f_auto/alunas/aluna1.jpg",
+  "https://res.cloudinary.com/drfs4s18a/image/upload/w_440,h_600,c_fill,g_auto,q_auto,f_auto/alunas/aluna2.jpg",
+  "https://res.cloudinary.com/drfs4s18a/image/upload/w_440,h_600,c_fill,g_auto,q_auto,f_auto/alunas/aluna3.jpg",
+  "https://res.cloudinary.com/drfs4s18a/image/upload/w_440,h_600,c_fill,g_auto,q_auto,f_auto/alunas/aluna4.jpg",
+  "https://res.cloudinary.com/drfs4s18a/image/upload/w_440,h_600,c_fill,g_auto,q_auto,f_auto/alunas/aluna5.jpg",
+  "https://res.cloudinary.com/drfs4s18a/image/upload/w_440,h_600,c_fill,g_auto,q_auto,f_auto/alunas/aluna6.jpg",
+  "https://res.cloudinary.com/drfs4s18a/image/upload/w_440,h_600,c_fill,g_auto,q_auto,f_auto/alunas/aluna7.jpg",
+  "https://res.cloudinary.com/drfs4s18a/image/upload/w_440,h_600,c_fill,g_auto,q_auto,f_auto/alunas/aluna8.jpg",
 ]
 
 const PLACEHOLDER_COUNT = 10
