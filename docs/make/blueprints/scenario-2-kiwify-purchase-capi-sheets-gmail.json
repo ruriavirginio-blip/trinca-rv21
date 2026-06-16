@@ -1,5 +1,5 @@
 {
-  "name": "TRINCA RV21 - Kiwify compra para CAPI Purchase, Sheets e Gmail",
+  "name": "TRINCA RV21 - Compra aprovada para CAPI Purchase e Supabase",
   "metadata": {
     "instant": true,
     "version": 1,
@@ -18,9 +18,9 @@
     },
     "zone": "us1.make.com",
     "notes": [
-      "Use a URL do Custom Webhook como webhook da Kiwify se quiser passar pelo Make antes do Vercel.",
-      "O endpoint /api/kiwify/webhook ja dispara Meta CAPI Purchase usando credenciais do Vercel.",
-      "Substituir __KIWIFY_WEBHOOK_TOKEN__, __GOOGLE_SHEETS_CONNECTION_ID__, __SPREADSHEET_ID__, __SHEET_NAME__, __GMAIL_CONNECTION_ID__ e __NOTIFICATION_EMAIL__."
+      "Cenario D1: Kiwify compra aprovada -> endpoint oficial Vercel -> Meta CAPI Purchase -> status Supabase.",
+      "O endpoint /api/kiwify/webhook ja atualiza lead, Kiwify events, mensagens WhatsApp e dispara Purchase CAPI.",
+      "Substituir __KIWIFY_WEBHOOK_TOKEN__ no modulo HTTP."
     ]
   },
   "blueprint": {

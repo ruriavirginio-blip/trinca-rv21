@@ -7,6 +7,7 @@ import {
   ChevronRight,
   CheckCircle2,
   CircleDollarSign,
+  Edit3,
   Eye,
   Home,
   KeyRound,
@@ -22,7 +23,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import OperacaoPage from "../operacao/page";
 
 type TabKey = "hoje" | "leads" | "vendas" | "gastos" | "conteudo" | "ao-vivo" | "ia";
-type ContentStatus = "GRAVAR" | "PRONTO" | "PUBLICADO";
+type ContentStatus = "RASCUNHO" | "APROVADO" | "PUBLICADO" | "REJEITADO";
 
 type Lead = {
   id: string;
@@ -47,6 +48,14 @@ type CommentLead = {
 type TwilioCredits = {
   balance: string;
   currency: string;
+};
+
+type NotionContentItem = {
+  id: string;
+  status: ContentStatus;
+  notionUrl?: string;
+  notionPageId?: string;
+  updatedAt?: string;
 };
 
 const GASTOS = [
@@ -95,7 +104,7 @@ const contentCalendar: Array<{
     format: "Reels + 3 Stories",
     objective: "Abrir curiosidade e posicionar o TRINCA RV21 como método possível para recomeçar.",
     channel: "Reels + Stories",
-    status: "GRAVAR",
+    status: "RASCUNHO",
     script: [
       "Gancho: Voce nao precisa virar outra pessoa para voltar a cuidar do corpo.",
       "Contexto: A maioria para porque tenta compensar tudo em uma semana.",
@@ -117,7 +126,7 @@ TEXTO NA TELA: [00:00] "Você não falhou" | [00:03] "O método falhou" | [00:27
     format: "Reels curto",
     objective: "Tirar peso emocional e mostrar que o problema e falta de metodo, nao falta de vontade.",
     channel: "Reels",
-    status: "GRAVAR",
+    status: "RASCUNHO",
     script: [
       "Gancho: Voce ja comecou segunda e parou na quarta?",
       "Contexto: Isso acontece quando o plano depende de motivacao.",
@@ -138,7 +147,7 @@ TEXTO NA TELA: [00:00] "Você não falhou" | [00:03] "O método falhou" | [00:27
     format: "Depoimento + bastidor",
     objective: "Usar depoimento para mostrar transformacao real sem promessa exagerada.",
     channel: "Depoimento + Stories",
-    status: "PRONTO",
+    status: "APROVADO",
     script: [
       "Gancho: A Jessica nao precisou de perfeicao. Ela precisou de direcao.",
       "Contexto: Mostrar trecho curto do depoimento com legenda forte.",
@@ -159,7 +168,7 @@ TEXTO NA TELA: [00:15] "-6kg • -8cm de barriga" (verde) | [00:30] "'Voltei a g
     format: "Carrossel + Stories",
     objective: "Explicar oferta, materiais, acompanhamento e fluxo sem parecer aula longa.",
     channel: "Carrossel + Stories",
-    status: "GRAVAR",
+    status: "RASCUNHO",
     script: [
       "Slide 1: O que voce recebe no TRINCA RV21.",
       "Slide 2: Treinos guiados para 21 dias.",
@@ -176,7 +185,7 @@ TEXTO NA TELA: [00:15] "-6kg • -8cm de barriga" (verde) | [00:30] "'Voltei a g
     format: "Reels + perguntas",
     objective: "Responder falta de tempo, medo de nao conseguir e preco.",
     channel: "Reels + Caixa de perguntas",
-    status: "GRAVAR",
+    status: "RASCUNHO",
     script: [
       "Gancho: Se voce acha que nao tem tempo, esse video e para voce.",
       "Contexto: O plano nao pede rotina perfeita, pede execucao minima consistente.",
@@ -196,7 +205,7 @@ TEXTO NA TELA: [00:15] "-6kg • -8cm de barriga" (verde) | [00:30] "'Voltei a g
     format: "Sequência de Stories",
     objective: "Avisar proximidade da abertura com clareza e sem pressão falsa.",
     channel: "Stories sequenciais",
-    status: "GRAVAR",
+    status: "RASCUNHO",
     script: [
       "Story 1: Falta pouco para abrir o TRINCA RV21.",
       "Story 2: Quem estiver na lista recebe o caminho primeiro.",
@@ -212,7 +221,7 @@ TEXTO NA TELA: [00:15] "-6kg • -8cm de barriga" (verde) | [00:30] "'Voltei a g
     format: "Reels + Stories + Bio",
     objective: "Direcionar tráfego para a landing e transformar intenção em compra.",
     channel: "Reels + Stories + Bio",
-    status: "GRAVAR",
+    status: "RASCUNHO",
     script: [
       "Gancho: O TRINCA RV21 abriu.",
       "Contexto: 21 dias para voltar a treinar com direcao, dieta e acompanhamento.",
@@ -253,6 +262,14 @@ function statusColor(status: string) {
   return "#FF5252";
 }
 
+function normalizeContentStatus(status: unknown): ContentStatus {
+  if (status === "PRONTO") return "APROVADO";
+  if (status === "GRAVAR") return "RASCUNHO";
+  if (status === "APROVADO" || status === "PUBLICADO" || status === "REJEITADO") return status;
+
+  return "RASCUNHO";
+}
+
 export default function CockpitClient({ cockpitPassword }: { cockpitPassword: string }) {
   const [isUnlocked, setIsUnlocked] = useState(() => {
     if (typeof window === "undefined") return false;
@@ -283,16 +300,19 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
     if (typeof window === "undefined") return defaults;
 
     try {
-      const saved = JSON.parse(window.localStorage.getItem(contentStatusStorageKey) || "{}") as Record<
-        string,
-        ContentStatus
-      >;
+      const saved = JSON.parse(window.localStorage.getItem(contentStatusStorageKey) || "{}") as Record<string, unknown>;
+      const normalizedSaved = Object.fromEntries(
+        Object.entries(saved).map(([postId, status]) => [postId, normalizeContentStatus(status)]),
+      );
 
-      return { ...defaults, ...saved };
+      return { ...defaults, ...normalizedSaved };
     } catch {
       return defaults;
     }
   });
+  const [notionContent, setNotionContent] = useState<Record<string, NotionContentItem>>({});
+  const [contentSyncStatus, setContentSyncStatus] = useState("Notion ainda nao sincronizado.");
+  const [contentSyncing, setContentSyncing] = useState(false);
   const [expandedPostId, setExpandedPostId] = useState(contentCalendar[0]?.id || "");
 
   useEffect(() => {
@@ -383,6 +403,12 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
     return undefined;
   }, [isUnlocked, loadData]);
 
+  useEffect(() => {
+    if (isUnlocked && activeTab === "conteudo") {
+      void loadContentFromNotion();
+    }
+  }, [activeTab, isUnlocked]);
+
   function unlock() {
     if (password !== cockpitPassword) {
       setDataError("Senha incorreta.");
@@ -414,6 +440,72 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
 
       return next;
     });
+
+    void syncContentStatus(postId, status);
+  }
+
+  async function loadContentFromNotion() {
+    setContentSyncing(true);
+
+    try {
+      const response = await fetch("/api/cockpit-content", { cache: "no-store" });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Nao foi possivel sincronizar o Notion.");
+      }
+
+      if (!data.configured) {
+        setContentSyncStatus("Notion nao configurado. Usando calendario local.");
+        return;
+      }
+
+      const items = Array.isArray(data.items) ? (data.items as NotionContentItem[]) : [];
+      const byId = Object.fromEntries(items.map((item) => [item.id, item]));
+      const nextStatuses = Object.fromEntries(
+        items.map((item) => [item.id, normalizeContentStatus(item.status)]),
+      );
+
+      setNotionContent(byId);
+      setContentStatuses((current) => {
+        const next = { ...current, ...nextStatuses };
+
+        window.localStorage.setItem(contentStatusStorageKey, JSON.stringify(next));
+
+        return next;
+      });
+      setContentSyncStatus(`Notion sincronizado: ${items.length} itens.`);
+    } catch (error) {
+      setContentSyncStatus(error instanceof Error ? error.message : "Falha ao sincronizar Notion.");
+    } finally {
+      setContentSyncing(false);
+    }
+  }
+
+  async function syncContentStatus(postId: string, status: ContentStatus) {
+    try {
+      const response = await fetch("/api/cockpit-content", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postId, status }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Falha ao atualizar Notion.");
+      }
+
+      if (data.configured === false) {
+        setContentSyncStatus("Status salvo localmente. Notion nao configurado.");
+        return;
+      }
+
+      setContentSyncStatus(`Notion atualizado: ${postId} -> ${status}.`);
+    } catch (error) {
+      setContentSyncStatus(
+        error instanceof Error ? `Status local salvo. Notion: ${error.message}` : "Status local salvo. Notion falhou.",
+      );
+    }
   }
 
   async function analyzeBusiness() {
@@ -571,9 +663,13 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
           >
             <ContentCalendar
               expandedPostId={expandedPostId}
+              notionContent={notionContent}
+              onRefresh={() => void loadContentFromNotion()}
               onExpand={setExpandedPostId}
               onStatusChange={updateContentStatus}
               statuses={contentStatuses}
+              syncStatus={contentSyncStatus}
+              syncing={contentSyncing}
             />
           </DashboardSection>
         ) : null}
@@ -680,19 +776,35 @@ function MiniCard({ title, value }: { title: string; value: string }) {
 
 function ContentCalendar({
   expandedPostId,
+  notionContent,
+  onRefresh,
   onExpand,
   onStatusChange,
   statuses,
+  syncStatus,
+  syncing,
 }: {
   expandedPostId: string;
+  notionContent: Record<string, NotionContentItem>;
+  onRefresh: () => void;
   onExpand: (postId: string) => void;
   onStatusChange: (postId: string, status: ContentStatus) => void;
   statuses: Record<string, ContentStatus>;
+  syncStatus: string;
+  syncing: boolean;
 }) {
   return (
     <div className="content-calendar">
+      <div className="content-sync-card">
+        <span>{syncStatus}</span>
+        <button className="secondary-action" disabled={syncing} onClick={onRefresh} type="button">
+          {syncing ? <Loader2 className="spin" size={16} /> : <RefreshCw size={16} />}
+          Sincronizar Notion
+        </button>
+      </div>
       {contentCalendar.map((post) => {
-        const status = statuses[post.id] || post.status;
+        const notionItem = notionContent[post.id];
+        const status = normalizeContentStatus(notionItem?.status || statuses[post.id] || post.status);
         const isExpanded = expandedPostId === post.id;
 
         return (
@@ -706,6 +818,11 @@ function ContentCalendar({
                 </small>
               </div>
               <b>{status}</b>
+              {notionItem?.notionUrl ? (
+                <a className="notion-link" href={notionItem.notionUrl} rel="noreferrer" target="_blank">
+                  Abrir Notion
+                </a>
+              ) : null}
               <button className="script-toggle" onClick={() => onExpand(isExpanded ? "" : post.id)} type="button">
                 {isExpanded ? "Ocultar roteiro ▲" : "Ver roteiro ▼"}
               </button>
@@ -726,11 +843,34 @@ function ContentCalendar({
                 <div className="content-actions">
                   <button
                     className="secondary-action"
-                    disabled={status === "PRONTO" || status === "PUBLICADO"}
-                    onClick={() => onStatusChange(post.id, "PRONTO")}
+                    disabled={status === "APROVADO" || status === "PUBLICADO"}
+                    onClick={() => onStatusChange(post.id, "APROVADO")}
                   >
                     <CheckCircle2 size={16} />
-                    Marcar como Pronto
+                    Aprovar
+                  </button>
+                  <button
+                    className="secondary-action reject"
+                    disabled={status === "REJEITADO" || status === "PUBLICADO"}
+                    onClick={() => onStatusChange(post.id, "REJEITADO")}
+                  >
+                    <XCircleIcon />
+                    Rejeitar
+                  </button>
+                  <button
+                    className="secondary-action edit"
+                    onClick={() => {
+                      if (notionItem?.notionUrl) {
+                        window.open(notionItem.notionUrl, "_blank", "noopener,noreferrer");
+                        return;
+                      }
+
+                      onExpand(post.id);
+                    }}
+                    type="button"
+                  >
+                    <Edit3 size={16} />
+                    Editar
                   </button>
                   <button
                     className="secondary-action publish"
@@ -738,7 +878,7 @@ function ContentCalendar({
                     onClick={() => onStatusChange(post.id, "PUBLICADO")}
                   >
                     <Send size={16} />
-                    Marcar como Publicado
+                    Publicar
                   </button>
                 </div>
               </div>
@@ -747,6 +887,14 @@ function ContentCalendar({
         );
       })}
     </div>
+  );
+}
+
+function XCircleIcon() {
+  return (
+    <span aria-hidden="true" className="x-circle-icon">
+      ×
+    </span>
   );
 }
 
@@ -1018,16 +1166,32 @@ function CockpitStyles() {
         gap: 12px;
       }
 
+      .content-sync-card {
+        align-items: center;
+        background: rgba(124, 77, 255, 0.1);
+        border: 1px solid rgba(124, 77, 255, 0.24);
+        border-radius: 14px;
+        color: rgba(255, 255, 255, 0.72);
+        display: flex;
+        gap: 12px;
+        justify-content: space-between;
+        padding: 12px;
+      }
+
       .content-post {
         overflow: hidden;
       }
 
-      .content-post.pronto {
+      .content-post.aprovado {
         border-color: rgba(255, 215, 64, 0.36);
       }
 
       .content-post.publicado {
         border-color: rgba(0, 230, 118, 0.36);
+      }
+
+      .content-post.rejeitado {
+        border-color: rgba(255, 82, 82, 0.36);
       }
 
       .content-post-head {
@@ -1065,9 +1229,20 @@ function CockpitStyles() {
         color: #00e676;
       }
 
-      .content-post.gravar .content-post-head b {
+      .content-post.rascunho .content-post-head b,
+      .content-post.rejeitado .content-post-head b {
         background: rgba(255, 82, 82, 0.12);
         color: #ff8a80;
+      }
+
+      .notion-link {
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 999px;
+        color: rgba(255, 255, 255, 0.72);
+        font-size: 11px;
+        font-weight: 800;
+        padding: 7px 9px;
+        text-decoration: none;
       }
 
       .day-pill {
@@ -1122,7 +1297,7 @@ function CockpitStyles() {
       .content-actions {
         display: grid;
         gap: 10px;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: repeat(4, minmax(0, 1fr));
         margin-top: 16px;
       }
 
@@ -1148,9 +1323,31 @@ function CockpitStyles() {
         border-color: rgba(0, 230, 118, 0.28);
       }
 
+      .secondary-action.reject {
+        background: rgba(255, 82, 82, 0.1);
+        border-color: rgba(255, 82, 82, 0.28);
+      }
+
+      .secondary-action.edit {
+        background: rgba(255, 215, 64, 0.1);
+        border-color: rgba(255, 215, 64, 0.28);
+      }
+
       .secondary-action:disabled {
         cursor: default;
         opacity: 0.46;
+      }
+
+      .x-circle-icon {
+        align-items: center;
+        border: 1px solid currentColor;
+        border-radius: 999px;
+        display: inline-flex;
+        font-size: 14px;
+        height: 16px;
+        justify-content: center;
+        line-height: 1;
+        width: 16px;
       }
 
       .token-card input {
@@ -1240,6 +1437,17 @@ function CockpitStyles() {
 
         .metric-grid {
           grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 520px) {
+        .content-actions {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .content-sync-card {
+          align-items: stretch;
+          flex-direction: column;
         }
       }
     `}</style>

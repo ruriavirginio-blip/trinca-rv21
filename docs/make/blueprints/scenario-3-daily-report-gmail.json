@@ -1,5 +1,5 @@
 {
-  "name": "TRINCA RV21 - Relatorio diario 07h por Gmail",
+  "name": "TRINCA RV21 - Relatorio diario 07h por WhatsApp",
   "metadata": {
     "instant": false,
     "version": 1,
@@ -19,8 +19,8 @@
     "zone": "us1.make.com",
     "notes": [
       "Agendar para todos os dias as 07h no timezone America/Fortaleza.",
-      "O endpoint /api/automation/dashboard ja consolida leads, Kiwify e WhatsApp das ultimas 24h.",
-      "Substituir __AUTOMATION_API_SECRET__, __GMAIL_CONNECTION_ID__ e __NOTIFICATION_EMAIL__."
+      "Busca /api/automation/dashboard e envia resumo para o WhatsApp pessoal do Ruria.",
+      "Substituir __AUTOMATION_API_SECRET__, __TWILIO_ACCOUNT_SID__, __TWILIO_BASIC_AUTH_BASE64__ e __TWILIO_WHATSAPP_FROM__."
     ]
   },
   "blueprint": {
@@ -70,33 +70,33 @@
       },
       {
         "id": 3,
-        "module": "google-email:ActionSendEmail",
-        "version": 2,
+        "module": "http:ActionSendData",
+        "version": 3,
         "parameters": {
-          "account": "__GMAIL_CONNECTION_ID__"
+          "handleErrors": true,
+          "useNewZLibDeCompress": true
         },
         "mapper": {
-          "to": [
+          "url": "https://api.twilio.com/2010-04-01/Accounts/__TWILIO_ACCOUNT_SID__/Messages.json",
+          "method": "post",
+          "headers": [
             {
-              "email": "__NOTIFICATION_EMAIL__",
-              "name": "TRINCA RV21"
+              "name": "Authorization",
+              "value": "Basic __TWILIO_BASIC_AUTH_BASE64__"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/x-www-form-urlencoded"
             }
           ],
-          "subject": "Relatorio diario TRINCA RV21 - {{formatDate(now; \"DD/MM/YYYY\")}}",
-          "content": "<h2>Relatorio diario TRINCA RV21</h2><p>Horario: {{formatDate(now; \"DD/MM/YYYY HH:mm\")}}</p><p><b>Resumo bruto do painel:</b></p><pre>{{2.body}}</pre><p>Abra o Cockpit: https://protocolorv.com.br/cockpit</p>",
-          "attachments": []
+          "bodyType": "raw",
+          "contentType": "application/x-www-form-urlencoded",
+          "data": "To=whatsapp%3A%2B5584998567078&From=whatsapp%3A%2B__TWILIO_WHATSAPP_FROM__&Body=Relatorio%20TRINCA%20RV21%2007h%0A%0A{{2.body}}%0A%0ACockpit%3A%20https%3A%2F%2Fprotocolorv.com.br%2Fcockpit"
         },
         "metadata": {
           "designer": {
             "x": 600,
             "y": 0
-          },
-          "restore": {
-            "parameters": {
-              "account": {
-                "label": "Conectar Gmail"
-              }
-            }
           }
         }
       }
