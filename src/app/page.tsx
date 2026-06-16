@@ -731,13 +731,31 @@ export default function Home() {
         </div>
 
         <div className="rv4-final-card">
-          <h3>TRINCA RV21</h3>
-          <span className="rv-old-price">De R$ 97,00</span>
-          <strong>8x de R$ 5,51</strong>
-          <p>R$ 37,89 à vista</p>
-          <small>Parcelamento sujeito a acréscimos da Kiwify</small>
-          <CountdownTimer />
-          <ul>
+          <div className="rv4-final-price">
+            <span className="rv4-card-eyebrow">TRINCA RV21</span>
+            <span className="rv-old-price">De R$ 97,00</span>
+            <strong>8x de R$ 5,51</strong>
+            <p>R$ 37,89 à vista</p>
+            <small>Parcelamento sujeito a acréscimos da Kiwify</small>
+            <a className="rv-button rv-button-primary rv-offer-button cta-primary" href="#inscricao">
+              Quero entrar no desafio agora
+            </a>
+            <footer>
+              <span>🔒 Pagamento 100% seguro via Kiwify</span>
+              <span>Vagas limitadas por turma</span>
+            </footer>
+          </div>
+
+          <div className="rv4-final-urgency">
+            <div>
+              <p className="rv4-kicker">Janela de entrada</p>
+              <h3>A turma fecha quando o contador zerar.</h3>
+              <p>Você entra, informa seu objetivo e recebe o caminho para iniciar os próximos 21 dias com direção.</p>
+            </div>
+            <CountdownTimer />
+          </div>
+
+          <ul className="rv4-final-includes">
             {heroOfferItems.map((item) => (
               <li key={item}>
                 <Check size={16} />
@@ -745,13 +763,6 @@ export default function Home() {
               </li>
             ))}
           </ul>
-          <a className="rv-button rv-button-primary rv-offer-button cta-primary" href="#inscricao">
-            Quero entrar no desafio agora
-          </a>
-          <footer>
-            <span>🔒 Pagamento 100% seguro via Kiwify</span>
-            <span>Vagas limitadas por turma</span>
-          </footer>
         </div>
       </section>
 

@@ -6924,3 +6924,160 @@ a {
     grid-template-columns: 1fr;
   }
 }
+
+/* Landing V4.4 final offer and separation polish */
+.rv4-final-card {
+  max-width: 1040px;
+  display: grid;
+  grid-template-columns: minmax(280px, 0.9fr) minmax(320px, 1fr);
+  gap: 18px;
+  text-align: left;
+}
+
+.rv4-final-price,
+.rv4-final-urgency,
+.rv4-final-includes {
+  border: 1px solid rgba(226, 191, 95, 0.14);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.035);
+  padding: 22px;
+}
+
+.rv4-final-price {
+  display: grid;
+  align-content: start;
+}
+
+.rv4-final-price .rv-old-price {
+  margin-top: 12px;
+}
+
+.rv4-final-price .rv-offer-button {
+  margin-top: 22px;
+}
+
+.rv4-final-price footer {
+  display: grid;
+  gap: 5px;
+  margin-top: 14px;
+  color: rgba(255, 255, 255, 0.54);
+  font-size: 12px;
+  text-align: center;
+}
+
+.rv4-final-urgency {
+  display: grid;
+  gap: 18px;
+}
+
+.rv4-final-urgency h3 {
+  margin: 0;
+  color: #fff;
+  font-size: 24px;
+  line-height: 1.15;
+}
+
+.rv4-final-urgency p:not(.rv4-kicker) {
+  margin: 10px 0 0;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 14px;
+  line-height: 1.58;
+}
+
+.rv4-final-card .rv-countdown {
+  grid-template-columns: auto repeat(4, minmax(58px, 1fr));
+  align-items: center;
+  gap: 10px;
+  border-color: rgba(226, 191, 95, 0.28);
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 215, 0, 0.12), transparent 34%),
+    rgba(226, 191, 95, 0.065);
+  padding: 14px;
+}
+
+.rv4-final-card .rv-countdown > span {
+  margin: 0;
+  color: var(--rv4-gold-strong);
+  font-size: 11px;
+  white-space: normal;
+}
+
+.rv4-final-card .rv-countdown b {
+  min-width: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  padding-left: 10px;
+}
+
+.rv4-final-card .rv-countdown strong {
+  font-size: 28px;
+}
+
+.rv4-final-card .rv-countdown small {
+  font-size: 9px;
+}
+
+.rv4-final-includes {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px 16px;
+  margin: 0;
+}
+
+.rv4-final-includes li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 9px;
+  align-items: start;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.35;
+}
+
+.rv4-final-includes svg {
+  color: var(--rv4-gold);
+  margin-top: 1px;
+}
+
+.rv4-results-copy .rv4-section-head,
+.rv4-video-head {
+  border-left: 2px solid rgba(226, 191, 95, 0.42);
+  padding-left: 18px;
+}
+
+.rv4-video-head {
+  margin-top: 28px;
+}
+
+.rv4-cloudinary-reel {
+  margin-top: 18px;
+}
+
+@media (max-width: 900px) {
+  .rv4-final-card {
+    grid-template-columns: 1fr;
+  }
+
+  .rv4-final-includes {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .rv4-final-card .rv-countdown {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .rv4-final-card .rv-countdown > span {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 560px) {
+  .rv4-final-includes {
+    grid-template-columns: 1fr;
+  }
+
+  .rv4-final-card .rv-countdown strong {
+    font-size: 24px;
+  }
+}
