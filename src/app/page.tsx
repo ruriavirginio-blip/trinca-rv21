@@ -57,16 +57,16 @@ const heroOfferItems = [
 
 const identityCards = [
   {
-    title: "Você começa forte, mas perde o eixo",
-    text: "O problema não é falta de vontade. É não ter um plano simples o bastante para caber na sua rotina real.",
+    title: "Você começa forte, mas perde o eixo.",
+    text: "A rotina aperta, a energia cai e o plano some antes do corpo responder.",
   },
   {
-    title: "Você troca dieta, treino e promessa",
-    text: "O corpo não responde quando cada semana começa do zero. O RV21 organiza o básico que faz resultado aparecer.",
+    title: "Você troca dieta, treino e promessa.",
+    text: "O corpo não evolui quando toda segunda-feira vira uma tentativa nova.",
   },
   {
-    title: "Você se compara e desanima",
-    text: "Aqui a comparação sai do centro. O foco é recuperar constância, medida, postura e confiança em 21 dias.",
+    title: "Você se compara e desanima.",
+    text: "O RV21 tira a culpa do centro e coloca direção, execução e acompanhamento.",
   },
 ];
 
@@ -522,12 +522,12 @@ export default function Home() {
           <div className="rv4-hero-copy">
             <p className="rv4-kicker">Protocolo RV21 · 21 dias · turma aberta</p>
             <h1>
-              Parar de começar e desistir.
-              <span> Voltar a se sentir forte, confiante e confortável no seu corpo.</span>
+              Pare de começar e desistir.
+              <span> Volte a se reconhecer no espelho.</span>
             </h1>
             <p className="rv4-lead">
-              Um desafio guiado para mulheres que já tentaram dieta, treino, promessa e motivação,
-              mas precisam de direção diária para finalmente sair do ciclo do abandono.
+              Treino, alimentação e acompanhamento diário para mulheres que querem resultado sem depender
+              de motivação perfeita.
             </p>
             <div className="rv4-hero-actions">
               <a className="rv4-primary-link" href="#inscricao">Quero entrar no TRINCA RV21</a>
@@ -539,6 +539,20 @@ export default function Home() {
               <span>Grupo exclusivo de acompanhamento</span>
             </div>
           </div>
+
+          <figure className="rv4-hero-portrait" aria-label="Ruriá Virgínio">
+            <Image
+              src="/images/ruria-rosto-premium.png"
+              alt="Ruriá Virgínio"
+              fill
+              priority
+              sizes="(max-width: 1080px) 92vw, 34vw"
+            />
+            <figcaption>
+              <strong>Ruriá Virgínio</strong>
+              <span>14 anos guiando transformações reais</span>
+            </figcaption>
+          </figure>
 
           <aside className="rv4-offer-card" aria-label="Oferta TRINCA RV21">
             <span className="rv4-card-eyebrow">Sua decisão pelos próximos 21 dias</span>
@@ -562,7 +576,7 @@ export default function Home() {
       <section className="rv4-diagnosis">
         <div className="rv4-section-head">
           <p className="rv4-kicker">O padrão que o RV21 quebra</p>
-          <h2>Você não está sem potencial. Você está sem um protocolo que te segure no processo.</h2>
+          <h2>Você não está sem potencial. Está sem um plano que te mantenha no processo.</h2>
         </div>
         <div className="rv4-identity-grid">
           {identityCards.map((card) => (
@@ -587,10 +601,10 @@ export default function Home() {
       <section className="rv4-method" id="metodo">
         <div className="rv4-method-copy">
           <p className="rv4-kicker">Protocolo, não promessa</p>
-          <h2>O RV21 organiza treino, alimentação e comportamento para você parar de improvisar.</h2>
+          <h2>O RV21 organiza o básico que faz o corpo responder.</h2>
           <p>
-            A transformação não vem de uma semana perfeita. Ela vem de decisões pequenas, repetidas
-            com acompanhamento, clareza e ajuste de rota.
+            Sem dieta maluca. Sem treino impossível. O foco é execução diária com orientação clara,
+            cobrança leve e ajuste de rota.
           </p>
         </div>
         <div className="rv4-method-grid">
@@ -608,7 +622,7 @@ export default function Home() {
       <section className="rv4-results" id="resultados">
         <div className="rv4-section-head align-left">
           <p className="rv4-kicker">Resultados reais</p>
-          <h2>Não é sobre posar para uma foto. É sobre voltar a se reconhecer.</h2>
+          <h2>Elas não precisavam de mais promessa. Precisavam de direção.</h2>
         </div>
 
         <div className="rv4-stat-strip">
@@ -656,7 +670,7 @@ export default function Home() {
           <h2>
             Sou Ruriá Virgínio.
             <br />
-            14 anos transformando mulheres reais, sem discurso de guru.
+            Método direto para mulheres reais.
           </h2>
           <p>
             O TRINCA RV21 nasceu para tirar mulheres do ciclo de tentativa solta:
@@ -676,7 +690,7 @@ export default function Home() {
       <section className="rv4-final-offer" id="oferta">
         <div className="rv4-section-head">
           <p className="rv4-kicker">Entrada imediata</p>
-          <h2>Se você esperar a motivação voltar, pode perder mais uma segunda-feira.</h2>
+          <h2>Comece com direção hoje. O próximo passo é simples.</h2>
         </div>
 
         <div className="rv4-final-card">
