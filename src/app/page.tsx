@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { Check, Lock, Play, X } from "lucide-react";
+import { CountdownTimer } from "@/components/CountdownTimer";
 import {
   gaTrackBeginCheckout,
   gaTrackEvent,
@@ -44,30 +45,31 @@ const proofBadges = ["⭐ +5.000 mulheres", "🔒 Kiwify", "📅 14 anos"];
 const studentVideos = [
   {
     id: "jessica",
-    name: "Jessica, 38 anos",
-    result: "-6kg • -8cm de barriga",
-    quote: "Voltei a gostar de me olhar no espelho",
+    name: "Depoimento Jessica",
+    result: "Vídeo real preservado",
+    quote: "Depoimento em vídeo da aluna.",
     src: "/media/depoimento-jessica.mp4",
     poster: "/images/depoimento-jessica-poster.jpg",
   },
   {
     id: "coletivo",
     name: "Alunas RV",
-    result: "Mais firmeza • mais constância",
-    quote: "Entendi que não era falta de força. Era método.",
+    result: "Depoimentos reais preservados",
+    quote: "Registros em vídeo das alunas.",
     src: "/media/depoimento-coletivo.mp4",
     poster: "/images/depoimento-coletivo-poster.jpg",
   },
   {
     id: "resultado",
-    name: "Fernanda, 41 anos",
-    result: "Medidas reduzidas",
-    quote: "Parei de recomeçar sozinha toda segunda.",
+    name: "Antes/depois real",
+    result: "Imagem real preservada",
+    quote: "Registro visual de resultado.",
     fallbackImage: "/images/antesdepoo.jpg",
   },
 ];
 
 const emotionalPain = [
+  "Você se olha no espelho e não se reconhece.",
   "Você começa animada, mas perde ritmo quando a rotina aperta.",
   "Sente que precisa emagrecer, desinchar e voltar a gostar das fotos.",
   "Já tentou sozinha, mas faltou direção, cobrança e suporte real.",
@@ -240,7 +242,7 @@ function VideoProofCard({
   }
 
   return (
-    <article className="rv-video-card">
+    <article className="rv-video-card result-card fade-in">
       <div className="rv-video-frame">
         {video.src ? (
           <>
@@ -305,6 +307,16 @@ export default function Home() {
 
     const reachedDepths = new Set<number>();
     const depths = [25, 50, 75, 90];
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("visible");
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: "0px 0px -50px 0px" },
+    );
 
     function handleScroll() {
       const scrollable = document.documentElement.scrollHeight - window.innerHeight;
@@ -328,9 +340,13 @@ export default function Home() {
     }
 
     window.addEventListener("scroll", handleScroll, { passive: true });
+    document.querySelectorAll(".fade-in").forEach((element) => observer.observe(element));
     handleScroll();
 
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      observer.disconnect();
+    };
   }, []);
 
   async function handleLeadSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -422,8 +438,8 @@ export default function Home() {
         <a className="rv-nav-cta" href="#inscricao">Garantir vaga →</a>
       </header>
 
-      <section className="rv-hero" id="top">
-        <div className="rv-hero-copy">
+      <section className="rv-hero fade-in" id="top">
+        <div className="rv-hero-copy fade-in">
           <span className="rv-badge">Desafio feminino oficial RV</span>
           <h1>
             21 dias para
@@ -433,7 +449,8 @@ export default function Home() {
             <em>começar e desistir.</em>
           </h1>
           <p>
-            O Protocolo RV que transformou +5.000 mulheres em 14 anos — agora num desafio de 21 dias.
+            O Protocolo RV que transformou +5.000 mulheres em 14 anos.
+            Agora num desafio de 21 dias com treino, dieta e suporte real.
           </p>
 
           <div className="rv-pain-bullets">
@@ -446,9 +463,11 @@ export default function Home() {
           </div>
 
           <div className="rv-hero-actions">
-            <a className="rv-button rv-button-primary" href="#inscricao">Garantir minha vaga agora →</a>
+            <a className="rv-button rv-button-primary cta-primary" href="#inscricao">Quero entrar no TRINCA RV21 →</a>
             <a className="rv-button rv-button-secondary" href="#protocolo">Ver o protocolo ↓</a>
           </div>
+
+          <CountdownTimer />
 
           <div className="rv-proof-badges">
             {proofBadges.map((badge) => (
@@ -457,8 +476,21 @@ export default function Home() {
           </div>
         </div>
 
-        <aside className="rv-price-card">
+        <figure className="rv-hero-photo fade-in" aria-label="Ruriá Virgínio, criador do Protocolo RV">
+          <Image
+            src="/images/hero-ruria.jpg"
+            alt="Ruriá Virgínio"
+            fill
+            priority
+            sizes="(max-width: 980px) 92vw, 31vw"
+            className="rv-hero-image"
+          />
+          <span>🔥 Pré-lançamento</span>
+        </figure>
+
+        <aside className="rv-price-card fade-in">
           <span>Sua decisão pelos próximos 21 dias</span>
+          <del>De R$ 97,00</del>
           <strong>R$ 37,89</strong>
           <small>à vista</small>
           <p>ou 8x de R$ 4,74</p>
@@ -475,12 +507,12 @@ export default function Home() {
             ))}
           </ul>
 
-          <a className="rv-button rv-button-solid" href="#inscricao">Garantir minha vaga agora →</a>
+          <a className="rv-button rv-button-solid cta-primary" href="#inscricao">Quero entrar no TRINCA RV21 →</a>
           <footer>🔒 Preço de lançamento por tempo limitado</footer>
         </aside>
       </section>
 
-      <section className="rv-section rv-video-section" id="resultados">
+      <section className="rv-section rv-video-section fade-in" id="resultados">
         <div className="rv-section-head">
           <span>PROVAS REAIS</span>
           <h2>Elas duvidavam. Hoje agradecem.</h2>
@@ -497,7 +529,9 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="rv-section rv-pain-section">
+      {/* WALL OF PROOF — aguardando screenshots reais de WhatsApp/DM do Ruriá. */}
+
+      <section className="rv-section rv-pain-section fade-in">
         <div>
           <span className="rv-label">VOCÊ NÃO ESTÁ SEM FORÇA</span>
           <h2>
@@ -512,19 +546,19 @@ export default function Home() {
         </div>
         <div className="rv-pain-card-list">
           {emotionalPain.map((item) => (
-            <article key={item}>{item}</article>
+            <article className="fade-in" key={item}>{item}</article>
           ))}
         </div>
       </section>
 
-      <section className="rv-section rv-persona-section">
+      <section className="rv-section rv-persona-section fade-in">
         <div className="rv-section-head">
           <span>DECISÃO COM CLAREZA</span>
           <h2>O TRINCA RV21 é para mulheres que querem estrutura, não mais uma promessa.</h2>
         </div>
         <div className="rv-persona-grid">
           {personas.map((persona) => (
-            <article className="rv-persona-card" key={persona.name}>
+            <article className="rv-persona-card result-card fade-in" key={persona.name}>
               <span>{persona.icon}</span>
               <h3>{persona.name}</h3>
               <strong>{persona.title}</strong>
@@ -534,14 +568,14 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="rv-section rv-protocol-section" id="protocolo">
+      <section className="rv-section rv-protocol-section fade-in" id="protocolo">
         <div className="rv-section-head">
           <span>O MÉTODO RV</span>
           <h2>21 dias com direção real. Não mais tentativas no escuro.</h2>
         </div>
         <div className="rv-timeline">
           {protocolSteps.map((step, index) => (
-            <article className="rv-timeline-item" key={step.title}>
+            <article className="rv-timeline-item fade-in" key={step.title}>
               <span>{index + 1}</span>
               <div>
                 <h3>{step.title}</h3>
@@ -552,7 +586,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="rv-section rv-authority-section">
+      <section className="rv-section rv-authority-section fade-in">
         <div className="rv-authority-photo">
           <Image
             src="/images/ruria.jpg"
@@ -569,8 +603,8 @@ export default function Home() {
           <p className="rv-authority-sub">Personal Trainer • Natal/RN • Criador do Protocolo RV</p>
           <div className="rv-stat-grid">
             {authorityStats.map((stat) => (
-              <article key={stat.label}>
-                <strong>{stat.value}</strong>
+              <article className="fade-in" key={stat.label}>
+                <strong className="stat-number">{stat.value}</strong>
                 <span>{stat.label}</span>
               </article>
             ))}
@@ -583,7 +617,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="rv-section rv-offer-section" id="oferta">
+      <section className="rv-section rv-offer-section fade-in" id="oferta">
         <div className="rv-section-head">
           <span>SUA DECISÃO</span>
           <h2>21 dias. Um protocolo real. O preço de uma pizza.</h2>
@@ -603,7 +637,7 @@ export default function Home() {
               </li>
             ))}
           </ul>
-          <a className="rv-button rv-button-primary rv-offer-button" href="#inscricao">
+          <a className="rv-button rv-button-primary rv-offer-button cta-primary" href="#inscricao">
             Quero entrar no TRINCA RV21 →
           </a>
           <footer>
@@ -613,7 +647,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="rv-section rv-form-section" id="inscricao">
+      <section className="rv-section rv-form-section fade-in" id="inscricao">
         <div className="rv-form-copy">
           <span className="rv-label">INSCRIÇÃO RÁPIDA</span>
           <h2>Escolha seu objetivo e garanta o preço de lançamento.</h2>
@@ -667,8 +701,8 @@ export default function Home() {
             <span>Autorizo receber mensagens sobre inscrição, pagamento e próximos passos pelo WhatsApp e e-mail.</span>
           </label>
           {submitError ? <p className="rv-form-error">{submitError}</p> : null}
-          <button className="rv-button rv-button-primary rv-submit" type="submit" disabled={loading}>
-            {loading ? "Enviando..." : "Garantir minha vaga agora →"}
+          <button className="rv-button rv-button-primary rv-submit cta-primary" type="submit" disabled={loading}>
+            {loading ? "Enviando..." : "Quero entrar no TRINCA RV21 →"}
           </button>
           <small>
             <Lock size={13} />
@@ -677,14 +711,14 @@ export default function Home() {
         </form>
       </section>
 
-      <section className="rv-section rv-faq-section" id="faq">
+      <section className="rv-section rv-faq-section fade-in" id="faq">
         <div className="rv-section-head">
           <span>DÚVIDAS</span>
           <h2>Perguntas antes de entrar.</h2>
         </div>
         <div className="rv-faq-list">
           {faqItems.map((item) => (
-            <details key={item.question}>
+            <details className="fade-in" key={item.question}>
               <summary>{item.question}</summary>
               <p>{item.answer}</p>
             </details>
