@@ -649,14 +649,16 @@
 
 .rv-authority-section {
   display: grid;
-  grid-template-columns: minmax(300px, 0.75fr) minmax(0, 1fr);
-  gap: 52px;
+  grid-template-columns: minmax(0, 400px) minmax(0, 1fr);
+  gap: 60px;
   align-items: center;
 }
 
 .rv-authority-photo {
   position: relative;
-  min-height: 560px;
+  width: 100%;
+  max-width: 400px;
+  aspect-ratio: 4 / 5;
   border-radius: 20px;
   overflow: hidden;
   background: #0f0f14;
@@ -671,8 +673,8 @@
 
 .rv-authority-image {
   object-fit: cover;
+  object-position: top center;
   will-change: transform;
-  transform: scale(1.03);
 }
 
 .rv-authority-photo b {
@@ -942,28 +944,19 @@
 }
 
 .fade-in {
-  opacity: 0;
-  transform: translateY(24px);
-  transition:
-    opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-    transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.fade-in.visible {
-  opacity: 1;
-  transform: translateY(0);
+  animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
 .fade-in:nth-child(2) {
-  transition-delay: 0.1s;
+  animation-delay: 0.1s;
 }
 
 .fade-in:nth-child(3) {
-  transition-delay: 0.2s;
+  animation-delay: 0.2s;
 }
 
 .fade-in:nth-child(4) {
-  transition-delay: 0.3s;
+  animation-delay: 0.3s;
 }
 
 .stat-number {
@@ -1080,7 +1073,7 @@
   }
 
   .rv-authority-photo {
-    min-height: 430px;
+    min-height: 0;
   }
 
   .rv-footer {
@@ -1128,6 +1121,18 @@
 
   100% {
     background-position: -200% center;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 

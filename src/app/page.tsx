@@ -307,16 +307,6 @@ export default function Home() {
 
     const reachedDepths = new Set<number>();
     const depths = [25, 50, 75, 90];
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("visible");
-          }
-        });
-      },
-      { threshold: 0.1, rootMargin: "0px 0px -50px 0px" },
-    );
 
     function handleScroll() {
       const scrollable = document.documentElement.scrollHeight - window.innerHeight;
@@ -340,12 +330,10 @@ export default function Home() {
     }
 
     window.addEventListener("scroll", handleScroll, { passive: true });
-    document.querySelectorAll(".fade-in").forEach((element) => observer.observe(element));
     handleScroll();
 
     return () => {
       window.removeEventListener("scroll", handleScroll);
-      observer.disconnect();
     };
   }, []);
 
