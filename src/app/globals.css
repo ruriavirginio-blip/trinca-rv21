@@ -20,8 +20,8 @@
   --rv-bg: #0a0a0a;
   --rv-card: #111114;
   --rv-elevated: #18181c;
-  --rv-purple: #7c4dff;
-  --rv-purple-soft: #9c6fff;
+  --rv-gold-accent: #FFD700;
+  --rv-gold-soft: #FFE66D;
   --rv-gold: #c9a84c;
   --rv-gold-light: #e8c96a;
   --rv-text: #ffffff;
@@ -55,8 +55,8 @@
   height: 40px;
   display: grid;
   place-items: center;
-  background: #7c4dff;
-  background: linear-gradient(90deg, #7c4dff 0%, #9c6fff 50%, #7c4dff 100%);
+  background: #FFD700;
+  background: linear-gradient(90deg, #FFD700 0%, #FFE66D 50%, #FFD700 100%);
   background-size: 200% 100%;
   color: #fff;
   font-size: 13px;
@@ -130,7 +130,7 @@
   min-height: 100svh;
   padding: 148px 7% 86px;
   background:
-    radial-gradient(circle at 12% 18%, rgba(124, 77, 255, 0.2), transparent 30%),
+    radial-gradient(circle at 12% 18%, rgba(255, 215, 0, 0.2), transparent 30%),
     radial-gradient(circle at 86% 24%, rgba(201, 168, 76, 0.1), transparent 34%),
     #0a0a0a;
 }
@@ -138,10 +138,10 @@
 .rv-badge {
   display: inline-flex;
   width: fit-content;
-  border: 1px solid rgba(124, 77, 255, 0.4);
+  border: 1px solid rgba(255, 215, 0, 0.4);
   border-radius: 100px;
-  background: rgba(124, 77, 255, 0.15);
-  color: #d8ccff;
+  background: rgba(255, 215, 0, 0.15);
+  color: #FFD700;
   padding: 9px 14px;
   font-size: 12px;
   font-weight: 900;
@@ -216,8 +216,8 @@
 }
 
 .rv-button-primary {
-  background: linear-gradient(135deg, #7c4dff, #9c6fff);
-  box-shadow: 0 0 30px rgba(124, 77, 255, 0.4);
+  background: linear-gradient(135deg, #FFD700, #FFE66D);
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
   padding: 18px 32px;
 }
 
@@ -234,7 +234,7 @@
 .rv-button-solid {
   width: 100%;
   height: 52px;
-  background: #7c4dff;
+  background: #FFD700;
   font-size: 16px;
   border-radius: 10px;
 }
@@ -324,7 +324,7 @@
   top: 18px;
   right: 18px;
   border-radius: 100px;
-  background: var(--rv-purple);
+  background: var(--rv-gold-accent);
   color: #fff;
   padding: 7px 14px;
   font-size: 12px;
@@ -339,14 +339,14 @@
   background: #0f0f14;
   border: 1px solid var(--rv-border);
   border-radius: 16px;
-  box-shadow: 0 0 40px rgba(124, 77, 255, 0.12);
+  box-shadow: 0 0 40px rgba(255, 215, 0, 0.12);
 }
 
 .rv-price-card {
-  border-color: rgba(124, 77, 255, 0.2);
+  border-color: rgba(255, 215, 0, 0.2);
   border-radius: 20px;
   padding: 28px;
-  box-shadow: 0 0 60px rgba(124, 77, 255, 0.15);
+  box-shadow: 0 0 60px rgba(255, 215, 0, 0.15);
 }
 
 .rv-price-card del {
@@ -552,7 +552,7 @@
 }
 
 .rv-pain-card-list article {
-  border-left: 3px solid #7c4dff;
+  border-left: 3px solid #FFD700;
   border-radius: 0 12px 12px 0;
   background: #0f0f14;
   padding: 20px;
@@ -607,7 +607,7 @@
   top: 12px;
   bottom: 12px;
   width: 2px;
-  background: #7c4dff;
+  background: #FFD700;
 }
 
 .rv-timeline-item {
@@ -624,7 +624,7 @@
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: #7c4dff;
+  background: #FFD700;
   color: #fff;
   font-weight: 900;
 }
@@ -719,8 +719,8 @@
 }
 
 .rv-offer-section {
-  border-top: 1px solid rgba(124, 77, 255, 0.2);
-  background: radial-gradient(ellipse at center, rgba(124, 77, 255, 0.08) 0%, transparent 70%), #07070a;
+  border-top: 1px solid rgba(255, 215, 0, 0.2);
+  background: radial-gradient(ellipse at center, rgba(255, 215, 0, 0.08) 0%, transparent 70%), #07070a;
 }
 
 .rv-final-offer-card {
@@ -803,7 +803,7 @@
 }
 
 .rv-lead-form input:focus {
-  border-color: rgba(124, 77, 255, 0.65);
+  border-color: rgba(255, 215, 0, 0.65);
 }
 
 .rv-lead-form fieldset {
@@ -843,8 +843,8 @@
 }
 
 .rv-objectives input:checked + span {
-  border-color: #7c4dff;
-  background: rgba(124, 77, 255, 0.18);
+  border-color: #FFD700;
+  background: rgba(255, 215, 0, 0.18);
 }
 
 .rv-consent {
@@ -1094,11 +1094,11 @@
 @keyframes cta-pulse {
   0%,
   100% {
-    box-shadow: 0 0 25px rgba(124, 77, 255, 0.3);
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.3);
   }
 
   50% {
-    box-shadow: 0 0 45px rgba(124, 77, 255, 0.55);
+    box-shadow: 0 0 45px rgba(255, 215, 0, 0.55);
   }
 }
 
@@ -1372,9 +1372,9 @@ a {
 }
 
 .button-primary {
-  background: #7c4dff;
+  background: #FFD700;
   color: #fff;
-  box-shadow: 0 16px 34px rgba(124, 77, 255, 0.28);
+  box-shadow: 0 16px 34px rgba(255, 215, 0, 0.28);
 }
 
 .button-primary:hover {
@@ -1421,7 +1421,7 @@ a {
   position: relative;
   width: min(560px, 100%);
   aspect-ratio: 16 / 9;
-  border: 1px solid rgba(124, 77, 255, 0.52);
+  border: 1px solid rgba(255, 215, 0, 0.52);
   border-radius: 8px;
   background: #080806;
   margin-top: 26px;
@@ -1460,7 +1460,7 @@ a {
 .hero-video-overlay span {
   width: fit-content;
   border-radius: 999px;
-  background: rgba(124, 77, 255, 0.9);
+  background: rgba(255, 215, 0, 0.9);
   color: #fff;
   padding: 6px 10px;
   font-size: 11px;
@@ -1919,7 +1919,7 @@ a {
 
 .proof-gallery-section {
   background:
-    linear-gradient(180deg, rgba(124, 77, 255, 0.08), transparent 320px),
+    linear-gradient(180deg, rgba(255, 215, 0, 0.08), transparent 320px),
     var(--bg-soft);
 }
 
@@ -4869,5 +4869,294 @@ a {
   .rv-section {
     padding-left: 16px;
     padding-right: 16px;
+  }
+}
+
+/* Landing V3 definitiva */
+.rv-hero {
+  align-items: center;
+  background: #0a0a0a;
+  display: grid;
+  isolation: isolate;
+  margin: 0;
+  max-width: none;
+  min-height: calc(100vh - 70px);
+  overflow: hidden;
+  padding: clamp(58px, 8vw, 104px) clamp(18px, 6vw, 86px);
+  position: relative;
+}
+
+.rv-hero::before {
+  background-image: url("https://res.cloudinary.com/drfs4s18a/image/upload/v1781613465/trinca-rv21/ruria-hero.jpg");
+  background-position: center top;
+  background-size: cover;
+  content: "";
+  filter: brightness(1.15) contrast(1.05);
+  inset: 0;
+  position: absolute;
+  z-index: -2;
+}
+
+.rv-hero::after {
+  background: linear-gradient(
+    to right,
+    rgba(10, 10, 10, 0.92) 0%,
+    rgba(10, 10, 10, 0.7) 50%,
+    rgba(10, 10, 10, 0.1) 100%
+  );
+  content: "";
+  inset: 0;
+  position: absolute;
+  z-index: -1;
+}
+
+.rv-hero-copy {
+  max-width: 680px;
+}
+
+.rv-hero .rv-badge,
+.rv-hero h1,
+.rv-hero-copy > p,
+.rv-hero .rv-price-card {
+  animation: fadeUp 0.5s ease both;
+}
+
+.rv-hero .rv-badge {
+  animation-delay: 0.05s;
+}
+
+.rv-hero h1 {
+  animation-delay: 0.15s;
+}
+
+.rv-hero-copy > p {
+  animation-delay: 0.25s;
+}
+
+.rv-hero .rv-price-card {
+  animation-delay: 0.35s;
+}
+
+.rv-hero .rv-price-card {
+  max-width: 430px;
+}
+
+.rv-price-card small,
+.rv-final-offer-card small {
+  color: rgba(255, 255, 255, 0.5);
+  display: block;
+  font-size: 12px;
+}
+
+.rv-price-card strong,
+.rv-final-offer-card > strong {
+  font-size: clamp(38px, 7vw, 56px);
+}
+
+.rv-button-primary,
+.rv-submit,
+.rv-offer-button {
+  animation: ctaPulse 3s ease infinite;
+}
+
+.rv-video-grid {
+  gap: 18px;
+  grid-template-columns: 1fr;
+  max-width: 980px;
+}
+
+.rv-video-card {
+  background: linear-gradient(180deg, rgba(255, 215, 0, 0.08), #141414 42%);
+  border-color: rgba(255, 215, 0, 0.16);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.45);
+}
+
+.rv-video-frame {
+  aspect-ratio: 16 / 10;
+}
+
+.rv-video-info {
+  padding: 18px;
+}
+
+.rv-video-info span {
+  border: 1px solid rgba(255, 215, 0, 0.25);
+  border-radius: 999px;
+  color: var(--rv-gold);
+  font-size: 11px;
+  justify-self: start;
+  padding: 6px 9px;
+}
+
+.rv-play-button {
+  animation: playPulse 2.2s ease infinite;
+  box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.34);
+}
+
+.rv-masonry-grid {
+  column-count: 2;
+  column-gap: 16px;
+  max-width: 1280px;
+}
+
+.rv-transform-card {
+  background: #141414;
+  border: 1px solid rgba(255, 215, 0, 0.08);
+  border-radius: 16px;
+  break-inside: avoid;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  display: block;
+  margin: 0 0 16px;
+  opacity: 0;
+  overflow: hidden;
+  position: relative;
+  transform: translateY(22px);
+  transition: opacity 0.5s ease, transform 0.5s ease, border-color 0.3s ease;
+}
+
+.rv-transform-card::before {
+  background: linear-gradient(90deg, transparent, var(--rv-gold), transparent);
+  content: "";
+  height: 2px;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+  z-index: 3;
+}
+
+.rv-transform-card.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.rv-transform-card:hover {
+  border-color: rgba(255, 215, 0, 0.35);
+}
+
+.rv-transform-card:hover::before {
+  transform: scaleX(1);
+}
+
+.rv-transform-card img {
+  border-radius: 0;
+  box-shadow: none;
+  display: block;
+  height: auto;
+  margin: 0;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+  width: 100%;
+}
+
+.rv-transform-card:hover img {
+  transform: scale(1.02);
+}
+
+.rv-transform-number {
+  background: rgba(10, 10, 10, 0.72);
+  border: 1px solid rgba(255, 215, 0, 0.22);
+  border-radius: 999px;
+  color: var(--rv-gold);
+  font-size: 11px;
+  font-weight: 900;
+  padding: 6px 8px;
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  z-index: 2;
+}
+
+.rv-transform-overlay {
+  align-items: end;
+  background: linear-gradient(to top, rgba(10, 10, 10, 0.84), rgba(10, 10, 10, 0));
+  display: flex;
+  gap: 8px;
+  inset: 0;
+  opacity: 0;
+  padding: 14px;
+  position: absolute;
+  transition: opacity 0.3s ease;
+  z-index: 1;
+}
+
+.rv-transform-card:hover .rv-transform-overlay {
+  opacity: 1;
+}
+
+.rv-transform-overlay span {
+  background: rgba(10, 10, 10, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 10px;
+  font-weight: 900;
+  padding: 6px 8px;
+}
+
+.rv-transform-overlay span:last-child {
+  border-color: rgba(255, 215, 0, 0.32);
+  color: var(--rv-gold);
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ctaPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 26px rgba(255, 215, 0, 0.18);
+  }
+
+  50% {
+    box-shadow: 0 0 48px rgba(255, 215, 0, 0.34);
+  }
+}
+
+@keyframes playPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.34);
+  }
+
+  50% {
+    box-shadow: 0 0 0 18px rgba(255, 215, 0, 0);
+  }
+}
+
+@media (min-width: 760px) {
+  .rv-hero {
+    grid-template-columns: minmax(0, 0.8fr) minmax(330px, 430px);
+  }
+
+  .rv-video-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .rv-masonry-grid {
+    column-count: 4;
+  }
+}
+
+@media (max-width: 760px) {
+  .rv-hero::after {
+    background: linear-gradient(
+      to bottom,
+      rgba(10, 10, 10, 0.88) 0%,
+      rgba(10, 10, 10, 0.72) 52%,
+      rgba(10, 10, 10, 0.52) 100%
+    );
   }
 }

@@ -31,10 +31,11 @@ type Lead = {
   email: string | null;
   whatsapp: string | null;
   objetivo: string | null;
+  origem: string | null;
   status: string | null;
-  utm_source: string | null;
+  utm: string | null;
+  capturado_em: string | null;
   created_at: string;
-  updated_at: string | null;
 };
 
 type CommentLead = {
@@ -344,9 +345,7 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
   const metrics = useMemo(() => {
     const start = todayStart();
     const leadsToday = leads.filter((lead) => new Date(lead.created_at) >= start);
-    const salesToday = leads.filter(
-      (lead) => lead.status === "compra-aprovada" && lead.updated_at && new Date(lead.updated_at) >= start,
-    );
+    const salesToday = leads.filter((lead) => lead.status === "compra-aprovada" && new Date(lead.created_at) >= start);
     const revenueToday = salesToday.length * saleValue;
     const conversion = leadsToday.length ? (salesToday.length / leadsToday.length) * 100 : 0;
     const fixedCosts = GASTOS.reduce((sum, item) => sum + item.valor, 0);
@@ -384,7 +383,7 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
         await Promise.all([
           supabase
             .from("leads")
-            .select("id,nome,email,whatsapp,objetivo,status,utm_source,created_at,updated_at")
+            .select("id,nome,email,whatsapp,objetivo,origem,status,utm,capturado_em,created_at")
             .order("created_at", { ascending: false })
             .limit(250),
           supabase
@@ -677,7 +676,7 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
           >
             <MetricGrid
               items={[
-                { label: "Leads hoje", value: String(metrics.leadsToday.length), tone: "purple" },
+                { label: "Leads hoje", value: String(metrics.leadsToday.length), tone: "gold" },
                 { label: "Vendas hoje", value: String(metrics.salesToday.length), tone: "green" },
                 { label: "Faturamento", value: currency(metrics.revenueToday), tone: "yellow" },
                 { label: "WhatsApp", value: String(metrics.whatsappLeads), tone: "green" },
@@ -706,7 +705,7 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
           <DashboardSection title="Vendas" description="Conversão, receita e projeção do dia." loading={loading}>
             <MetricGrid
               items={[
-                { label: "Conversão", value: `${metrics.conversion.toFixed(1)}%`, tone: "purple" },
+                { label: "Conversão", value: `${metrics.conversion.toFixed(1)}%`, tone: "gold" },
                 { label: "Vendas", value: String(metrics.salesToday.length), tone: "green" },
                 { label: "Ticket", value: currency(saleValue), tone: "yellow" },
                 { label: "Receita", value: currency(metrics.revenueToday), tone: "green" },
@@ -844,7 +843,7 @@ function DashboardSection({
 function MetricGrid({
   items,
 }: {
-  items: Array<{ label: string; value: string; tone: "purple" | "green" | "red" | "yellow" }>;
+  items: Array<{ label: string; value: string; tone: "gold" | "green" | "red" | "yellow" }>;
 }) {
   return (
     <div className="metric-grid">
@@ -1115,7 +1114,8 @@ function LeadList({ leads, commentLeads }: { leads: Lead[]; commentLeads: Commen
           <div>
             <strong>{lead.nome || lead.email || "Lead sem nome"}</strong>
             <span>
-              {lead.utm_source || "origem direta"} · {lead.objetivo || "sem objetivo"} · {dateLabel(lead.created_at)}
+              {lead.origem || "origem direta"} · {lead.objetivo || "sem objetivo"} ·{" "}
+              {dateLabel(lead.created_at || lead.capturado_em || new Date().toISOString())}
             </span>
           </div>
           <b>{lead.status || "novo"}</b>
@@ -1173,15 +1173,15 @@ function CockpitStyles() {
         width: 54px;
         height: 54px;
         border-radius: 16px;
-        background: rgba(124, 77, 255, 0.18);
-        color: #7c4dff;
+        background: rgba(255, 215, 0, 0.18);
+        color: #FFD700;
         display: grid;
         place-items: center;
         margin-bottom: 18px;
       }
 
       .eyebrow {
-        color: #7c4dff;
+        color: #FFD700;
         font-size: 11px;
         font-weight: 800;
         letter-spacing: 0.14em;
@@ -1213,7 +1213,7 @@ function CockpitStyles() {
       .icon-btn {
         border: 0;
         border-radius: 14px;
-        background: #7c4dff;
+        background: #FFD700;
         color: #fff;
         cursor: pointer;
         font: inherit;
@@ -1288,8 +1288,8 @@ function CockpitStyles() {
         margin-top: 12px;
       }
 
-      .metric.purple strong {
-        color: #7c4dff;
+      .metric.gold strong {
+        color: #FFD700;
       }
 
       .metric.green strong {
@@ -1335,7 +1335,7 @@ function CockpitStyles() {
       .progress span {
         display: block;
         height: 100%;
-        background: linear-gradient(90deg, #7c4dff, #00e676);
+        background: linear-gradient(90deg, #FFD700, #00e676);
       }
 
       .list {
@@ -1367,7 +1367,7 @@ function CockpitStyles() {
       }
 
       .list-row.comment b {
-        color: #7c4dff;
+        color: #FFD700;
       }
 
       .content-calendar {
@@ -1481,8 +1481,8 @@ function CockpitStyles() {
 
       .content-sync-card {
         align-items: center;
-        background: rgba(124, 77, 255, 0.1);
-        border: 1px solid rgba(124, 77, 255, 0.24);
+        background: rgba(255, 215, 0, 0.1);
+        border: 1px solid rgba(255, 215, 0, 0.24);
         border-radius: 14px;
         color: rgba(255, 255, 255, 0.72);
         display: flex;
@@ -1559,10 +1559,10 @@ function CockpitStyles() {
       }
 
       .day-pill {
-        background: rgba(124, 77, 255, 0.18);
-        border: 1px solid rgba(124, 77, 255, 0.32);
+        background: rgba(255, 215, 0, 0.18);
+        border: 1px solid rgba(255, 215, 0, 0.32);
         border-radius: 12px;
-        color: #b9a4ff;
+        color: #FFD700;
         font-weight: 900;
         padding: 10px 9px;
       }
@@ -1582,9 +1582,9 @@ function CockpitStyles() {
       .script-toggle {
         grid-column: 2 / -1;
         width: fit-content;
-        border: 1px solid rgba(124, 77, 255, 0.34);
+        border: 1px solid rgba(255, 215, 0, 0.34);
         border-radius: 999px;
-        background: rgba(124, 77, 255, 0.16);
+        background: rgba(255, 215, 0, 0.16);
         color: #fff;
         cursor: pointer;
         font: inherit;
@@ -1616,8 +1616,8 @@ function CockpitStyles() {
 
       .secondary-action {
         align-items: center;
-        background: rgba(124, 77, 255, 0.16);
-        border: 1px solid rgba(124, 77, 255, 0.3);
+        background: rgba(255, 215, 0, 0.16);
+        border: 1px solid rgba(255, 215, 0, 0.3);
         border-radius: 12px;
         color: #fff;
         cursor: pointer;
@@ -1724,7 +1724,7 @@ function CockpitStyles() {
       }
 
       .bottom-nav button.active {
-        background: rgba(124, 77, 255, 0.18);
+        background: rgba(255, 215, 0, 0.18);
         color: #fff;
       }
 

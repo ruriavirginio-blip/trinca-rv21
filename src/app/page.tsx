@@ -51,6 +51,16 @@ const proofStats = [
   { value: 10, suffix: "+", prefix: "", label: "de atuação", display: "+10 países" },
 ];
 
+type StudentVideo = {
+  fallbackImage?: string;
+  id: string;
+  name: string;
+  poster?: string;
+  quote: string;
+  result: string;
+  src?: string;
+};
+
 const transformationImages = [
   "/images/antesdepois.jpg",
   "/images/antesdepoiss.jpg",
@@ -68,11 +78,11 @@ const transformationImages = [
   "/images/aluna-3.jpg",
 ];
 
-const studentVideos = [
+const studentVideos: StudentVideo[] = [
   {
     id: "jessica",
     name: "Depoimento Jessica",
-    result: "Vídeo real preservado",
+    result: "DEPOIMENTO REAL",
     quote: "Depoimento em vídeo da aluna.",
     src: "/media/depoimento-jessica.mp4",
     poster: "/images/depoimento-jessica-poster.jpg",
@@ -80,17 +90,10 @@ const studentVideos = [
   {
     id: "coletivo",
     name: "Alunas RV",
-    result: "Depoimentos reais preservados",
+    result: "ANTES & DEPOIS",
     quote: "Registros em vídeo das alunas.",
     src: "/media/depoimento-coletivo.mp4",
     poster: "/images/depoimento-coletivo-poster.jpg",
-  },
-  {
-    id: "resultado",
-    name: "Antes/depois real",
-    result: "Imagem real preservada",
-    quote: "Registro visual de resultado.",
-    fallbackImage: "/images/antesdepoo.jpg",
   },
 ];
 
@@ -202,7 +205,7 @@ function VideoProofCard({
   isPlaying,
   onPlay,
 }: {
-  video: (typeof studentVideos)[number];
+  video: StudentVideo;
   isPlaying: boolean;
   onPlay: () => void;
 }) {
@@ -362,6 +365,29 @@ export default function Home() {
     };
   }, []);
 
+  useEffect(() => {
+    const cards = Array.from(document.querySelectorAll<HTMLElement>(".rv-transform-card"));
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+
+          const element = entry.target as HTMLElement;
+          const delay = Number(element.dataset.index || 0) * 80;
+          window.setTimeout(() => {
+            element.classList.add("is-visible");
+          }, delay);
+          observer.unobserve(element);
+        });
+      },
+      { threshold: 0.18 },
+    );
+
+    cards.forEach((card) => observer.observe(card));
+
+    return () => observer.disconnect();
+  }, []);
+
   async function handleLeadSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
@@ -460,23 +486,13 @@ export default function Home() {
           <p>
             Em 21 dias, com o Protocolo RV, você finalmente tem direção — não promessa.
           </p>
-
-          <figure className="rv-hero-photo" aria-label="Ruriá Virgínio, criador do Protocolo RV">
-            <Image
-              src="/images/hero-ruria.jpg"
-              alt="Ruriá Virgínio"
-              fill
-              priority
-              sizes="(max-width: 980px) 92vw, 480px"
-              className="rv-hero-image"
-            />
-          </figure>
         </div>
 
         <aside className="rv-price-card">
           <del>De R$ 97,00</del>
-          <strong>R$ 37,89</strong>
-          <p>ou 8x de R$ 4,74</p>
+          <strong>8x de R$ 5,51</strong>
+          <p>R$ 37,89 à vista</p>
+          <small>Parcelamento sujeito a acréscimos da Kiwify</small>
           <a className="rv-button rv-button-primary cta-primary" href="#inscricao">Quero entrar no desafio agora</a>
           <footer>🔒 Pagamento seguro · Acesso imediato</footer>
         </aside>
@@ -539,15 +555,21 @@ export default function Home() {
 
         <div className="rv-masonry-grid" aria-label="Transformações reais de alunas">
           {transformationImages.map((src, index) => (
-            <Image
-              key={src}
-              src={src}
-              alt={`Transformação real TRINCA RV21 ${index + 1}`}
-              width={520}
-              height={index % 3 === 0 ? 740 : index % 3 === 1 ? 620 : 680}
-              sizes="(max-width: 720px) 46vw, 30vw"
-              loading="lazy"
-            />
+            <article className="rv-transform-card" data-index={index} key={src}>
+              <span className="rv-transform-number">{String(index + 1).padStart(2, "0")}</span>
+              <Image
+                src={src}
+                alt={`Transformação real TRINCA RV21 ${index + 1}`}
+                width={520}
+                height={index % 3 === 0 ? 740 : index % 3 === 1 ? 620 : 680}
+                sizes="(max-width: 720px) 46vw, 24vw"
+                loading="lazy"
+              />
+              <div className="rv-transform-overlay">
+                <span>ANTES</span>
+                <span>DEPOIS</span>
+              </div>
+            </article>
           ))}
         </div>
 
@@ -592,8 +614,9 @@ export default function Home() {
         <div className="rv-final-offer-card">
           <h3>TRINCA RV21</h3>
           <span className="rv-old-price">De R$ 97,00</span>
-          <strong>R$ 37,89</strong>
-          <p>ou 8x de R$ 4,74</p>
+          <strong>8x de R$ 5,51</strong>
+          <p>R$ 37,89 à vista</p>
+          <small>Parcelamento sujeito a acréscimos da Kiwify</small>
           <CountdownTimer />
           <ul>
             {includedItems.map((item) => (
