@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 const targetDate = new Date("2026-06-23T00:00:00");
+const initialTime = { d: 0, h: 0, m: 0, s: 0 };
 
 function getRemainingTime() {
   const diff = Math.max(0, targetDate.getTime() - Date.now());
@@ -16,19 +17,26 @@ function getRemainingTime() {
 }
 
 export function CountdownTimer() {
-  const [time, setTime] = useState(getRemainingTime);
+  const [time, setTime] = useState(initialTime);
 
   useEffect(() => {
+    const firstTickId = window.setTimeout(() => {
+      setTime(getRemainingTime());
+    }, 0);
+
     const intervalId = window.setInterval(() => {
       setTime(getRemainingTime());
     }, 1000);
 
-    return () => window.clearInterval(intervalId);
+    return () => {
+      window.clearTimeout(firstTickId);
+      window.clearInterval(intervalId);
+    };
   }, []);
 
   return (
-    <div className="rv-countdown" aria-label="Contagem regressiva para o lançamento em 23 de junho de 2026">
-      <span>⏱ Lançamento em:</span>
+    <div className="rv-countdown" aria-label="Contagem regressiva para 23 de junho de 2026">
+      <span>⏱ Encerra em:</span>
       {[
         [time.d, "dias"],
         [time.h, "horas"],

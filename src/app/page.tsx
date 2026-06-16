@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { Check, Lock, Play, X } from "lucide-react";
+import { Check, Lock, Play } from "lucide-react";
 import { CountdownTimer } from "@/components/CountdownTimer";
 import {
   gaTrackBeginCheckout,
@@ -26,21 +26,47 @@ const CHECKOUT_URL = process.env.NEXT_PUBLIC_KIWIFY_CHECKOUT_URL || WHATSAPP_URL
 const PRODUCT_PRICE = 37.89;
 
 const includedItems = [
-  "Treinos direcionados para 21 dias",
-  "Dieta específica por objetivo (nutricionista)",
-  "Grupo exclusivo com direcionamento",
-  "Check-ins para manter constância",
-  "Ebook RV + Ebook Nutricional",
-  "Cupom 50% pós-desafio (TRINCA PREMIUM)",
+  "Treinos progressivos adaptados ao seu nível",
+  "Alimentação com estrutura, sem dieta maluca",
+  "Acompanhamento diário via grupo exclusivo",
+  "Análise comportamental individualizada",
 ];
 
-const painBullets = [
-  "Tentou várias dietas e nenhuma funcionou",
-  "Começa motivada e para na primeira semana",
-  "Quer resultado mas não quer sofrimento",
+const painCards = [
+  "😔 Começa segunda animada, na quarta some",
+  "😩 Já tentou tudo e nada durou mais de 2 semanas",
+  "😤 Se olha no espelho e não reconhece mais seu corpo",
 ];
 
-const proofBadges = ["⭐ +5.000 mulheres", "🔒 Kiwify", "📅 14 anos"];
+const methodItems = [
+  "Treinos progressivos adaptados ao seu nível",
+  "Alimentação com estrutura (sem dieta maluca)",
+  "Acompanhamento diário via grupo exclusivo",
+  "Análise comportamental individualizada (só no RV)",
+];
+
+const proofStats = [
+  { value: 5000, suffix: "+", prefix: "", label: "mulheres transformadas", display: "+5.000" },
+  { value: 14, suffix: " anos", prefix: "", label: "de experiência", display: "14 anos" },
+  { value: 10, suffix: "+", prefix: "", label: "de atuação", display: "+10 países" },
+];
+
+const transformationImages = [
+  "/images/antesdepois.jpg",
+  "/images/antesdepoiss.jpg",
+  "/images/antesdepoisss.jpg",
+  "/images/antesdepoissss.jpg",
+  "/images/antesdepoissssss.jpg",
+  "/images/antesdepo.jpg",
+  "/images/antesdepoi.jpg",
+  "/images/antesdepoii.jpg",
+  "/images/antesdepoiii.jpg",
+  "/images/antesdepoiiii.jpg",
+  "/images/antesdepoo.jpg",
+  "/images/aluna-1.jpg",
+  "/images/aluna-2.jpg",
+  "/images/aluna-3.jpg",
+];
 
 const studentVideos = [
   {
@@ -68,65 +94,11 @@ const studentVideos = [
   },
 ];
 
-const emotionalPain = [
-  "Você se olha no espelho e não se reconhece.",
-  "Você começa animada, mas perde ritmo quando a rotina aperta.",
-  "Sente que precisa emagrecer, desinchar e voltar a gostar das fotos.",
-  "Já tentou sozinha, mas faltou direção, cobrança e suporte real.",
-  "Quer resultado, mas não quer um plano impossível de seguir.",
-  "Sente vergonha de como está e evita espelhos e fotos.",
-  "Já perdeu a conta de quantas segundas-feiras você recomeçou.",
-];
-
-const personas = [
-  {
-    icon: "🎯",
-    name: "RENATA",
-    title: "Iniciante Frustrada",
-    text: "Já tentou de tudo. Quer protocolo real, com suporte, que respeite sua rotina.",
-  },
-  {
-    icon: "💎",
-    name: "RAYANE",
-    title: "Premium Aspiracional",
-    text: "Sabe o que quer. Busca método sério, resultado estético visível e exclusividade.",
-  },
-  {
-    icon: "⚡",
-    name: "GUERREIRA",
-    title: "Sedentária que Decidiu",
-    text: "Saiu do zero. Precisa de estrutura simples, motivação e alguém que acredite nela.",
-  },
-];
-
-const protocolSteps = [
-  {
-    title: "Você se inscreve e escolhe seu objetivo",
-    text: "Perder barriga, definir glúteos ou emagrecimento geral — você decide o foco.",
-  },
-  {
-    title: "Recebe boas-vindas + vídeo pessoal do Ruriá",
-    text: "Não é automação fria. É direcionamento personalizado desde o primeiro momento.",
-  },
-  {
-    title: "Dieta específica por nutricionista",
-    text: "Elaborada para o SEU objetivo. Não genérica. Não impossível.",
-  },
-  {
-    title: "Treinos + Ebooks + suporte no grupo",
-    text: "21 dias com estrutura diária. Você só precisa aparecer.",
-  },
-  {
-    title: "Você conclui e recebe cupom 50%",
-    text: "Para continuar na sistematização completa com desconto exclusivo.",
-  },
-];
-
-const authorityStats = [
-  { value: "+5.000", label: "mulheres transformadas" },
-  { value: "14 anos", label: "de experiência" },
-  { value: "+10", label: "países de alcance" },
-  { value: "21 dias", label: "de resultado comprovado" },
+const authorityBullets = [
+  "Personal trainer certificado",
+  "+5.000 alunas em mais de 10 países",
+  "Criador do PROTOCOLO RV (método exclusivo)",
+  "Especialista em transformação estética feminina",
 ];
 
 const faqItems = [
@@ -280,6 +252,59 @@ function VideoProofCard({
   );
 }
 
+function CountUpStat({ stat }: { stat: (typeof proofStats)[number] }) {
+  const [count, setCount] = useState(0);
+  const [started, setStarted] = useState(false);
+  const statRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const element = statRef.current;
+    if (!element || started) return undefined;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting) return;
+
+        setStarted(true);
+        const duration = 1100;
+        const start = performance.now();
+
+        function frame(now: number) {
+          const progress = Math.min((now - start) / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          setCount(Math.round(stat.value * eased));
+
+          if (progress < 1) {
+            window.requestAnimationFrame(frame);
+          }
+        }
+
+        window.requestAnimationFrame(frame);
+        observer.disconnect();
+      },
+      { threshold: 0.4 },
+    );
+
+    observer.observe(element);
+
+    return () => observer.disconnect();
+  }, [started, stat.value]);
+
+  const value =
+    stat.value >= 1000
+      ? `+${new Intl.NumberFormat("pt-BR").format(count)}`
+      : stat.display.includes("países")
+        ? `+${count} países`
+        : `${count}${stat.suffix}`;
+
+  return (
+    <article ref={statRef}>
+      <strong>{started ? value : stat.display}</strong>
+      <span>{stat.label}</span>
+    </article>
+  );
+}
+
 export default function Home() {
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState("");
@@ -411,100 +436,96 @@ export default function Home() {
 
   return (
     <main className="rv-page">
-      <div className="rv-announcement">
-        <span>🔥 Pré-lançamento • Inscrições abertas • Preço de lançamento por tempo limitado</span>
-      </div>
-
       <header className="rv-nav">
         <a className="rv-logo" href="#top">TRINCA RV21</a>
         <nav aria-label="Navegação principal">
-          <a href="#protocolo">Protocolo</a>
+          <a href="#metodo">Método</a>
           <a href="#resultados">Resultados</a>
           <a href="#oferta">Oferta</a>
           <a href="#faq">Dúvidas</a>
         </nav>
-        <a className="rv-nav-cta" href="#inscricao">Garantir vaga →</a>
+        <a className="rv-nav-cta" href="#inscricao">Entrar agora</a>
       </header>
 
-      <section className="rv-hero fade-in" id="top">
-        <div className="rv-hero-copy fade-in">
-          <span className="rv-badge">Desafio feminino oficial RV</span>
+      <section className="rv-hero" id="top">
+        <div className="rv-hero-copy">
+          <span className="rv-badge">✦ 14 anos · +5.000 mulheres transformadas</span>
           <h1>
-            21 dias para
+            Você não falhou.
             <br />
-            sair do ciclo de
+            O método falhou
             <br />
-            <em>começar e desistir.</em>
+            por você.
           </h1>
           <p>
-            O Protocolo RV que transformou +5.000 mulheres em 14 anos.
-            Agora num desafio de 21 dias com treino, dieta e suporte real.
+            Em 21 dias, com o Protocolo RV, você finalmente tem direção — não promessa.
           </p>
 
-          <div className="rv-pain-bullets">
-            {painBullets.map((item) => (
-              <span key={item}>
-                <X size={16} />
-                {item}
-              </span>
-            ))}
-          </div>
-
-          <div className="rv-hero-actions">
-            <a className="rv-button rv-button-primary cta-primary" href="#inscricao">Quero entrar no TRINCA RV21 →</a>
-            <a className="rv-button rv-button-secondary" href="#protocolo">Ver o protocolo ↓</a>
-          </div>
-
-          <CountdownTimer />
-
-          <div className="rv-proof-badges">
-            {proofBadges.map((badge) => (
-              <span key={badge}>{badge}</span>
-            ))}
-          </div>
+          <figure className="rv-hero-photo" aria-label="Ruriá Virgínio, criador do Protocolo RV">
+            <Image
+              src="/images/hero-ruria.jpg"
+              alt="Ruriá Virgínio"
+              fill
+              priority
+              sizes="(max-width: 980px) 92vw, 480px"
+              className="rv-hero-image"
+            />
+          </figure>
         </div>
 
-        <figure className="rv-hero-photo fade-in" aria-label="Ruriá Virgínio, criador do Protocolo RV">
-          <Image
-            src="/images/hero-ruria.jpg"
-            alt="Ruriá Virgínio"
-            fill
-            priority
-            sizes="(max-width: 980px) 92vw, 31vw"
-            className="rv-hero-image"
-          />
-          <span>🔥 Pré-lançamento</span>
-        </figure>
-
-        <aside className="rv-price-card fade-in">
-          <span>Sua decisão pelos próximos 21 dias</span>
+        <aside className="rv-price-card">
           <del>De R$ 97,00</del>
           <strong>R$ 37,89</strong>
-          <small>à vista</small>
           <p>ou 8x de R$ 4,74</p>
-          <small>Parcelamento sujeito a acréscimos Kiwify</small>
-
-          <div className="rv-card-divider" />
-
-          <ul>
-            {includedItems.map((item) => (
-              <li key={item}>
-                <Check size={16} />
-                {item}
-              </li>
-            ))}
-          </ul>
-
-          <a className="rv-button rv-button-solid cta-primary" href="#inscricao">Quero entrar no TRINCA RV21 →</a>
-          <footer>🔒 Preço de lançamento por tempo limitado</footer>
+          <a className="rv-button rv-button-primary cta-primary" href="#inscricao">Quero entrar no desafio agora</a>
+          <footer>🔒 Pagamento seguro · Acesso imediato</footer>
         </aside>
       </section>
 
-      <section className="rv-section rv-video-section fade-in" id="resultados">
+      <section className="rv-section rv-pain-section">
         <div className="rv-section-head">
-          <span>PROVAS REAIS</span>
+          <h2>Você se identifica com isso?</h2>
+        </div>
+        <div className="rv-pain-grid">
+          {painCards.map((item) => (
+            <article key={item}>{item}</article>
+          ))}
+        </div>
+        <p className="rv-center-copy">
+          Se você marcou sim pra qualquer um desses — o TRINCA RV21 foi feito pra você.
+        </p>
+      </section>
+
+      <section className="rv-section rv-method-section" id="metodo">
+        <div className="rv-method-copy">
+          <span className="rv-badge">✦ O que é o TRINCA RV21</span>
+          <h2>21 dias. Protocolo real. Resultado visível.</h2>
+          <p>
+            O plano foi desenhado para mulheres reais: rotina corrida, corpo cansado de tentativas soltas
+            e vontade de voltar a se reconhecer no espelho.
+          </p>
+        </div>
+        <div className="rv-method-list">
+          {methodItems.map((item) => (
+            <article key={item}>
+              <span>▸</span>
+              {item}
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="rv-section rv-proof-section" id="resultados">
+        <div className="rv-section-head">
           <h2>Elas duvidavam. Hoje agradecem.</h2>
         </div>
+
+        <div className="rv-proof-stats">
+          {proofStats.map((stat) => (
+            <CountUpStat key={stat.label} stat={stat} />
+          ))}
+        </div>
+
         <div className="rv-video-grid">
           {studentVideos.map((video) => (
             <VideoProofCard
@@ -515,108 +536,65 @@ export default function Home() {
             />
           ))}
         </div>
-      </section>
 
-      {/* WALL OF PROOF — aguardando screenshots reais de WhatsApp/DM do Ruriá. */}
-
-      <section className="rv-section rv-pain-section fade-in">
-        <div>
-          <span className="rv-label">VOCÊ NÃO ESTÁ SEM FORÇA</span>
-          <h2>
-            Talvez você só esteja
-            <br />
-            no método errado.
-          </h2>
-          <p>
-            O TRINCA RV21 foi criado para quem já tentou. Para quem conhece a sensação de começar na
-            segunda animada e parar na quarta sem entender por quê. O problema nunca foi você.
-          </p>
-        </div>
-        <div className="rv-pain-card-list">
-          {emotionalPain.map((item) => (
-            <article className="fade-in" key={item}>{item}</article>
+        <div className="rv-masonry-grid" aria-label="Transformações reais de alunas">
+          {transformationImages.map((src, index) => (
+            <Image
+              key={src}
+              src={src}
+              alt={`Transformação real TRINCA RV21 ${index + 1}`}
+              width={520}
+              height={index % 3 === 0 ? 740 : index % 3 === 1 ? 620 : 680}
+              sizes="(max-width: 720px) 46vw, 30vw"
+              loading="lazy"
+            />
           ))}
         </div>
-      </section>
 
-      <section className="rv-section rv-persona-section fade-in">
-        <div className="rv-section-head">
-          <span>DECISÃO COM CLAREZA</span>
-          <h2>O TRINCA RV21 é para mulheres que querem estrutura, não mais uma promessa.</h2>
-        </div>
-        <div className="rv-persona-grid">
-          {personas.map((persona) => (
-            <article className="rv-persona-card result-card fade-in" key={persona.name}>
-              <span>{persona.icon}</span>
-              <h3>{persona.name}</h3>
-              <strong>{persona.title}</strong>
-              <p>{persona.text}</p>
-            </article>
-          ))}
+        <div className="rv-proof-cta">
+          <h3>Você pode ser a próxima.</h3>
+          <a className="rv-button rv-button-primary cta-primary" href={CHECKOUT_URL}>Quero minha transformação</a>
         </div>
       </section>
 
-      <section className="rv-section rv-protocol-section fade-in" id="protocolo">
-        <div className="rv-section-head">
-          <span>O MÉTODO RV</span>
-          <h2>21 dias com direção real. Não mais tentativas no escuro.</h2>
-        </div>
-        <div className="rv-timeline">
-          {protocolSteps.map((step, index) => (
-            <article className="rv-timeline-item fade-in" key={step.title}>
-              <span>{index + 1}</span>
-              <div>
-                <h3>{step.title}</h3>
-                <p>{step.text}</p>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="rv-section rv-authority-section fade-in">
+      <section className="rv-section rv-authority-section">
         <div className="rv-authority-photo">
           <Image
-            src="/images/ruria.jpg"
+            src="/images/ruria-sobre.jpg"
             alt="Ruriá Virgínio"
             fill
-            sizes="(max-width: 900px) 100vw, 40vw"
+            sizes="(max-width: 900px) 92vw, 400px"
             className="rv-authority-image"
           />
-          <b>14 anos</b>
         </div>
         <div className="rv-authority-copy">
-          <span className="rv-label">QUEM CRIA O PROTOCOLO</span>
-          <h2>Ruriá Virgínio</h2>
-          <p className="rv-authority-sub">Personal Trainer • Natal/RN • Criador do Protocolo RV</p>
-          <div className="rv-stat-grid">
-            {authorityStats.map((stat) => (
-              <article className="fade-in" key={stat.label}>
-                <strong className="stat-number">{stat.value}</strong>
-                <span>{stat.label}</span>
-              </article>
+          <h2>
+            Sou Ruriá Virgínio.
+            <br />
+            14 anos transformando mulheres reais.
+          </h2>
+          <ul>
+            {authorityBullets.map((item) => (
+              <li key={item}>
+                <span>✦</span>
+                {item}
+              </li>
             ))}
-          </div>
-          <p>
-            Em 14 anos transformando mulheres, aprendi que o maior obstáculo não é o corpo — é o
-            método errado. O Protocolo RV existe porque eu vi, pessoalmente, o que funciona e o que
-            desperdiça tempo e energia das mulheres.
-          </p>
+          </ul>
         </div>
       </section>
 
-      <section className="rv-section rv-offer-section fade-in" id="oferta">
+      <section className="rv-section rv-offer-section" id="oferta">
         <div className="rv-section-head">
-          <span>SUA DECISÃO</span>
-          <h2>21 dias. Um protocolo real. O preço de uma pizza.</h2>
+          <h2>Comece hoje. Sem desculpa.</h2>
         </div>
 
         <div className="rv-final-offer-card">
           <h3>TRINCA RV21</h3>
           <span className="rv-old-price">De R$ 97,00</span>
           <strong>R$ 37,89</strong>
-          <small>à vista</small>
           <p>ou 8x de R$ 4,74</p>
+          <CountdownTimer />
           <ul>
             {includedItems.map((item) => (
               <li key={item}>
@@ -626,19 +604,19 @@ export default function Home() {
             ))}
           </ul>
           <a className="rv-button rv-button-primary rv-offer-button cta-primary" href="#inscricao">
-            Quero entrar no TRINCA RV21 →
+            Quero entrar no desafio agora
           </a>
           <footer>
             <span>🔒 Pagamento 100% seguro via Kiwify</span>
-            <span>💳 Cartão, PIX ou boleto</span>
+            <span>Vagas limitadas por turma</span>
           </footer>
         </div>
       </section>
 
-      <section className="rv-section rv-form-section fade-in" id="inscricao">
+      <section className="rv-section rv-form-section" id="inscricao">
         <div className="rv-form-copy">
           <span className="rv-label">INSCRIÇÃO RÁPIDA</span>
-          <h2>Escolha seu objetivo e garanta o preço de lançamento.</h2>
+          <h2>Escolha seu objetivo e entre no TRINCA RV21.</h2>
           <p>
             Esse campo alimenta a dieta que você recebe depois da compra. Escolha o foco real dos
             próximos 21 dias.
@@ -690,7 +668,7 @@ export default function Home() {
           </label>
           {submitError ? <p className="rv-form-error">{submitError}</p> : null}
           <button className="rv-button rv-button-primary rv-submit cta-primary" type="submit" disabled={loading}>
-            {loading ? "Enviando..." : "Quero entrar no TRINCA RV21 →"}
+            {loading ? "Enviando..." : "Quero entrar no desafio agora"}
           </button>
           <small>
             <Lock size={13} />
@@ -699,14 +677,13 @@ export default function Home() {
         </form>
       </section>
 
-      <section className="rv-section rv-faq-section fade-in" id="faq">
+      <section className="rv-section rv-faq-section" id="faq">
         <div className="rv-section-head">
-          <span>DÚVIDAS</span>
           <h2>Perguntas antes de entrar.</h2>
         </div>
         <div className="rv-faq-list">
           {faqItems.map((item) => (
-            <details className="fade-in" key={item.question}>
+            <details key={item.question}>
               <summary>{item.question}</summary>
               <p>{item.answer}</p>
             </details>
@@ -717,7 +694,7 @@ export default function Home() {
       <footer className="rv-footer">
         <strong>TRINCA RV21</strong>
         <nav>
-          <a href="#protocolo">Protocolo</a>
+          <a href="#metodo">Método</a>
           <a href="#oferta">Oferta</a>
           <a href="#faq">Dúvidas</a>
         </nav>
