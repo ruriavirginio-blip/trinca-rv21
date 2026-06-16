@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { Check, Lock, Play } from "lucide-react";
 import { CountdownTimer } from "@/components/CountdownTimer";
+import { PhotoMarquee } from "@/components/PhotoMarquee";
 import {
   gaTrackBeginCheckout,
   gaTrackEvent,
@@ -44,6 +45,24 @@ const methodItems = [
   "Acompanhamento diário via grupo exclusivo",
   "Análise comportamental individualizada (só no RV)",
 ];
+
+const DORES = [
+  { emoji: '😔', text: 'Começa segunda animada, na quarta some' },
+  { emoji: '😩', text: 'Já tentou tudo e nada durou mais de 2 semanas' },
+  { emoji: '😞', text: 'Se olha no espelho e não reconhece mais seu corpo' },
+  { emoji: '😤', text: 'Treina e acha que não tá adiantando nada' },
+  { emoji: '😰', text: 'Tem vergonha de tirar foto mesmo de biquíni' },
+  { emoji: '😓', text: 'Dieta nova todo mês, resultado zero' },
+  { emoji: '🫠', text: 'Sente que todo mundo tem resultado menos você' },
+  { emoji: '😞', text: 'Parou de acreditar que seu corpo pode mudar' },
+]
+
+const METODO_ITENS = [
+  { icon: '🏋️', titulo: 'Treinos progressivos adaptados ao seu nível', desc: '30 a 45 minutos por dia. Progressivo e feito para quem tem rotina corrida.' },
+  { icon: '🥗', titulo: 'Alimentação com estrutura (sem dieta maluca)', desc: 'Sem proibições radicais. Um plano real, feito por nutricionista, que você consegue seguir.' },
+  { icon: '💬', titulo: 'Acompanhamento diário via grupo exclusivo', desc: 'Grupo privado no WhatsApp com suporte diário. Você não faz o desafio sozinha.' },
+  { icon: '🧠', titulo: 'Análise comportamental individualizada (só no RV)', desc: 'Identificamos o padrão que te fez desistir antes e trabalhamos em cima dele.' },
+]
 
 const proofStats = [
   { value: 5000, suffix: "+", prefix: "", label: "mulheres transformadas", display: "+5.000" },
@@ -473,110 +492,280 @@ export default function Home() {
         <a className="rv-nav-cta" href="#inscricao">Entrar agora</a>
       </header>
 
-      <section className="rv-hero" id="top">
-        <div className="rv-hero-copy">
-          <span className="rv-badge">✦ 14 anos · +5.000 mulheres transformadas</span>
-          <h1>
-            Você não falhou.
-            <br />
-            O método falhou
-            <br />
-            por você.
-          </h1>
-          <p>
-            Em 21 dias, com o Protocolo RV, você finalmente tem direção — não promessa.
-          </p>
-        </div>
+      <section id="top" style={{ position: 'relative', minHeight: '100vh', background: '#080808', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
 
-        <aside className="rv-price-card">
-          <del>De R$ 97,00</del>
-          <strong>8x de R$ 5,51</strong>
-          <p>R$ 37,89 à vista</p>
-          <small>Parcelamento sujeito a acréscimos da Kiwify</small>
-          <a className="rv-button rv-button-primary cta-primary" href="#inscricao">Quero entrar no desafio agora</a>
-          <footer>🔒 Pagamento seguro · Acesso imediato</footer>
-        </aside>
-      </section>
+        {/* Glow decorativo */}
+        <div style={{
+          position: 'absolute', inset: 0, pointerEvents: 'none',
+          background: 'radial-gradient(ellipse 700px 500px at 75% 50%, rgba(245,200,66,0.06) 0%, transparent 70%)'
+        }} />
 
-      <section className="rv-section rv-pain-section">
-        <div className="rv-section-head">
-          <h2>Você se identifica com isso?</h2>
-        </div>
-        <div className="rv-pain-grid">
-          {painCards.map((item) => (
-            <article key={item}>{item}</article>
-          ))}
-        </div>
-        <p className="rv-center-copy">
-          Se você marcou sim pra qualquer um desses — o TRINCA RV21 foi feito pra você.
-        </p>
-      </section>
+        <div style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: '1280px', margin: '0 auto', padding: '120px 24px 80px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '80px', alignItems: 'center' }}
+               className="hero-grid">
 
-      <section className="rv-section rv-method-section" id="metodo">
-        <div className="rv-method-copy">
-          <span className="rv-badge">✦ O que é o TRINCA RV21</span>
-          <h2>21 dias. Protocolo real. Resultado visível.</h2>
-          <p>
-            O plano foi desenhado para mulheres reais: rotina corrida, corpo cansado de tentativas soltas
-            e vontade de voltar a se reconhecer no espelho.
-          </p>
-        </div>
-        <div className="rv-method-list">
-          {methodItems.map((item) => (
-            <article key={item}>
-              <span>▸</span>
-              {item}
-            </article>
-          ))}
-        </div>
-      </section>
+            {/* ESQUERDA */}
+            <div className="fade-in-up delay-1">
 
-      <section className="rv-section rv-proof-section" id="resultados">
-        <div className="rv-section-head">
-          <h2>Elas duvidavam. Hoje agradecem.</h2>
-        </div>
-
-        <div className="rv-proof-stats">
-          {proofStats.map((stat) => (
-            <CountUpStat key={stat.label} stat={stat} />
-          ))}
-        </div>
-
-        <div className="rv-video-grid">
-          {studentVideos.map((video) => (
-            <VideoProofCard
-              key={video.id}
-              video={video}
-              isPlaying={playingVideo === video.id}
-              onPlay={() => setPlayingVideo(video.id)}
-            />
-          ))}
-        </div>
-
-        <div className="rv-masonry-grid" aria-label="Transformações reais de alunas">
-          {transformationImages.map((src, index) => (
-            <article className="rv-transform-card" data-index={index} key={src}>
-              <span className="rv-transform-number">{String(index + 1).padStart(2, "0")}</span>
-              <Image
-                src={src}
-                alt={`Transformação real TRINCA RV21 ${index + 1}`}
-                width={520}
-                height={index % 3 === 0 ? 740 : index % 3 === 1 ? 620 : 680}
-                sizes="(max-width: 720px) 46vw, 24vw"
-                loading="lazy"
-              />
-              <div className="rv-transform-overlay">
-                <span>ANTES</span>
-                <span>DEPOIS</span>
+              {/* Badge */}
+              <div style={{ display: 'inline-flex', marginBottom: '32px' }}>
+                <span style={{
+                  fontSize: '11px', fontWeight: '700', letterSpacing: '0.16em',
+                  textTransform: 'uppercase', padding: '8px 18px', borderRadius: '999px',
+                  color: '#F5C842', border: '1px solid rgba(245,200,66,0.25)',
+                  background: 'rgba(245,200,66,0.05)',
+                }}>
+                  ✦ 14 ANOS · +5.000 MULHERES TRANSFORMADAS
+                </span>
               </div>
-            </article>
-          ))}
+
+              {/* Headline */}
+              <h1 style={{
+                fontWeight: '800', lineHeight: '1.05', marginBottom: '24px',
+                fontSize: 'clamp(42px, 5.5vw, 80px)', letterSpacing: '-0.025em', color: '#FFFFFF',
+              }}>
+                Você não falhou.<br />
+                O método falhou<br />
+                <span style={{ color: '#F5C842' }}>por você.</span>
+              </h1>
+
+              {/* Subheadline */}
+              <p style={{
+                fontSize: '17px', color: '#9CA3AF', lineHeight: '1.75',
+                maxWidth: '460px', marginBottom: '40px',
+              }}>
+                Em 21 dias, com o Protocolo RV, você finalmente tem treino
+                com direção, alimentação real e resultado que aparece no
+                espelho — sem dieta maluca, sem treino impossível.
+              </p>
+
+              {/* CTA */}
+              <a href="#inscricao" style={{
+                display: 'inline-block', background: '#F5C842', color: '#000000',
+                fontWeight: '700', fontSize: '16px', padding: '18px 42px',
+                borderRadius: '999px', textDecoration: 'none',
+                transition: 'transform 0.2s ease, filter 0.2s ease',
+              }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.02)'; (e.currentTarget as HTMLElement).style.filter = 'brightness(1.06)' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; (e.currentTarget as HTMLElement).style.filter = 'brightness(1)' }}
+              >
+                Quero entrar no TRINCA RV21
+              </a>
+
+              <p style={{ marginTop: '16px', fontSize: '12px', color: '#374151' }}>
+                🔒 Pagamento seguro via Kiwify · Acesso imediato
+              </p>
+            </div>
+
+            {/* DIREITA — Foto */}
+            <div className="fade-in-up delay-2" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <div style={{ position: 'relative', maxWidth: '420px', width: '100%' }}>
+
+                <div style={{ borderRadius: '24px', overflow: 'hidden', aspectRatio: '3/4' }}>
+                  <img
+                    src="https://res.cloudinary.com/drfs4s18a/image/upload/v1781613465/trinca-rv21/ruria-hero.jpg"
+                    alt="Ruriá Virgínio"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }}
+                  />
+                  <div style={{
+                    position: 'absolute', inset: 0,
+                    background: 'linear-gradient(to top, rgba(8,8,8,0.55) 0%, transparent 45%)',
+                  }} />
+                </div>
+
+                {/* Badge stats sobre a foto */}
+                <div style={{
+                  position: 'absolute', bottom: '20px', left: '16px', right: '16px',
+                  background: 'rgba(8,8,8,0.82)', backdropFilter: 'blur(14px)',
+                  border: '1px solid rgba(245,200,66,0.12)', borderRadius: '16px',
+                  padding: '14px 20px', display: 'flex', justifyContent: 'space-around',
+                }}>
+                  {[{ n: '+5k', label: 'alunas' }, { n: '14', label: 'anos' }, { n: '+10', label: 'países' }].map(({ n, label }) => (
+                    <div key={label} style={{ textAlign: 'center' }}>
+                      <div style={{ color: '#F5C842', fontWeight: '700', fontSize: '17px' }}>{n}</div>
+                      <div style={{ color: '#6B7280', fontSize: '11px', marginTop: '2px' }}>{label}</div>
+                    </div>
+                  ))}
+                </div>
+
+              </div>
+            </div>
+
+          </div>
         </div>
 
-        <div className="rv-proof-cta">
-          <h3>Você pode ser a próxima.</h3>
-          <a className="rv-button rv-button-primary cta-primary" href={CHECKOUT_URL}>Quero minha transformação</a>
+        {/* Mobile: empilhar verticalmente */}
+        <style>{`
+          @media (max-width: 768px) {
+            .hero-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+          }
+        `}</style>
+      </section>
+
+      <section style={{ padding: '80px 0', background: '#060606', overflow: 'hidden' }}>
+
+        <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 24px 48px', textAlign: 'center' }}>
+          <p style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(245,200,66,0.55)', marginBottom: '16px' }}>
+            ✦ VOCÊ SE IDENTIFICA COM ISSO?
+          </p>
+          <h2 style={{ fontWeight: '800', fontSize: 'clamp(28px, 4.5vw, 52px)', color: '#FFFFFF', letterSpacing: '-0.02em', lineHeight: '1.15' }}>
+            Se marcou sim em qualquer um —{' '}
+            <span style={{ color: '#F5C842' }}>o TRINCA RV21 foi feito pra você.</span>
+          </h2>
         </div>
+
+        <div style={{ overflow: 'hidden' }}>
+          <div className="marquee-track">
+            {[...DORES, ...DORES].map((d, i) => (
+              <div
+                key={i}
+                style={{
+                  flexShrink: 0,
+                  background: '#111111',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                  borderRadius: '16px',
+                  padding: '20px 24px',
+                  minWidth: '250px',
+                  marginRight: '14px',
+                  transition: 'border-color 0.2s',
+                  cursor: 'default',
+                }}
+                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(245,200,66,0.28)')}
+                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)')}
+              >
+                <div style={{ fontSize: '26px', marginBottom: '10px' }}>{d.emoji}</div>
+                <p style={{ color: '#E5E7EB', fontSize: '14px', fontWeight: '500', lineHeight: '1.55', margin: 0 }}>
+                  {d.text}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="metodo" style={{ padding: '96px 0', background: '#0A0A0A' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '80px', alignItems: 'start' }}
+               className="metodo-grid">
+
+            {/* Esquerda */}
+            <div>
+              <p style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(245,200,66,0.55)', marginBottom: '16px' }}>
+                ✦ O QUE É O TRINCA RV21
+              </p>
+              <h2 style={{ fontWeight: '800', fontSize: 'clamp(34px, 4.5vw, 56px)', color: '#FFFFFF', letterSpacing: '-0.025em', lineHeight: '1.1', marginBottom: '24px' }}>
+                21 dias.<br />Protocolo real.<br /><span style={{ color: '#F5C842' }}>Resultado visível.</span>
+              </h2>
+              <p style={{ fontSize: '17px', color: '#6B7280', lineHeight: '1.75', maxWidth: '400px' }}>
+                O plano foi desenhado para mulheres reais: rotina corrida, corpo cansado
+                de tentativas soltas e vontade de voltar a se reconhecer no espelho.
+              </p>
+            </div>
+
+            {/* Direita — cards */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {METODO_ITENS.map((item, i) => (
+                <div key={i} style={{
+                  background: '#111111', border: '1px solid rgba(255,255,255,0.06)',
+                  borderRadius: '16px', padding: '18px 22px',
+                  display: 'flex', gap: '16px', alignItems: 'flex-start',
+                }}>
+                  <div style={{
+                    width: '42px', height: '42px', borderRadius: '10px',
+                    background: 'rgba(245,200,66,0.09)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '20px', flexShrink: 0,
+                  }}>
+                    {item.icon}
+                  </div>
+                  <div>
+                    <h3 style={{ color: '#FFFFFF', fontWeight: '600', fontSize: '15px', marginBottom: '6px', lineHeight: '1.4' }}>
+                      {item.titulo}
+                    </h3>
+                    <p style={{ color: '#6B7280', fontSize: '13px', lineHeight: '1.6', margin: 0 }}>
+                      {item.desc}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+          </div>
+        </div>
+
+        <style>{`
+          @media (max-width: 768px) {
+            .metodo-grid { grid-template-columns: 1fr !important; gap: 48px !important; }
+          }
+        `}</style>
+      </section>
+
+      <section id="resultados" style={{ padding: '96px 0', background: '#060606', overflow: 'hidden' }}>
+
+        {/* Header */}
+        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px 64px' }}>
+          <p style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(245,200,66,0.55)', marginBottom: '16px' }}>
+            ✦ RESULTADOS REAIS
+          </p>
+          <h2 style={{ fontWeight: '800', fontSize: 'clamp(34px, 4.5vw, 56px)', color: '#FFFFFF', letterSpacing: '-0.025em', lineHeight: '1.1' }}>
+            Elas duvidavam.<br /><span style={{ color: '#F5C842' }}>Hoje agradecem.</span>
+          </h2>
+        </div>
+
+        {/* MARQUEE DE FOTOS — sem nomes */}
+        <div style={{ marginBottom: '80px' }}>
+          <PhotoMarquee />
+        </div>
+
+        {/* Divisor */}
+        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px' }}>
+          <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', marginBottom: '64px' }} />
+        </div>
+
+        {/* VÍDEOS — usar os src originais que você copiou acima */}
+        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px' }}>
+          <p style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.18)', marginBottom: '32px' }}>
+            ✦ DEPOIMENTOS EM VÍDEO
+          </p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }} className="videos-grid">
+
+            {/* Vídeo 1 — src = VIDEO_SRC_1 que você copiou */}
+            <div style={{ background: '#0F0F0F', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', overflow: 'hidden', transition: 'border-color 0.3s' }}
+                 onMouseEnter={e => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(245,200,66,0.18)')}
+                 onMouseLeave={e => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)')}>
+              <div style={{ position: 'relative', aspectRatio: '9/16' }}>
+                <video src="/media/depoimento-jessica.mp4" controls playsInline preload="metadata" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+              </div>
+              <div style={{ padding: '16px 20px' }}>
+                <span style={{ fontSize: '10px', fontWeight: '700', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#F5C842', background: 'rgba(245,200,66,0.08)', padding: '5px 12px', borderRadius: '999px' }}>
+                  DEPOIMENTO REAL
+                </span>
+              </div>
+            </div>
+
+            {/* Vídeo 2 — src = VIDEO_SRC_2 que você copiou */}
+            <div style={{ background: '#0F0F0F', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px', overflow: 'hidden', transition: 'border-color 0.3s' }}
+                 onMouseEnter={e => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(245,200,66,0.18)')}
+                 onMouseLeave={e => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)')}>
+              <div style={{ position: 'relative', aspectRatio: '9/16' }}>
+                <video src="/media/depoimento-coletivo.mp4" controls playsInline preload="metadata" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+              </div>
+              <div style={{ padding: '16px 20px' }}>
+                <span style={{ fontSize: '10px', fontWeight: '700', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#F5C842', background: 'rgba(245,200,66,0.08)', padding: '5px 12px', borderRadius: '999px' }}>
+                  ANTES & DEPOIS
+                </span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <style>{`
+          @media (max-width: 768px) {
+            .videos-grid { grid-template-columns: 1fr !important; }
+          }
+        `}</style>
       </section>
 
       <section className="rv-section rv-authority-section">
@@ -723,6 +912,27 @@ export default function Home() {
         </nav>
         <span>© 2026 Ruriá Virgínio</span>
       </footer>
+
+      <div style={{
+        position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50,
+        padding: '12px 16px',
+        background: 'rgba(8,8,8,0.9)',
+        backdropFilter: 'blur(16px)',
+        borderTop: '1px solid rgba(255,255,255,0.07)',
+      }} className="mobile-cta-bar">
+        <a href="#inscricao" style={{
+          display: 'block', width: '100%', textAlign: 'center',
+          background: '#F5C842', color: '#000000', fontWeight: '700',
+          fontSize: '15px', padding: '15px 0', borderRadius: '999px',
+          textDecoration: 'none',
+        }}>
+          Quero entrar no TRINCA RV21
+        </a>
+      </div>
+
+      <style>{`
+        @media (min-width: 768px) { .mobile-cta-bar { display: none !important; } }
+      `}</style>
     </main>
   );
 }
