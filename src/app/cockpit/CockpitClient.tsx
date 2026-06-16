@@ -58,6 +58,18 @@ type NotionContentItem = {
   updatedAt?: string;
 };
 
+type ContentQueueItem = {
+  aprovado_em: string | null;
+  criado_em: string;
+  feedback: string | null;
+  id: string;
+  publicado_em: string | null;
+  status: "aguardando_aprovacao" | "aprovado" | "rejeitado" | "publicado";
+  tipo: string;
+  titulo: string;
+  url_video: string | null;
+};
+
 const GASTOS = [
   { nome: "Make.com", valor: 45, status: "ativo" },
   { nome: "Twilio WhatsApp", valor: 78.5, status: "ativo" },
@@ -271,20 +283,9 @@ function normalizeContentStatus(status: unknown): ContentStatus {
 }
 
 export default function CockpitClient({ cockpitPassword }: { cockpitPassword: string }) {
-  const [isUnlocked, setIsUnlocked] = useState(() => {
-    if (typeof window === "undefined") return false;
-
-    const savedAuth = window.localStorage.getItem(authStorageKey);
-    const expiresAt = savedAuth ? Number(JSON.parse(savedAuth).expiresAt || 0) : 0;
-
-    return expiresAt > Date.now();
-  });
+  const [isUnlocked, setIsUnlocked] = useState(false);
   const [password, setPassword] = useState("");
-  const [automationToken, setAutomationToken] = useState(() => {
-    if (typeof window === "undefined") return "";
-
-    return window.localStorage.getItem(operacaoTokenStorageKey) || "";
-  });
+  const [automationToken, setAutomationToken] = useState("");
   const [activeTab, setActiveTab] = useState<TabKey>("hoje");
   const [leads, setLeads] = useState<Lead[]>([]);
   const [commentLeads, setCommentLeads] = useState<CommentLead[]>([]);
@@ -294,27 +295,45 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
   const [iaLoading, setIaLoading] = useState(false);
   const [iaAnalysis, setIaAnalysis] = useState("");
   const [iaError, setIaError] = useState("");
-  const [contentStatuses, setContentStatuses] = useState<Record<string, ContentStatus>>(() => {
-    const defaults = Object.fromEntries(contentCalendar.map((post) => [post.id, post.status]));
-
-    if (typeof window === "undefined") return defaults;
-
-    try {
-      const saved = JSON.parse(window.localStorage.getItem(contentStatusStorageKey) || "{}") as Record<string, unknown>;
-      const normalizedSaved = Object.fromEntries(
-        Object.entries(saved).map(([postId, status]) => [postId, normalizeContentStatus(status)]),
-      );
-
-      return { ...defaults, ...normalizedSaved };
-    } catch {
-      return defaults;
-    }
-  });
+  const [contentStatuses, setContentStatuses] = useState<Record<string, ContentStatus>>(
+    Object.fromEntries(contentCalendar.map((post) => [post.id, post.status])),
+  );
   const [notionContent, setNotionContent] = useState<Record<string, NotionContentItem>>({});
   const [contentSyncStatus, setContentSyncStatus] = useState("Notion ainda nao sincronizado.");
   const [contentSyncing, setContentSyncing] = useState(false);
+  const [contentQueue, setContentQueue] = useState<ContentQueueItem[]>([]);
+  const [contentQueueLoading, setContentQueueLoading] = useState(false);
+  const [contentQueueError, setContentQueueError] = useState("");
   const [pendingContentApproval, setPendingContentApproval] = useState(0);
   const [expandedPostId, setExpandedPostId] = useState(contentCalendar[0]?.id || "");
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      try {
+        const savedAuth = window.localStorage.getItem(authStorageKey);
+        const expiresAt = savedAuth ? Number(JSON.parse(savedAuth).expiresAt || 0) : 0;
+        setIsUnlocked(expiresAt > Date.now());
+      } catch {
+        setIsUnlocked(false);
+      }
+
+      setAutomationToken(window.localStorage.getItem(operacaoTokenStorageKey) || "");
+
+      try {
+        const defaults = Object.fromEntries(contentCalendar.map((post) => [post.id, post.status]));
+        const saved = JSON.parse(window.localStorage.getItem(contentStatusStorageKey) || "{}") as Record<string, unknown>;
+        const normalizedSaved = Object.fromEntries(
+          Object.entries(saved).map(([postId, status]) => [postId, normalizeContentStatus(status)]),
+        );
+
+        setContentStatuses({ ...defaults, ...normalizedSaved });
+      } catch {
+        setContentStatuses(Object.fromEntries(contentCalendar.map((post) => [post.id, post.status])));
+      }
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (automationToken) {
@@ -410,7 +429,10 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
     }
   }, [activeTab, isUnlocked]);
 
-  const loadPendingContentApproval = useCallback(async () => {
+  const loadContentQueue = useCallback(async () => {
+    setContentQueueLoading(true);
+    setContentQueueError("");
+
     try {
       const response = await fetch("/api/content-queue", { cache: "no-store" });
       const data = await response.json();
@@ -420,26 +442,56 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
       }
 
       setPendingContentApproval(Number(data.pendingApproval || 0));
+      setContentQueue(Array.isArray(data.items) ? (data.items as ContentQueueItem[]) : []);
+      if (data.message) setContentQueueError(data.message);
     } catch {
       setPendingContentApproval(0);
+      setContentQueue([]);
+      setContentQueueError("Nao foi possivel carregar a fila de aprovacao.");
+    } finally {
+      setContentQueueLoading(false);
     }
   }, []);
+
+  const updateQueueItemStatus = useCallback(
+    async (id: string, status: ContentQueueItem["status"]) => {
+      setContentQueueError("");
+
+      try {
+        const response = await fetch("/api/content-queue", {
+          body: JSON.stringify({ id, status }),
+          headers: { "Content-Type": "application/json" },
+          method: "PATCH",
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Falha ao atualizar item.");
+        }
+
+        await loadContentQueue();
+      } catch (error) {
+        setContentQueueError(error instanceof Error ? error.message : "Falha ao atualizar item.");
+      }
+    },
+    [loadContentQueue],
+  );
 
   useEffect(() => {
     if (!isUnlocked) return undefined;
 
     const firstRunId = window.setTimeout(() => {
-      void loadPendingContentApproval();
+      void loadContentQueue();
     }, 0);
     const intervalId = window.setInterval(() => {
-      void loadPendingContentApproval();
+      void loadContentQueue();
     }, 30000);
 
     return () => {
       window.clearTimeout(firstRunId);
       window.clearInterval(intervalId);
     };
-  }, [isUnlocked, loadPendingContentApproval]);
+  }, [isUnlocked, loadContentQueue]);
 
   function unlock() {
     if (password !== cockpitPassword) {
@@ -691,8 +743,15 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
           <DashboardSection
             title="Conteúdo"
             description="Calendário da semana pré-lançamento com roteiro, aprovação e publicação."
-            loading={false}
+            loading={contentQueueLoading}
           >
+            <ContentApprovalQueue
+              error={contentQueueError}
+              items={contentQueue}
+              onRefresh={() => void loadContentQueue()}
+              onStatusChange={(id, status) => void updateQueueItemStatus(id, status)}
+              pendingCount={pendingContentApproval}
+            />
             <ContentCalendar
               expandedPostId={expandedPostId}
               notionContent={notionContent}
@@ -809,6 +868,119 @@ function MiniCard({ title, value }: { title: string; value: string }) {
       </div>
     </div>
   );
+}
+
+function ContentApprovalQueue({
+  error,
+  items,
+  onRefresh,
+  onStatusChange,
+  pendingCount,
+}: {
+  error: string;
+  items: ContentQueueItem[];
+  onRefresh: () => void;
+  onStatusChange: (id: string, status: ContentQueueItem["status"]) => void;
+  pendingCount: number;
+}) {
+  const pendingItems = items.filter((item) => item.status === "aguardando_aprovacao");
+  const visibleItems = pendingItems.length ? pendingItems : items.slice(0, 6);
+
+  return (
+    <section className="approval-queue">
+      <div className="approval-head">
+        <div>
+          <span>Fila do Cockpit</span>
+          <strong>{pendingCount} aguardando aprovação</strong>
+        </div>
+        <button className="secondary-action" onClick={onRefresh} type="button">
+          <RefreshCw size={16} />
+          Atualizar
+        </button>
+      </div>
+
+      {error ? <div className="queue-warning">{error}</div> : null}
+
+      {visibleItems.length ? (
+        <div className="approval-list">
+          {visibleItems.map((item) => (
+            <article className="approval-item" key={item.id}>
+              <ContentPreview item={item} />
+              <div className="approval-copy">
+                <span>{item.tipo || "conteudo"}</span>
+                <strong>{item.titulo}</strong>
+                <small>
+                  {queueStatusLabel(item.status)} · {dateLabel(item.criado_em)}
+                </small>
+                {item.feedback ? <p>{item.feedback}</p> : null}
+              </div>
+              <div className="approval-actions">
+                {item.url_video ? (
+                  <a className="secondary-action edit" href={item.url_video} rel="noreferrer" target="_blank">
+                    <Eye size={16} />
+                    Abrir
+                  </a>
+                ) : null}
+                <button
+                  className="secondary-action"
+                  disabled={item.status === "aprovado" || item.status === "publicado"}
+                  onClick={() => onStatusChange(item.id, "aprovado")}
+                  type="button"
+                >
+                  <CheckCircle2 size={16} />
+                  Aprovar
+                </button>
+                <button
+                  className="secondary-action reject"
+                  disabled={item.status === "rejeitado" || item.status === "publicado"}
+                  onClick={() => onStatusChange(item.id, "rejeitado")}
+                  type="button"
+                >
+                  <XCircleIcon />
+                  Rejeitar
+                </button>
+                <button
+                  className="secondary-action publish"
+                  disabled={item.status === "publicado"}
+                  onClick={() => onStatusChange(item.id, "publicado")}
+                  type="button"
+                >
+                  <Send size={16} />
+                  Publicar
+                </button>
+              </div>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <div className="empty-queue">Nenhum criativo na fila agora.</div>
+      )}
+    </section>
+  );
+}
+
+function ContentPreview({ item }: { item: ContentQueueItem }) {
+  const url = item.url_video || "";
+  const isImage = /\.(png|jpe?g|webp)(\?|$)/i.test(url);
+
+  if (!url) {
+    return <div className="approval-preview placeholder">{item.tipo || "conteudo"}</div>;
+  }
+
+  if (isImage) {
+    // URLs da fila podem vir de Cloudinary, Vercel ou outro storage externo.
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img alt={item.titulo} className="approval-preview" loading="lazy" src={url} />;
+  }
+
+  return <video className="approval-preview" muted playsInline preload="metadata" src={url} />;
+}
+
+function queueStatusLabel(status: ContentQueueItem["status"]) {
+  if (status === "aguardando_aprovacao") return "Aguardando aprovação";
+  if (status === "aprovado") return "Aprovado";
+  if (status === "publicado") return "Publicado";
+  return "Rejeitado";
 }
 
 function ContentCalendar({
@@ -1203,6 +1375,110 @@ function CockpitStyles() {
         gap: 12px;
       }
 
+      .approval-queue {
+        border: 1px solid rgba(255, 215, 64, 0.24);
+        border-radius: 14px;
+        background: rgba(255, 215, 64, 0.06);
+        display: grid;
+        gap: 12px;
+        margin-bottom: 14px;
+        padding: 12px;
+      }
+
+      .approval-head {
+        align-items: center;
+        display: flex;
+        gap: 12px;
+        justify-content: space-between;
+      }
+
+      .approval-head span,
+      .approval-copy span,
+      .approval-copy small {
+        color: rgba(255, 255, 255, 0.62);
+        display: block;
+      }
+
+      .approval-head strong {
+        color: #ffd740;
+        display: block;
+        margin-top: 2px;
+      }
+
+      .approval-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .approval-item {
+        align-items: center;
+        background: #13131a;
+        border: 1px solid #1e1e2e;
+        border-radius: 14px;
+        display: grid;
+        gap: 12px;
+        grid-template-columns: 74px minmax(0, 1fr);
+        padding: 10px;
+      }
+
+      .approval-preview {
+        aspect-ratio: 9 / 16;
+        background: #0a0a0f;
+        border: 1px solid #1e1e2e;
+        border-radius: 10px;
+        color: rgba(255, 255, 255, 0.54);
+        display: grid;
+        font-size: 11px;
+        font-weight: 800;
+        height: 118px;
+        object-fit: cover;
+        place-items: center;
+        text-align: center;
+        width: 66px;
+      }
+
+      .approval-copy {
+        min-width: 0;
+      }
+
+      .approval-copy strong {
+        display: block;
+        margin: 2px 0 4px;
+      }
+
+      .approval-copy p {
+        color: rgba(255, 255, 255, 0.72);
+        font-size: 12px;
+        margin: 6px 0 0;
+      }
+
+      .approval-actions {
+        display: grid;
+        gap: 8px;
+        grid-column: 1 / -1;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .approval-actions a {
+        text-decoration: none;
+      }
+
+      .empty-queue,
+      .queue-warning {
+        border-radius: 12px;
+        color: rgba(255, 255, 255, 0.72);
+        padding: 12px;
+      }
+
+      .empty-queue {
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .queue-warning {
+        background: rgba(255, 82, 82, 0.12);
+        color: #ff8a80;
+      }
+
       .content-sync-card {
         align-items: center;
         background: rgba(124, 77, 255, 0.1);
@@ -1503,6 +1779,15 @@ function CockpitStyles() {
       }
 
       @media (max-width: 520px) {
+        .approval-actions {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .approval-head {
+          align-items: stretch;
+          flex-direction: column;
+        }
+
         .content-actions {
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }

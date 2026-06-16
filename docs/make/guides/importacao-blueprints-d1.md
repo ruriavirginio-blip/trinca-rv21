@@ -221,8 +221,20 @@ Configuração visual:
 ├─────────────────────────────────────────────┤
 │ URL: __SUPABASE_URL__/rest/v1/content_queue │
 │ Headers: apikey + Authorization Bearer      │
+│ Body: titulo, url_video, tipo, status       │
 │ status: aguardando_aprovacao                │
 └─────────────────────────────────────────────┘
+```
+
+Body mínimo compatível com o schema em produção:
+
+```json
+{
+  "titulo": "Reel TRINCA RV21",
+  "url_video": "https://...",
+  "tipo": "reel",
+  "status": "aguardando_aprovacao"
+}
 ```
 
 ```text
@@ -256,4 +268,5 @@ Variáveis:
 3. Confirme `content_queue.status = aguardando_aprovacao`.
 4. Abra `/cockpit`.
 5. Confirme badge vermelho na aba Conteúdo.
-6. Confirme mensagem WhatsApp interno.
+6. Confirme se o criativo aparece na fila "Aguardando aprovação".
+7. Confirme mensagem WhatsApp interno.

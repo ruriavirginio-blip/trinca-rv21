@@ -167,7 +167,7 @@
           ],
           "bodyType": "raw",
           "contentType": "application/json",
-          "data": "{\"titulo\":\"{{ifempty(1.name; \\\"Reel TRINCA RV21\\\")}}\",\"status\":\"aguardando_aprovacao\",\"source\":\"make_video_pipeline\",\"video_url\":\"{{3.secure_url}}\",\"cloudinary_public_id\":\"{{3.public_id}}\",\"remotion_render_url\":\"{{4.cloudinaryUrl}}\",\"drive_file_id\":\"{{1.id}}\",\"briefing\":{\"drive_name\":\"{{1.name}}\",\"drive_description\":\"{{1.description}}\",\"gatilho\":\"APROVACAO\"},\"raw_payload\":{\"drive\":{{toJSON(1)}},\"cloudinary\":{{toJSON(3)}},\"remotion\":{{toJSON(4)}}}}"
+          "data": "{\"titulo\":\"{{ifempty(1.name; \\\"Reel TRINCA RV21\\\")}}\",\"url_video\":\"{{4.cloudinaryUrl}}\",\"tipo\":\"reel\",\"status\":\"aguardando_aprovacao\"}"
         },
         "metadata": {
           "designer": {
