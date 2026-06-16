@@ -313,6 +313,7 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
   const [notionContent, setNotionContent] = useState<Record<string, NotionContentItem>>({});
   const [contentSyncStatus, setContentSyncStatus] = useState("Notion ainda nao sincronizado.");
   const [contentSyncing, setContentSyncing] = useState(false);
+  const [pendingContentApproval, setPendingContentApproval] = useState(0);
   const [expandedPostId, setExpandedPostId] = useState(contentCalendar[0]?.id || "");
 
   useEffect(() => {
@@ -408,6 +409,37 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
       void loadContentFromNotion();
     }
   }, [activeTab, isUnlocked]);
+
+  const loadPendingContentApproval = useCallback(async () => {
+    try {
+      const response = await fetch("/api/content-queue", { cache: "no-store" });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Falha ao ler content_queue.");
+      }
+
+      setPendingContentApproval(Number(data.pendingApproval || 0));
+    } catch {
+      setPendingContentApproval(0);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isUnlocked) return undefined;
+
+    const firstRunId = window.setTimeout(() => {
+      void loadPendingContentApproval();
+    }, 0);
+    const intervalId = window.setInterval(() => {
+      void loadPendingContentApproval();
+    }, 30000);
+
+    return () => {
+      window.clearTimeout(firstRunId);
+      window.clearInterval(intervalId);
+    };
+  }, [isUnlocked, loadPendingContentApproval]);
 
   function unlock() {
     if (password !== cockpitPassword) {
@@ -709,7 +741,12 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
           >
-            {tab.icon}
+            <span className="nav-icon">
+              {tab.icon}
+              {tab.key === "conteudo" && pendingContentApproval > 0 ? (
+                <b className="content-badge">{pendingContentApproval}</b>
+              ) : null}
+            </span>
             <span>{tab.label}</span>
           </button>
         ))}
@@ -1413,6 +1450,31 @@ function CockpitStyles() {
       .bottom-nav button.active {
         background: rgba(124, 77, 255, 0.18);
         color: #fff;
+      }
+
+      .nav-icon {
+        display: inline-grid;
+        place-items: center;
+        position: relative;
+      }
+
+      .content-badge {
+        min-width: 18px;
+        height: 18px;
+        align-items: center;
+        background: #ff5252;
+        border: 2px solid #0a0a0f;
+        border-radius: 999px;
+        color: #fff;
+        display: inline-flex;
+        font-size: 10px;
+        font-weight: 900;
+        justify-content: center;
+        line-height: 1;
+        padding: 0 4px;
+        position: absolute;
+        right: -10px;
+        top: -8px;
       }
 
       .bottom-nav span {

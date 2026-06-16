@@ -1,0 +1,207 @@
+{
+  "name": "TRINCA RV21 - Pipeline video automatico para aprovacao",
+  "metadata": {
+    "instant": false,
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": true,
+      "confidential": false,
+      "dataloss": false,
+      "dlq": false
+    },
+    "designer": {
+      "orphans": []
+    },
+    "zone": "us1.make.com",
+    "notes": [
+      "Cenario 4 D1-D7: Google Drive reels/brutos -> Cloudinary -> Remotion Worker Railway -> Supabase content_queue -> Telegram.",
+      "Substituir placeholders: __GOOGLE_DRIVE_CONNECTION_ID__, __DRIVE_REELS_BRUTOS_FOLDER_ID__, __CLOUDINARY_CLOUD_NAME__, __CLOUDINARY_UPLOAD_PRESET__, __REMOTION_WORKER_URL__, __SUPABASE_URL__, __SUPABASE_SERVICE_ROLE_KEY__, __TELEGRAM_BOT_TOKEN__, __TELEGRAM_CHAT_ID__.",
+      "O worker atual renderiza a partir de videoUrl. Se ele passar a exigir public_id, manter public_id no payload e adicionar Cloudinary delivery URL no campo videoUrl."
+    ]
+  },
+  "blueprint": {
+    "flow": [
+      {
+        "id": 1,
+        "module": "google-drive:watchFiles",
+        "version": 4,
+        "parameters": {
+          "account": "__GOOGLE_DRIVE_CONNECTION_ID__",
+          "folderId": "__DRIVE_REELS_BRUTOS_FOLDER_ID__",
+          "limit": 1
+        },
+        "mapper": {},
+        "metadata": {
+          "designer": {
+            "x": 0,
+            "y": 0
+          },
+          "restore": {
+            "parameters": {
+              "account": {
+                "label": "Google Drive Ruria"
+              },
+              "folderId": {
+                "label": "reels/brutos"
+              }
+            }
+          }
+        }
+      },
+      {
+        "id": 2,
+        "module": "google-drive:downloadFile",
+        "version": 4,
+        "parameters": {
+          "account": "__GOOGLE_DRIVE_CONNECTION_ID__"
+        },
+        "mapper": {
+          "file": "{{1.id}}"
+        },
+        "metadata": {
+          "designer": {
+            "x": 260,
+            "y": 0
+          }
+        }
+      },
+      {
+        "id": 3,
+        "module": "http:ActionSendData",
+        "version": 3,
+        "parameters": {
+          "handleErrors": true,
+          "useNewZLibDeCompress": true
+        },
+        "mapper": {
+          "url": "https://api.cloudinary.com/v1_1/__CLOUDINARY_CLOUD_NAME__/video/upload",
+          "method": "post",
+          "bodyType": "multipart/form-data",
+          "headers": [],
+          "formData": [
+            {
+              "key": "file",
+              "value": "{{2.data}}",
+              "type": "file",
+              "fileName": "{{1.name}}"
+            },
+            {
+              "key": "upload_preset",
+              "value": "__CLOUDINARY_UPLOAD_PRESET__",
+              "type": "text"
+            },
+            {
+              "key": "folder",
+              "value": "reels-trinca/reels/brutos",
+              "type": "text"
+            }
+          ]
+        },
+        "metadata": {
+          "designer": {
+            "x": 520,
+            "y": 0
+          }
+        }
+      },
+      {
+        "id": 4,
+        "module": "http:ActionSendData",
+        "version": 3,
+        "parameters": {
+          "handleErrors": true,
+          "useNewZLibDeCompress": true
+        },
+        "mapper": {
+          "url": "__REMOTION_WORKER_URL__/render",
+          "method": "post",
+          "headers": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "raw",
+          "contentType": "application/json",
+          "data": "{\"videoUrl\":\"{{3.secure_url}}\",\"publicId\":\"{{3.public_id}}\",\"gancho\":\"{{ifempty(1.description; \\\"TRINCA RV21\\\")}}\",\"gatilho\":\"APROVACAO\",\"legenda\":\"Video gerado automaticamente para aprovacao no Cockpit.\",\"durationSeconds\":{{ifempty(1.duration; 30)}}}"
+        },
+        "metadata": {
+          "designer": {
+            "x": 780,
+            "y": 0
+          }
+        }
+      },
+      {
+        "id": 5,
+        "module": "http:ActionSendData",
+        "version": 3,
+        "parameters": {
+          "handleErrors": true,
+          "useNewZLibDeCompress": true
+        },
+        "mapper": {
+          "url": "__SUPABASE_URL__/rest/v1/content_queue",
+          "method": "post",
+          "headers": [
+            {
+              "name": "apikey",
+              "value": "__SUPABASE_SERVICE_ROLE_KEY__"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer __SUPABASE_SERVICE_ROLE_KEY__"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ],
+          "bodyType": "raw",
+          "contentType": "application/json",
+          "data": "{\"titulo\":\"{{ifempty(1.name; \\\"Reel TRINCA RV21\\\")}}\",\"status\":\"aguardando_aprovacao\",\"source\":\"make_video_pipeline\",\"video_url\":\"{{3.secure_url}}\",\"cloudinary_public_id\":\"{{3.public_id}}\",\"remotion_render_url\":\"{{4.cloudinaryUrl}}\",\"drive_file_id\":\"{{1.id}}\",\"briefing\":{\"drive_name\":\"{{1.name}}\",\"drive_description\":\"{{1.description}}\",\"gatilho\":\"APROVACAO\"},\"raw_payload\":{\"drive\":{{toJSON(1)}},\"cloudinary\":{{toJSON(3)}},\"remotion\":{{toJSON(4)}}}}"
+        },
+        "metadata": {
+          "designer": {
+            "x": 1040,
+            "y": 0
+          }
+        }
+      },
+      {
+        "id": 6,
+        "module": "telegram:sendMessage",
+        "version": 1,
+        "parameters": {
+          "token": "__TELEGRAM_BOT_TOKEN__"
+        },
+        "mapper": {
+          "chatId": "__TELEGRAM_CHAT_ID__",
+          "text": "🎬 {{ifempty(1.name; \"Reel TRINCA RV21\")}} pronto no Cockpit para aprovação.\n\nAbra: https://protocolorv.com.br/cockpit",
+          "parseMode": "HTML"
+        },
+        "metadata": {
+          "designer": {
+            "x": 1300,
+            "y": 0
+          },
+          "restore": {
+            "parameters": {
+              "token": {
+                "label": "Telegram Bot TRINCA RV21"
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "name": "TRINCA RV21 - Lead nova para CAPI Lead e WhatsApp Ruria",
+  "name": "TRINCA RV21 - Lead nova para CAPI Lead",
   "metadata": {
     "instant": true,
     "version": 1,
@@ -19,8 +19,8 @@
     "zone": "us1.make.com",
     "notes": [
       "Importar no Make.com e substituir placeholders de conexao/credenciais.",
-      "Cenario D1: lead nova -> Meta CAPI Lead -> notificacao WhatsApp pessoal Ruria.",
-      "Se preferir manter credenciais apenas no Vercel, trocar o modulo Meta CAPI por endpoint interno equivalente."
+      "Cenario D1: lead nova -> Meta CAPI Lead -> registro oficial em /api/leads.",
+      "Sem notificacao interna via Twilio. A notificacao operacional fica no Cockpit e Telegram do pipeline de video."
     ]
   },
   "blueprint": {
@@ -100,38 +100,6 @@
         "metadata": {
           "designer": {
             "x": 600,
-            "y": 0
-          }
-        }
-      },
-      {
-        "id": 4,
-        "module": "http:ActionSendData",
-        "version": 3,
-        "parameters": {
-          "handleErrors": true,
-          "useNewZLibDeCompress": true
-        },
-        "mapper": {
-          "url": "https://api.twilio.com/2010-04-01/Accounts/__TWILIO_ACCOUNT_SID__/Messages.json",
-          "method": "post",
-          "headers": [
-            {
-              "name": "Authorization",
-              "value": "Basic __TWILIO_BASIC_AUTH_BASE64__"
-            },
-            {
-              "name": "Content-Type",
-              "value": "application/x-www-form-urlencoded"
-            }
-          ],
-          "bodyType": "raw",
-          "contentType": "application/x-www-form-urlencoded",
-          "data": "To=whatsapp%3A%2B5584998567078&From=whatsapp%3A%2B__TWILIO_WHATSAPP_FROM__&Body=Novo%20lead%20TRINCA%20RV21%3A%20{{1.nome}}%20-%20{{1.whatsapp}}%20-%20{{1.objetivo}}"
-        },
-        "metadata": {
-          "designer": {
-            "x": 900,
             "y": 0
           }
         }
