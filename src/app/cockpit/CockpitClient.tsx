@@ -2,8 +2,11 @@
 
 import { createClient } from "@supabase/supabase-js";
 import {
+  BarChart3,
   Bot,
+  Brain,
   CalendarDays,
+  Camera,
   ChevronRight,
   CheckCircle2,
   CircleDollarSign,
@@ -11,18 +14,25 @@ import {
   Eye,
   Home,
   KeyRound,
+  LayoutGrid,
   Loader2,
+  MessageCircle,
   Radio,
   RefreshCw,
   Send,
+  Sparkles,
+  Target,
   TrendingUp,
   Users,
+  Wallet,
   WalletCards,
+  Wrench,
+  Zap,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import OperacaoPage from "../operacao/page";
 
-type TabKey = "hoje" | "leads" | "vendas" | "gastos" | "conteudo" | "ao-vivo" | "ia";
+type TabKey = "comando" | "hoje" | "leads" | "vendas" | "gastos" | "conteudo" | "ao-vivo" | "inteligencia" | "ia";
 type ContentStatus = "RASCUNHO" | "APROVADO" | "PUBLICADO" | "REJEITADO";
 
 type Lead = {
@@ -88,14 +98,184 @@ const saleValue = 37.89;
 const leadGoal = 1000;
 
 const tabs: Array<{ key: TabKey; label: string; icon: React.ReactNode }> = [
+  { key: "comando", label: "Comando", icon: <LayoutGrid size={20} /> },
   { key: "hoje", label: "Hoje", icon: <Home size={20} /> },
   { key: "leads", label: "Leads", icon: <Users size={20} /> },
   { key: "vendas", label: "Vendas", icon: <CircleDollarSign size={20} /> },
   { key: "gastos", label: "Gastos", icon: <WalletCards size={20} /> },
   { key: "conteudo", label: "Conteúdo", icon: <CalendarDays size={20} /> },
   { key: "ao-vivo", label: "Ao Vivo", icon: <Radio size={20} /> },
+  { key: "inteligencia", label: "Inteligência", icon: <Brain size={20} /> },
   { key: "ia", label: "IA", icon: <Bot size={20} /> },
 ];
+
+type DeptStatus = "ok" | "run" | "wait" | "new";
+type CheckState = "d" | "p" | "x";
+type Department = {
+  icon: React.ReactNode;
+  name: string;
+  agent: string;
+  status: DeptStatus;
+  domain: string;
+  report: string;
+  skills: string[];
+  conn: string[];
+  check: Array<{ s: CheckState; t: string }>;
+  cmd: string;
+};
+
+const DEPARTMENTS: Department[] = [
+  {
+    icon: <Wrench size={18} />, name: "TECH OPS", agent: "Agente 4 · Infraestrutura", status: "run",
+    domain: "Pixel, CAPI, GA4, webhooks, WhatsApp, Supabase, deploy.",
+    report: "Base sólida: Pixel, GA4 e token CAPI ativos em produção. Falta plugar o token no Cenário 2 do Make e validar o fluxo ponta a ponta. Caminho crítico.",
+    skills: ["conversion-funnel-rv", "performance-metrics-rv"],
+    conn: ["Vercel", "Supabase", "Meta CAPI", "Twilio"],
+    check: [
+      { s: "d", t: "Meta Pixel instalado e disparando" },
+      { s: "d", t: "GA4 ativo em produção" },
+      { s: "d", t: "Token CAPI gerado" },
+      { s: "p", t: "Make.com Cenário 2 (Compra→CAPI)" },
+      { s: "x", t: "Função SQL get_daily_report" },
+      { s: "x", t: "Teste ponta-a-ponta completo" },
+    ],
+    cmd: "COMANDO TECH OPS: assuma a infraestrutura. Prioridade: (1) corrigir o Cenário 2 do Make.com (Compra→CAPI) com o token já gerado, (2) criar a função SQL get_daily_report no Supabase, (3) rodar teste ponta-a-ponta completo. Use conversion-funnel-rv e performance-metrics-rv. Reporte item por item.",
+  },
+  {
+    icon: <Zap size={18} />, name: "CONVERSION ENGINE", agent: "Agente 2 · Funil & Automação", status: "run",
+    domain: "Landing page, funil Kiwify→Supabase→Twilio, recuperação.",
+    report: "Landing no ar, mas ainda fora do padrão alto exigido — falta auditoria de conversão (CRO), polish final e A/B de headline. Carrinho abandonado não existe ainda.",
+    skills: ["conversion-funnel-rv", "trinca-page-cro", "objection-handling-rv"],
+    conn: ["Make.com", "Kiwify", "Supabase", "Vercel"],
+    check: [
+      { s: "d", t: "Landing publicada (protocolorv.com.br)" },
+      { s: "p", t: "Estrutura final da landing (padrão alto)" },
+      { s: "p", t: "A/B test de headline + CTA" },
+      { s: "x", t: "Fluxo de carrinho abandonado" },
+    ],
+    cmd: "COMANDO CONVERSION ENGINE: assuma o funil. Prioridade: (1) finalizar a landing no padrão premium com trinca-page-cro e trinca-final-polish, (2) A/B de headline e CTA, (3) fluxo de recuperação de carrinho. Use conversion-funnel-rv e objection-handling-rv.",
+  },
+  {
+    icon: <Target size={18} />, name: "TRAFFIC HUNTER", agent: "Agente 1 · Aquisição", status: "wait",
+    domain: "Meta Ads pago, orgânico, audiences, CPL, escala.",
+    report: "Não iniciado. Nenhum anúncio rodando, gasto R$0. Aguarda o CAPI 100%. Frente mais atrasada e mais decisiva para a meta de 1.000 leads.",
+    skills: ["audience-segmentation-rv", "performance-metrics-rv", "content-instagram-rv"],
+    conn: ["Meta Ads", "Windsor.ai", "Motion"],
+    check: [
+      { s: "x", t: "Criar 3 anúncios teste (R$10/dia)" },
+      { s: "x", t: "Definir 3 audiences/segmentos" },
+      { s: "x", t: "Lookalike audience" },
+      { s: "x", t: "Meta de CPL R$3-8" },
+    ],
+    cmd: "COMANDO TRAFFIC HUNTER: assuma a aquisição. Pré-requisito: CAPI funcionando. Prioridade: (1) 3 audiences de teste com audience-segmentation-rv, (2) 3 anúncios de teste (R$10/dia) com copy e criativo, (3) plano de escala dias 8-21. Puxe dados via Motion e Windsor.",
+  },
+  {
+    icon: <Camera size={18} />, name: "CONTENT CREATOR", agent: "Agente 3 · Conteúdo IG", status: "wait",
+    domain: "Posts, reels, stories, carrosséis, bio, calendário 21 dias.",
+    report: "Bio não atualizada e criativos pendentes. O calendário e os roteiros vivem na aba Conteúdo. Conteúdo orgânico aquece a audiência antes do tráfego pago.",
+    skills: ["content-instagram-rv", "brand-positioning-rv", "trinca-copywriting"],
+    conn: ["Canva", "Adobe", "Instagram"],
+    check: [
+      { s: "p", t: "Calendário editorial (aba Conteúdo)" },
+      { s: "x", t: "Bio Instagram atualizada" },
+      { s: "x", t: "Criativos: carrossel/estático/reels" },
+      { s: "p", t: "Roteiros de reels (aba Conteúdo)" },
+    ],
+    cmd: "COMANDO CONTENT CREATOR: assuma o conteúdo. Prioridade: (1) revisar o calendário e roteiros da aba Conteúdo, (2) reescrever a bio com trinca-copywriting, (3) gerar os 3 primeiros criativos com Canva/Adobe. Foco em captação de leads.",
+  },
+  {
+    icon: <MessageCircle size={18} />, name: "SALES CLOSER", agent: "Agente 5 · Vendas & DMs", status: "ok",
+    domain: "DMs, objeções, WhatsApp, emails de venda, fechamento.",
+    report: "Pronto para ativar. Skills de objeção e copy prontas — basta o comando para gerar templates de WhatsApp e a sequência de email.",
+    skills: ["objection-handling-rv", "brand-positioning-rv", "audience-segmentation-rv"],
+    conn: ["Twilio", "Gmail", "Instagram"],
+    check: [
+      { s: "d", t: "Skills de objeção prontas" },
+      { s: "p", t: "Templates WhatsApp de resposta" },
+      { s: "p", t: "Sequência de email de venda" },
+      { s: "x", t: "Scripts de upsell pós-desafio" },
+    ],
+    cmd: "COMANDO SALES CLOSER: assuma vendas. Prioridade: (1) templates de WhatsApp para as objeções comuns com objection-handling-rv, (2) sequência de email de venda, (3) script de upsell pós-desafio. Entregue pronto para colar.",
+  },
+  {
+    icon: <BarChart3 size={18} />, name: "DATA ANALYST", agent: "Agente 6 · Métricas", status: "run",
+    domain: "Relatório diário 07h, CPL/CAC/LTV/ROAS, gargalos, projeções.",
+    report: "Depende da função SQL get_daily_report (Tech Ops). Conectores prontos. Quando os ads ligarem, manda relatório automático às 07h.",
+    skills: ["performance-metrics-rv", "audience-segmentation-rv", "competitor-intelligence-rv"],
+    conn: ["Windsor.ai", "GA4", "Supabase", "Perplexity"],
+    check: [
+      { s: "x", t: "Função get_daily_report (Tech Ops)" },
+      { s: "p", t: "Dashboard de KPIs ao vivo (este cockpit)" },
+      { s: "x", t: "Relatório diário 07:00 automático" },
+      { s: "p", t: "Projeção até 1.000 leads" },
+    ],
+    cmd: "COMANDO DATA ANALYST: assuma métricas. Prioridade: (1) especificar get_daily_report e o relatório 07h, (2) projeção de cenários até 1.000 leads, (3) varredura de concorrentes via Perplexity + Semrush. Use performance-metrics-rv.",
+  },
+  {
+    icon: <Wallet size={18} />, name: "FINANCE · CFO", agent: "Controle financeiro", status: "new",
+    domain: "Assinaturas, gasto de tráfego, fluxo de caixa, ROI, alertas.",
+    report: "Os números reais vivem na aba Gastos (Make, Twilio, Railway, Vercel...). Falta conectar gasto de Meta Ads ao vivo e definir o break-even pelo ticket de R$37,89.",
+    skills: ["performance-metrics-rv", "launch-action-plan-rv"],
+    conn: ["Windsor.ai", "Twilio", "Kiwify", "Vercel"],
+    check: [
+      { s: "d", t: "Gastos fixos mapeados (aba Gastos)" },
+      { s: "x", t: "Gasto de Meta Ads ao vivo" },
+      { s: "x", t: "Break-even pelo ticket R$37,89" },
+      { s: "x", t: "Alertas de pagamento a vencer" },
+    ],
+    cmd: "COMANDO FINANCE CFO: assuma o financeiro. Prioridade: (1) revisar os gastos da aba Gastos, (2) conectar o gasto de Meta Ads ao vivo via Windsor, (3) calcular o break-even pelo ticket de R$37,89. Use performance-metrics-rv.",
+  },
+];
+
+type Expert = { icon: React.ReactNode; name: string; tag: string; desc: string; atua: string; cmd: string };
+const EXPERTS: Expert[] = [
+  { icon: <Sparkles size={16} />, name: "using-superpowers", tag: "/using-superpowers", desc: "O maestro: escolhe sozinho a melhor skill para cada tarefa.", atua: "Todos os setores", cmd: "Use a skill using-superpowers para selecionar automaticamente as melhores skills e executar a tarefa do setor que eu indicar." },
+  { icon: <Sparkles size={16} />, name: "ui-ux-pro-max", tag: "/ui-ux-pro-max", desc: "Design de telas: 50+ estilos, paletas e fontes.", atua: "Conversion · Content", cmd: "Use a skill ui-ux-pro-max para elevar o design da landing/criativo ao padrão premium." },
+  { icon: <Sparkles size={16} />, name: "frontend-design", tag: "/frontend-design", desc: "Direção visual de agência (padrão americano).", atua: "Conversion · Content", cmd: "Use a skill frontend-design para dar direção visual premium à landing." },
+  { icon: <Sparkles size={16} />, name: "ckm:ui-styling", tag: "/ckm:ui-styling", desc: "Estilização fina: componentes, cores, dark mode.", atua: "Conversion", cmd: "Use a skill ckm-ui-styling para refinar componentes, cores e responsividade." },
+  { icon: <Sparkles size={16} />, name: "ckm:banner-design", tag: "/ckm:banner-design", desc: "Banners e criativos de anúncio (Meta, capas).", atua: "Content · Traffic", cmd: "Use a skill ckm-banner-design para criar os criativos de anúncio do TRINCA RV21." },
+  { icon: <Sparkles size={16} />, name: "obsidian-bases", tag: "/obsidian-bases", desc: "Bancos de dados visuais para alimentar o painel.", atua: "Data · Comando", cmd: "Use a skill obsidian-bases para montar a base de dados que alimenta o cockpit." },
+  { icon: <Sparkles size={16} />, name: "create-cowork-plugin", tag: "/create-cowork-plugin", desc: "Cria plugins sob medida para o fluxo de trabalho.", atua: "Comando", cmd: "Use a skill create-cowork-plugin para empacotar o sistema TRINCA RV21 num plugin reutilizável." },
+  { icon: <Sparkles size={16} />, name: "schedule", tag: "/anthropic-skills:schedule", desc: "Agenda agentes na nuvem que rodam sozinhos. Motor 24/7.", atua: "Motor de automação", cmd: "Use a skill schedule para criar uma rotina diária na nuvem que gera meu relatório de comando às 07h." },
+];
+
+type ArsenalCol = { col: string; items: Array<{ n: string; d: string }> };
+const ARSENAL: ArsenalCol[] = [
+  { col: "🎯 Tráfego & Leads", items: [
+    { n: "audience-segmentation-rv", d: "Segmenta público e qualifica leads" },
+    { n: "performance-metrics-rv", d: "Calcula CPL, CAC, ROI, KPIs" },
+    { n: "competitor-intelligence-rv", d: "Espiona e compara concorrentes" },
+  ] },
+  { col: "⚡ Funil & Conversão", items: [
+    { n: "conversion-funnel-rv", d: "Arquitetura do funil e automações" },
+    { n: "trinca-page-cro", d: "Audita conversão da landing" },
+    { n: "trinca-final-polish", d: "Passe final antes de publicar" },
+    { n: "objection-handling-rv", d: "Quebra objeções de venda" },
+  ] },
+  { col: "📸 Conteúdo & Copy", items: [
+    { n: "content-instagram-rv", d: "Posts, reels, stories, calendário" },
+    { n: "trinca-copywriting", d: "Headlines, bio, CTAs, anúncios" },
+    { n: "brand-positioning-rv", d: "Tom de voz e posicionamento" },
+    { n: "trinca-marketing-psychology", d: "Gatilhos mentais que convertem" },
+  ] },
+  { col: "🎨 Design Premium", items: [
+    { n: "trinca-high-end-visual-design", d: "Padrão visual premium do projeto" },
+    { n: "ckm:design", d: "Logo, identidade, banners, slides" },
+    { n: "canvas-design", d: "Posters e artes estáticas" },
+  ] },
+  { col: "💰 Vendas & Estratégia", items: [
+    { n: "launch-action-plan-rv", d: "Plano-mestre do lançamento" },
+    { n: "trinca-prompt-mestre", d: "Refina prompts para qualquer IA" },
+    { n: "agents-trinca-rv21", d: "Decide qual agente faz o quê" },
+  ] },
+  { col: "🛠️ Produção & Docs", items: [
+    { n: "pptx", d: "Apresentações / pitch decks" },
+    { n: "docx", d: "Documentos Word profissionais" },
+    { n: "xlsx", d: "Planilhas e relatórios" },
+  ] },
+];
+
+const STATUS_LABEL: Record<DeptStatus, string> = { ok: "PRONTO", run: "ANDAMENTO", wait: "PENDENTE", new: "A ESTRUTURAR" };
 
 const contentCalendar: Array<{
   id: string;
@@ -668,6 +848,17 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
       {dataError ? <div className="notice">{dataError}</div> : null}
 
       <section className="content">
+        {activeTab === "comando" ? (
+          <DashboardSection
+            title="Comando Geral"
+            description="Cadeia de comando: cada setor reporta status e recebe ordens diretas."
+            loading={loading}
+          >
+            <MonitorPanel />
+            <CommandSection />
+          </DashboardSection>
+        ) : null}
+
         {activeTab === "hoje" ? (
           <DashboardSection
             title="Hoje"
@@ -780,6 +971,16 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
           </DashboardSection>
         ) : null}
 
+        {activeTab === "inteligencia" ? (
+          <DashboardSection
+            title="Comando de Inteligência"
+            description="Experts premium e arsenal de skills — clique para designar o comando."
+            loading={false}
+          >
+            <IntelligenceSection />
+          </DashboardSection>
+        ) : null}
+
         {activeTab === "ia" ? (
           <DashboardSection title="IA" description="Análise simples do negócio com Claude." loading={false}>
             <button className="primary" disabled={iaLoading} onClick={() => void analyzeBusiness()}>
@@ -812,6 +1013,253 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
 
       <CockpitStyles />
     </main>
+  );
+}
+
+type MonitorStatus = {
+  severity: "ok" | "warn" | "critical";
+  problems: string[];
+  warnings: string[];
+  counts: Record<string, number>;
+  checked_at: string;
+};
+
+function MonitorPanel() {
+  const [token, setToken] = useState("");
+  const [status, setStatus] = useState<MonitorStatus | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const [testMsg, setTestMsg] = useState("");
+
+  const check = useCallback(async (t: string) => {
+    if (!t) return;
+    setBusy(true);
+    setErr("");
+    try {
+      const r = await fetch(`/api/automation/monitor?token=${encodeURIComponent(t)}`);
+      const d = await r.json();
+      if (!r.ok) {
+        setErr(d.error || "Falha ao consultar a saúde.");
+        setStatus(null);
+      } else {
+        setStatus(d as MonitorStatus);
+      }
+    } catch {
+      setErr("Erro de rede ao consultar a saúde.");
+    }
+    setBusy(false);
+  }, []);
+
+  useEffect(() => {
+    const t = window.localStorage.getItem(operacaoTokenStorageKey) || "";
+    setToken(t);
+    void check(t);
+  }, [check]);
+
+  const sendTest = async () => {
+    setTestMsg("Enviando alerta de teste...");
+    try {
+      const r = await fetch("/api/internal-notifications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          trigger: "critical_alert",
+          description: "TESTE DE COMANDO: alerta manual do Cockpit. Se chegou no seu WhatsApp, o motor de erros está integrado.",
+          dedupeKey: `teste-manual:${Date.now()}`,
+        }),
+      });
+      const d = await r.json();
+      if (d.ok && !d.skipped) setTestMsg("✅ Enviado! Confira seu WhatsApp.");
+      else setTestMsg(`⚠️ ${d.reason || d.error || "Não enviou — verifique a configuração do WhatsApp."}`);
+    } catch {
+      setTestMsg("Erro de rede ao enviar o teste.");
+    }
+  };
+
+  const sev = status?.severity;
+  const sevLabel = sev === "ok" ? "TUDO OK" : sev === "warn" ? "ATENÇÃO" : sev === "critical" ? "FALHA" : "—";
+
+  return (
+    <div className="monitor-card">
+      <div className="mon-head">
+        <span className={`mon-dot ${sev || "none"}`} />
+        <div className="mon-title">
+          <strong>Saúde do Sistema · Motor de Erros</strong>
+          <span>
+            {status ? `${sevLabel} · checado ${dateLabel(status.checked_at)}` : err ? err : "Aguardando token..."}
+          </span>
+        </div>
+        <button className="mon-refresh" onClick={() => void check(token)} disabled={busy} aria-label="Atualizar">
+          {busy ? <Loader2 className="spin" size={16} /> : <RefreshCw size={16} />}
+        </button>
+      </div>
+
+      {!token ? (
+        <p className="mon-hint">
+          Cole o AUTOMATION_API_SECRET uma vez na aba <b>Ao Vivo</b> para ligar o monitor de saúde aqui.
+        </p>
+      ) : null}
+
+      {status && status.problems.length > 0 ? (
+        <ul className="mon-list crit">
+          {status.problems.map((p, i) => (
+            <li key={i}>🚨 {p}</li>
+          ))}
+        </ul>
+      ) : null}
+      {status && status.warnings.length > 0 ? (
+        <ul className="mon-list warn">
+          {status.warnings.map((w, i) => (
+            <li key={i}>⚠️ {w}</li>
+          ))}
+        </ul>
+      ) : null}
+      {status && status.severity === "ok" ? <p className="mon-ok">✓ Nenhuma falha detectada. Automação saudável.</p> : null}
+
+      <div className="mon-actions">
+        <button className="mon-test" onClick={() => void sendTest()} disabled={!token}>
+          <Send size={14} /> Testar alerta no meu WhatsApp
+        </button>
+        {testMsg ? <span className="mon-testmsg">{testMsg}</span> : null}
+      </div>
+    </div>
+  );
+}
+
+function CommandSection() {
+  const [copied, setCopied] = useState<string | null>(null);
+  const copy = (text: string, label: string) => {
+    void navigator.clipboard?.writeText(text).then(() => {
+      setCopied(label);
+      window.setTimeout(() => setCopied(null), 2200);
+    });
+  };
+  const ready = DEPARTMENTS.filter((d) => d.status === "ok").length;
+  const running = DEPARTMENTS.filter((d) => d.status === "run").length;
+  const pending = DEPARTMENTS.filter((d) => d.status === "wait" || d.status === "new").length;
+  return (
+    <>
+      <MetricGrid
+        items={[
+          { label: "Setores", value: String(DEPARTMENTS.length), tone: "gold" },
+          { label: "Prontos", value: String(ready), tone: "green" },
+          { label: "Em andamento", value: String(running), tone: "yellow" },
+          { label: "Pendentes", value: String(pending), tone: "red" },
+        ]}
+      />
+      <div className="cmd-grid">
+        {DEPARTMENTS.map((d) => (
+          <article className="cmd-card" key={d.name}>
+            <div className="cmd-card-head">
+              <span className="cmd-ico">{d.icon}</span>
+              <div className="cmd-card-title">
+                <strong>{d.name}</strong>
+                <span>{d.agent}</span>
+              </div>
+              <span className={`cmd-status ${d.status}`}>{STATUS_LABEL[d.status]}</span>
+            </div>
+            <p className="cmd-domain">{d.domain}</p>
+            <p className="cmd-report">
+              <b>Reporte ao Comando</b>
+              {d.report}
+            </p>
+            <div className="cmd-chips">
+              {d.skills.map((s) => (
+                <span className="chip chip-skill" key={s}>
+                  {s}
+                </span>
+              ))}
+            </div>
+            <div className="cmd-chips">
+              {d.conn.map((c) => (
+                <span className="chip chip-conn" key={c}>
+                  {c}
+                </span>
+              ))}
+            </div>
+            <ul className="cmd-check">
+              {d.check.map((c, i) => (
+                <li className={c.s === "d" ? "done" : ""} key={i}>
+                  <span className={`check-mark ${c.s}`}>{c.s === "d" ? "✓" : c.s === "p" ? "~" : "!"}</span>
+                  {c.t}
+                </li>
+              ))}
+            </ul>
+            <div className="cmd-actions">
+              <button className="cmd-btn" onClick={() => copy(d.cmd, d.name)}>
+                {copied === d.name ? <CheckCircle2 size={15} /> : <Send size={15} />}
+                {copied === d.name ? "Copiado" : "Acionar"}
+              </button>
+              <button
+                className="cmd-btn-upd"
+                title="Pedir atualização deste setor"
+                onClick={() =>
+                  copy(
+                    `COMANDO ATUALIZAÇÃO — ${d.name}: revise o estado atual, atualize o checklist e o reporte, e me diga em português simples o que mudou, o que falta e o próximo passo.`,
+                    `${d.name}-upd`,
+                  )
+                }
+              >
+                {copied === `${d.name}-upd` ? <CheckCircle2 size={15} /> : <RefreshCw size={15} />}
+              </button>
+            </div>
+          </article>
+        ))}
+      </div>
+      <p className="cmd-hint">
+        Clique em <b>Acionar</b> para copiar o comando do setor e colar no Claude Code. <b>↻</b> pede uma atualização de status.
+      </p>
+    </>
+  );
+}
+
+function IntelligenceSection() {
+  const [copied, setCopied] = useState<string | null>(null);
+  const copy = (text: string, label: string) => {
+    void navigator.clipboard?.writeText(text).then(() => {
+      setCopied(label);
+      window.setTimeout(() => setCopied(null), 2000);
+    });
+  };
+  return (
+    <>
+      <div className="intel-head">
+        <Sparkles size={16} /> Experts premium — atuam sobre todos os setores
+      </div>
+      <div className="expert-grid">
+        {EXPERTS.map((e) => (
+          <button className="expert-card" key={e.name} onClick={() => copy(e.cmd, e.name)}>
+            <span className="expert-top">
+              {e.icon}
+              <strong>{e.name}</strong>
+            </span>
+            <span className="expert-tag">{e.tag}</span>
+            <p>{e.desc}</p>
+            <span className="expert-atua">{copied === e.name ? "✓ Comando copiado" : `Atua: ${e.atua}`}</span>
+          </button>
+        ))}
+      </div>
+      <div className="intel-head" style={{ marginTop: 18 }}>
+        <LayoutGrid size={16} /> Arsenal de skills — clique para designar
+      </div>
+      <div className="arsenal-grid">
+        {ARSENAL.map((c) => (
+          <div className="ars-col" key={c.col}>
+            <h4>{c.col}</h4>
+            {c.items.map((it) => (
+              <button
+                className="ars-skill"
+                key={it.n}
+                onClick={() => copy(`Use a skill ${it.n} para a próxima tarefa do TRINCA RV21 que eu vou descrever.`, it.n)}
+              >
+                <span className="ars-skill-n">{it.n}</span>
+                <span className="ars-skill-d">{copied === it.n ? "✓ copiado" : it.d}</span>
+              </button>
+            ))}
+          </div>
+        ))}
+      </div>
+    </>
   );
 }
 
@@ -1703,11 +2151,11 @@ function CockpitStyles() {
         bottom: 0;
         z-index: 50;
         display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        gap: 4px;
+        grid-template-columns: repeat(9, 1fr);
+        gap: 2px;
         background: rgba(10, 10, 15, 0.94);
         border-top: 1px solid #1e1e2e;
-        padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+        padding: 8px 6px calc(8px + env(safe-area-inset-bottom));
         backdrop-filter: blur(16px);
       }
 
@@ -1756,6 +2204,405 @@ function CockpitStyles() {
       .bottom-nav span {
         font-size: 9px;
         font-weight: 800;
+      }
+
+      /* ===== MONITOR / SAÚDE ===== */
+      .monitor-card {
+        background: linear-gradient(180deg, #16161f, #101015);
+        border: 1px solid #1e1e2e;
+        border-radius: 16px;
+        padding: 16px;
+        margin-top: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .mon-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .mon-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        flex: none;
+        background: rgba(255, 255, 255, 0.3);
+      }
+      .mon-dot.ok {
+        background: #00e676;
+        box-shadow: 0 0 10px rgba(0, 230, 118, 0.6);
+      }
+      .mon-dot.warn {
+        background: #ffd740;
+        box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+      }
+      .mon-dot.critical {
+        background: #ff5252;
+        box-shadow: 0 0 10px rgba(255, 82, 82, 0.7);
+      }
+      .mon-title {
+        flex: 1;
+        min-width: 0;
+      }
+      .mon-title strong {
+        display: block;
+        font-size: 13px;
+      }
+      .mon-title span {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.54);
+      }
+      .mon-refresh {
+        flex: none;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid #1e1e2e;
+        color: rgba(255, 255, 255, 0.7);
+        border-radius: 9px;
+        padding: 8px;
+        cursor: pointer;
+      }
+      .mon-hint {
+        font-size: 11.5px;
+        color: #ffd740;
+      }
+      .mon-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 12px;
+      }
+      .mon-list.crit li {
+        color: #ff8a80;
+      }
+      .mon-list.warn li {
+        color: rgba(255, 215, 64, 0.9);
+      }
+      .mon-ok {
+        font-size: 12px;
+        color: #00e676;
+      }
+      .mon-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .mon-test {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(255, 215, 64, 0.1);
+        border: 1px solid rgba(255, 215, 0, 0.28);
+        color: #ffd740;
+        border-radius: 10px;
+        padding: 9px 14px;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .mon-test:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .mon-testmsg {
+        font-size: 11.5px;
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      /* ===== COMANDO ===== */
+      .cmd-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-top: 14px;
+      }
+      .cmd-card {
+        background: linear-gradient(180deg, #16161f, #101015);
+        border: 1px solid #1e1e2e;
+        border-radius: 16px;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .cmd-card-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .cmd-ico {
+        width: 38px;
+        height: 38px;
+        border-radius: 11px;
+        display: grid;
+        place-items: center;
+        background: rgba(255, 215, 0, 0.1);
+        color: #ffd740;
+        flex: none;
+      }
+      .cmd-card-title {
+        flex: 1;
+        min-width: 0;
+      }
+      .cmd-card-title strong {
+        display: block;
+        font-size: 14px;
+        letter-spacing: 0.3px;
+      }
+      .cmd-card-title span {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.54);
+      }
+      .cmd-status {
+        font-size: 9.5px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        padding: 5px 9px;
+        border-radius: 999px;
+        flex: none;
+      }
+      .cmd-status.ok {
+        background: rgba(0, 230, 118, 0.12);
+        color: #00e676;
+      }
+      .cmd-status.run {
+        background: rgba(255, 215, 0, 0.14);
+        color: #ffd740;
+      }
+      .cmd-status.wait {
+        background: rgba(255, 82, 82, 0.13);
+        color: #ff8a80;
+      }
+      .cmd-status.new {
+        background: rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.7);
+      }
+      .cmd-domain {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.62);
+        border-left: 2px solid rgba(255, 215, 0, 0.5);
+        padding-left: 9px;
+      }
+      .cmd-report {
+        font-size: 11.5px;
+        color: rgba(255, 255, 255, 0.68);
+        line-height: 1.5;
+        background: rgba(255, 215, 0, 0.06);
+        border: 1px solid rgba(255, 215, 0, 0.18);
+        border-radius: 8px;
+        padding: 9px 11px;
+      }
+      .cmd-report b {
+        display: block;
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: #ffd740;
+        margin-bottom: 3px;
+      }
+      .cmd-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+      }
+      .chip {
+        font-size: 10.5px;
+        padding: 3px 8px;
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid #1e1e2e;
+      }
+      .chip-skill {
+        color: #ffd740;
+        border-color: rgba(255, 215, 0, 0.24);
+      }
+      .chip-conn {
+        color: rgba(255, 255, 255, 0.7);
+      }
+      .cmd-check {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        font-size: 12px;
+        margin: 0;
+        padding: 0;
+      }
+      .cmd-check li {
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+        color: rgba(255, 255, 255, 0.66);
+      }
+      .cmd-check li.done {
+        color: rgba(255, 255, 255, 0.4);
+        text-decoration: line-through;
+      }
+      .check-mark {
+        flex: none;
+        width: 16px;
+        height: 16px;
+        border-radius: 5px;
+        display: grid;
+        place-items: center;
+        font-size: 9px;
+        font-weight: 900;
+        margin-top: 1px;
+      }
+      .check-mark.d {
+        background: rgba(0, 230, 118, 0.16);
+        color: #00e676;
+      }
+      .check-mark.p {
+        background: rgba(255, 215, 0, 0.14);
+        color: #ffd740;
+      }
+      .check-mark.x {
+        background: rgba(255, 82, 82, 0.13);
+        color: #ff8a80;
+      }
+      .cmd-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 2px;
+      }
+      .cmd-btn {
+        flex: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        background: linear-gradient(180deg, #FFD700, #ffb300);
+        color: #1a1407;
+        border: 0;
+        border-radius: 10px;
+        padding: 11px;
+        font-size: 12.5px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      .cmd-btn-upd {
+        flex: none;
+        display: inline-grid;
+        place-items: center;
+        background: rgba(255, 215, 64, 0.1);
+        border: 1px solid rgba(255, 215, 0, 0.28);
+        color: #ffd740;
+        border-radius: 10px;
+        padding: 0 14px;
+        cursor: pointer;
+      }
+      .cmd-hint {
+        font-size: 11.5px;
+        color: rgba(255, 255, 255, 0.5);
+        margin-top: 12px;
+      }
+
+      /* ===== INTELIGÊNCIA ===== */
+      .intel-head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        font-weight: 800;
+        color: #ffd740;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 14px 0 10px;
+      }
+      .expert-grid,
+      .arsenal-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      .expert-card {
+        text-align: left;
+        background: linear-gradient(180deg, #16161f, #101015);
+        border: 1px solid #1e1e2e;
+        border-top: 2px solid rgba(255, 215, 0, 0.5);
+        border-radius: 14px;
+        padding: 14px;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      .expert-top {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #ffd740;
+      }
+      .expert-top strong {
+        font-size: 13px;
+        color: #fff;
+      }
+      .expert-tag {
+        font-size: 10px;
+        color: rgba(255, 215, 0, 0.8);
+        font-family: ui-monospace, Menlo, monospace;
+      }
+      .expert-card p {
+        font-size: 11.5px;
+        color: rgba(255, 255, 255, 0.62);
+        line-height: 1.45;
+        margin: 2px 0;
+      }
+      .expert-atua {
+        font-size: 10px;
+        color: rgba(255, 255, 255, 0.5);
+        border-top: 1px solid #1e1e2e;
+        padding-top: 7px;
+      }
+      .ars-col {
+        background: #13131a;
+        border: 1px solid #1e1e2e;
+        border-radius: 14px;
+        padding: 14px;
+      }
+      .ars-col h4 {
+        font-size: 12px;
+        color: #ffd740;
+        margin: 0 0 9px;
+      }
+      .ars-skill {
+        width: 100%;
+        text-align: left;
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid #1e1e2e;
+        border-radius: 9px;
+        padding: 8px 10px;
+        margin-bottom: 6px;
+        cursor: pointer;
+      }
+      .ars-skill-n {
+        font-size: 11.5px;
+        color: #fff;
+        font-weight: 600;
+      }
+      .ars-skill-d {
+        font-size: 10px;
+        color: rgba(255, 255, 255, 0.5);
+      }
+
+      @media (min-width: 720px) {
+        .cmd-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .expert-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .arsenal-grid {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
       }
 
       .spin {
