@@ -36,11 +36,20 @@ function readAutomationToken(request: Request) {
 }
 
 function authorize(request: Request) {
-  const secret = cleanText(process.env.AUTOMATION_API_SECRET || process.env.KIWIFY_WEBHOOK_SECRET);
-  if (!secret) {
+  // Aceita o secret geral da automação OU um token dedicado do monitor (MONITOR_TOKEN),
+  // usado pelo gatilho 24/7 do Make.com sem precisar expor o AUTOMATION_API_SECRET.
+  const validSecrets = [
+    process.env.AUTOMATION_API_SECRET,
+    process.env.KIWIFY_WEBHOOK_SECRET,
+    process.env.MONITOR_TOKEN,
+  ]
+    .map(cleanText)
+    .filter(Boolean);
+  if (!validSecrets.length) {
     return NextResponse.json({ error: "AUTOMATION_API_SECRET ainda nao configurado." }, { status: 503 });
   }
-  if (!readAutomationToken(request).includes(secret)) {
+  const provided = readAutomationToken(request);
+  if (!provided.some((token) => validSecrets.includes(token))) {
     return NextResponse.json({ error: "Token invalido." }, { status: 401 });
   }
   return null;
