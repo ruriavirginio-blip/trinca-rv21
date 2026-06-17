@@ -854,6 +854,7 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
             description="Cadeia de comando: cada setor reporta status e recebe ordens diretas."
             loading={loading}
           >
+            <ProjectHealthPanel />
             <MonitorPanel />
             <CommandSection />
           </DashboardSection>
@@ -1122,6 +1123,82 @@ function MonitorPanel() {
         </button>
         {testMsg ? <span className="mon-testmsg">{testMsg}</span> : null}
       </div>
+    </div>
+  );
+}
+
+const HEALTH_AREAS: Array<{ nome: string; pct: number; texto: string }> = [
+  { nome: "🛠️ Base técnica (site, rastreamento, deploy)", pct: 90, texto: "Quase tudo pronto: site no ar, Pixel e Google medindo, cockpit funcionando." },
+  { nome: "🤖 Robô de mensagens (WhatsApp automático)", pct: 60, texto: "Canal consertado, mas a fila travou 7 mensagens e falta o Meta aprovar 1 modelo." },
+  { nome: "⚡ Página de vendas (landing)", pct: 65, texto: "No ar, mas precisa do acabamento premium e do teste de versões." },
+  { nome: "📸 Conteúdo (posts, reels, stories)", pct: 25, texto: "Calendário rascunhado, nada publicado ainda. É o que mais precisa começar agora." },
+  { nome: "🎯 Tráfego (anúncios pagos)", pct: 10, texto: "Não iniciado. Espera o robô e o modelo de WhatsApp ficarem 100%." },
+  { nome: "💬 Vendas e atendimento", pct: 50, texto: "Scripts prontos pra ativar; falta só ligar." },
+  { nome: "💰 Financeiro (controle de gastos)", pct: 55, texto: "Painel pronto; falta colocar os valores reais e o preço do produto." },
+];
+
+function ProjectHealthPanel() {
+  const overall = Math.round(HEALTH_AREAS.reduce((a, x) => a + x.pct, 0) / HEALTH_AREAS.length);
+  const tone = overall >= 75 ? "green" : overall >= 45 ? "gold" : "red";
+  const frase =
+    overall >= 75
+      ? "Reta final — quase pronto pra lançar."
+      : overall >= 45
+        ? "Em construção — a base está pronta, falta ligar o conteúdo e o tráfego."
+        : "Início — muita coisa ainda por montar.";
+  const barTone = (p: number) => (p >= 70 ? "green" : p >= 40 ? "gold" : "red");
+  return (
+    <div className="health-card">
+      <div className="health-top">
+        <div className={`health-score ${tone}`}>
+          <strong>{overall}%</strong>
+          <span>pronto</span>
+        </div>
+        <div className="health-intro">
+          <strong>Saúde do Projeto TRINCA RV</strong>
+          <p>{frase}</p>
+        </div>
+      </div>
+
+      <div className="health-bars">
+        {HEALTH_AREAS.map((a) => (
+          <div className="hrow" key={a.nome}>
+            <div className="hrow-top">
+              <span className="hname">{a.nome}</span>
+              <b className={`hpct ${barTone(a.pct)}`}>{a.pct}%</b>
+            </div>
+            <div className="hbar">
+              <span className={barTone(a.pct)} style={{ width: `${a.pct}%` }} />
+            </div>
+            <p className="hdesc">{a.texto}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="health-two">
+        <div className="health-col ok">
+          <strong>✅ O que já está pronto</strong>
+          <ul>
+            <li>Site (landing) no ar e medindo visitantes</li>
+            <li>Central de Comando (este cockpit) funcionando</li>
+            <li>Motor de Erros vigiando o sistema 24h por dia</li>
+            <li>Canal de WhatsApp consertado</li>
+          </ul>
+        </div>
+        <div className="health-col todo">
+          <strong>🔧 O que precisamos trabalhar (em ordem)</strong>
+          <ol>
+            <li>Destravar o robô de mensagens (fila parada)</li>
+            <li>Meta aprovar o modelo de aviso no WhatsApp</li>
+            <li>Começar a produzir conteúdo (reels, stories)</li>
+            <li>Dar o acabamento premium na página de vendas</li>
+            <li>Só depois: ligar os anúncios (tráfego)</li>
+          </ol>
+        </div>
+      </div>
+      <p className="health-foot">
+        Atualizado automaticamente pelo Comando. Quanto mais perto de <b>100%</b>, mais pronto pra lançar.
+      </p>
     </div>
   );
 }
@@ -2593,7 +2670,168 @@ function CockpitStyles() {
         color: rgba(255, 255, 255, 0.5);
       }
 
+      .health-card {
+        background: linear-gradient(180deg, #13131a, #0f0f15);
+        border: 1px solid #1e1e2e;
+        border-left: 3px solid #FFD700;
+        border-radius: 16px;
+        padding: 18px;
+        margin-bottom: 14px;
+      }
+      .health-top {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+      .health-score {
+        flex: none;
+        width: 92px;
+        height: 92px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        text-align: center;
+        border: 3px solid rgba(255, 215, 0, 0.3);
+        background: rgba(255, 215, 0, 0.06);
+      }
+      .health-score.green {
+        border-color: rgba(0, 230, 118, 0.4);
+        background: rgba(0, 230, 118, 0.08);
+      }
+      .health-score.red {
+        border-color: rgba(255, 82, 82, 0.4);
+        background: rgba(255, 82, 82, 0.08);
+      }
+      .health-score strong {
+        font-size: 26px;
+        line-height: 1;
+        color: #ffd740;
+      }
+      .health-score.green strong {
+        color: #00e676;
+      }
+      .health-score.red strong {
+        color: #ff8a80;
+      }
+      .health-score span {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: rgba(255, 255, 255, 0.54);
+        margin-top: 3px;
+      }
+      .health-intro strong {
+        font-size: 16px;
+        color: #fff;
+      }
+      .health-intro p {
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.62);
+        margin-top: 4px;
+      }
+      .health-bars {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .hrow-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 8px;
+      }
+      .hname {
+        font-size: 12.5px;
+        color: #fff;
+        font-weight: 600;
+      }
+      .hpct {
+        font-size: 12.5px;
+        font-variant-numeric: tabular-nums;
+      }
+      .hpct.green {
+        color: #00e676;
+      }
+      .hpct.gold {
+        color: #ffd740;
+      }
+      .hpct.red {
+        color: #ff8a80;
+      }
+      .hbar {
+        height: 8px;
+        background: #0a0a0f;
+        border: 1px solid #1e1e2e;
+        border-radius: 99px;
+        overflow: hidden;
+        margin: 5px 0 4px;
+      }
+      .hbar span {
+        display: block;
+        height: 100%;
+        border-radius: 99px;
+        background: #ffd740;
+      }
+      .hbar span.green {
+        background: #00e676;
+      }
+      .hbar span.red {
+        background: #ff5252;
+      }
+      .hdesc {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.54);
+        line-height: 1.45;
+      }
+      .health-two {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-top: 16px;
+      }
+      .health-col {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid #1e1e2e;
+        border-radius: 12px;
+        padding: 13px 15px;
+      }
+      .health-col.ok {
+        border-left: 2px solid #00e676;
+      }
+      .health-col.todo {
+        border-left: 2px solid #ffd740;
+      }
+      .health-col strong {
+        font-size: 12.5px;
+        color: #fff;
+        display: block;
+        margin-bottom: 8px;
+      }
+      .health-col ul,
+      .health-col ol {
+        margin: 0;
+        padding-left: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      .health-col li {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.68);
+        line-height: 1.4;
+      }
+      .health-foot {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.5);
+        margin-top: 12px;
+        text-align: center;
+      }
+
       @media (min-width: 720px) {
+        .health-two {
+          grid-template-columns: 1fr 1fr;
+        }
         .cmd-grid {
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
