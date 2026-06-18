@@ -927,6 +927,7 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
                 </div>
               ))}
             </div>
+            <TwilioEconomics balance={twilio} />
           </DashboardSection>
         ) : null}
 
@@ -1123,6 +1124,89 @@ function MonitorPanel() {
         </button>
         {testMsg ? <span className="mon-testmsg">{testMsg}</span> : null}
       </div>
+    </div>
+  );
+}
+
+// Economia do WhatsApp (Twilio) — para controle de gasto por lead
+const USD_BRL = 5.4; // aproximado; ajustável
+const COST_PER_MSG_USD = 0.04; // custo médio estimado por mensagem WhatsApp (BR)
+const LOW_BALANCE_USD = 5; // alerta de crédito baixo
+const CONVERSAO_ESTIMADA = 0.05; // 5% dos leads compram (estimativa conservadora)
+
+const FLUXO_MSGS: Array<{ fase: string; msgs: number; gatilho: string }> = [
+  { fase: "Captação (lead novo)", msgs: 2, gatilho: "Preencheu o formulário" },
+  { fase: "Aquecimento / nutrição", msgs: 3, gatilho: "Primeiros 2-3 dias" },
+  { fase: "Carrinho abandonado", msgs: 2, gatilho: "Não finalizou a compra" },
+  { fase: "Pagamento pendente", msgs: 2, gatilho: "Gerou boleto / PIX" },
+  { fase: "Pós-compra (entrega)", msgs: 6, gatilho: "Comprou — grupo, dieta, materiais" },
+];
+
+function TwilioEconomics({ balance }: { balance: TwilioCredits | null }) {
+  const saldoUsd = balance ? Number(balance.balance) : null;
+  const baixo = saldoUsd !== null && saldoUsd <= LOW_BALANCE_USD;
+  const brl = (usd: number) => `R$ ${(usd * USD_BRL).toFixed(2)}`;
+
+  const msgsNaoCompra = 2 + 3 + 2; // captação + nutrição + abandono
+  const msgsCompra = 2 + 3 + 6; // captação + nutrição + pós-compra
+  const custoLeadNaoCompra = msgsNaoCompra * COST_PER_MSG_USD;
+  const custoLeadCompra = msgsCompra * COST_PER_MSG_USD;
+
+  const compradores = Math.round(leadGoal * CONVERSAO_ESTIMADA);
+  const naoCompradores = leadGoal - compradores;
+  const totalMsgs1000 = naoCompradores * msgsNaoCompra + compradores * msgsCompra;
+  const custoTotal1000Usd = totalMsgs1000 * COST_PER_MSG_USD;
+  const mensagensRestantes = saldoUsd !== null ? Math.floor(saldoUsd / COST_PER_MSG_USD) : null;
+
+  return (
+    <div className="health-card" style={{ marginTop: 14 }}>
+      <div className="health-top">
+        <div className={`health-score ${baixo ? "red" : "green"}`}>
+          <strong style={{ fontSize: 18 }}>{saldoUsd !== null ? `$${saldoUsd.toFixed(2)}` : "—"}</strong>
+          <span>saldo Twilio</span>
+        </div>
+        <div className="health-intro">
+          <strong>💬 Custo & Crédito do WhatsApp (Twilio)</strong>
+          <p>
+            {saldoUsd !== null
+              ? `Dá para enviar cerca de ${mensagensRestantes?.toLocaleString("pt-BR")} mensagens com o saldo atual.`
+              : "Carregando saldo..."}
+          </p>
+        </div>
+      </div>
+
+      {baixo ? (
+        <p className="mon-list crit" style={{ listStyle: "none", padding: "10px 12px" }}>
+          🚨 Crédito Twilio baixo ({`$${saldoUsd?.toFixed(2)}`}). Recarregue para o robô de mensagens não parar.
+        </p>
+      ) : null}
+
+      <MetricGrid
+        items={[
+          { label: "Custo por lead (não compra)", value: brl(custoLeadNaoCompra), tone: "yellow" },
+          { label: "Custo por lead (compra)", value: brl(custoLeadCompra), tone: "gold" },
+          { label: "Projeção p/ 1.000 leads", value: brl(custoTotal1000Usd), tone: "red" },
+        ]}
+      />
+
+      <p className="hdesc" style={{ margin: "10px 0 6px", fontWeight: 600, color: "#fff" }}>
+        Quantas mensagens o Twilio dispara por lead, por fase:
+      </p>
+      <div className="list">
+        {FLUXO_MSGS.map((f) => (
+          <div className="list-row" key={f.fase}>
+            <div>
+              <strong>{f.fase}</strong>
+              <span style={{ color: "rgba(255,255,255,0.5)" }}>{f.gatilho}</span>
+            </div>
+            <b>{f.msgs} msg</b>
+          </div>
+        ))}
+      </div>
+      <p className="health-foot">
+        Lead que não compra ≈ <b>{msgsNaoCompra} mensagens</b> · lead que compra ≈ <b>{msgsCompra} mensagens</b>.
+        Estimativa de {`$${COST_PER_MSG_USD.toFixed(2)}`}/msg — ajustável conforme a fatura real.
+      </p>
     </div>
   );
 }
