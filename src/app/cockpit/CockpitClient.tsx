@@ -1094,6 +1094,7 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
               syncStatus={contentSyncStatus}
               syncing={contentSyncing}
             />
+            <ContentFactoryPanel />
           </DashboardSection>
         ) : null}
 
@@ -1640,6 +1641,134 @@ function StrategyPanel() {
       <p className="strat-tip">Quanto mais barato o lead (CPL), menos você investe pra bater 1.000. Melhorar a página (Comando 3) e mirar o público certo <b>derruba o CPL</b> — por isso medir é tão importante.</p>
 
       <p className="cmd-hint"><b>Reporte ao Comando:</b> medição instalada na /nova (Pixel + GA4). Próximo passo: ligar o anúncio e este painel vira números reais.</p>
+    </div>
+  );
+}
+
+type CFItem = {
+  id: string;
+  tipo: string;
+  tema?: string | null;
+  roteiro_ref?: string | null;
+  status: string;
+  data_post?: string | null;
+  hora_post?: string | null;
+  skills?: string[] | null;
+};
+const CF_SKILLS_BY_TYPE: Record<string, string[]> = {
+  story: ["ckm-banner-design", "trinca-marketing-psychology", "content-instagram-rv"],
+  feed: ["ckm-design", "trinca-high-end-visual-design", "trinca-marketing-psychology", "trinca-copywriting"],
+  carrossel: ["ckm-design", "frontend-design", "trinca-marketing-psychology", "trinca-copywriting"],
+  reel: ["content-instagram-rv", "trinca-copywriting", "trinca-marketing-psychology"],
+};
+const CF_STATUS_LABEL: Record<string, string> = {
+  solicitado: "Solicitado", criando: "Criando", em_aprovacao: "Aguardando aprovação",
+  aprovado: "Aprovado", agendado: "Agendado", publicado: "Publicado", rejeitado: "Rejeitado", erro: "Erro",
+};
+
+function ContentFactoryPanel() {
+  const [items, setItems] = useState<CFItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [tipo, setTipo] = useState("feed");
+  const [tema, setTema] = useState("");
+  const [data, setData] = useState("");
+  const [hora, setHora] = useState("");
+  const [msg, setMsg] = useState("");
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const r = await fetch("/api/content-factory");
+      const j = (await r.json()) as { items?: CFItem[] };
+      setItems(Array.isArray(j.items) ? j.items : []);
+    } catch {
+      /* silencioso */
+    }
+    setLoading(false);
+  }, []);
+  useEffect(() => { void load(); }, [load]);
+
+  const criar = async () => {
+    if (!tema.trim()) { setMsg("Escreva o tema do post."); return; }
+    setMsg("");
+    const skills = CF_SKILLS_BY_TYPE[tipo] || [];
+    const r = await fetch("/api/content-factory", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ tipo, tema, data_post: data, hora_post: hora, skills }),
+    });
+    if (r.ok) {
+      setTema(""); setData(""); setHora("");
+      setMsg("✅ Pedido criado! Use 'Acionar criação' pra o Claude gerar o material.");
+      void load();
+    } else {
+      const j = (await r.json().catch(() => ({}))) as { error?: string };
+      setMsg("Erro: " + (j.error || "tente de novo. Rodou o SQL no Supabase?"));
+    }
+  };
+
+  const patch = async (id: string, status: string) => {
+    await fetch("/api/content-factory", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ id, status }),
+    });
+    void load();
+  };
+
+  const copyCmd = (it: CFItem) => {
+    const skills = (it.skills || []).join(", ");
+    void navigator.clipboard?.writeText(
+      `CRIAR CONTEÚDO TRINCA RV21 — pedido ${it.id}: gere um ${it.tipo} sobre "${it.tema || it.roteiro_ref || ""}" no padrão premium da landing /nova. Use as skills: ${skills}. Aplique psicologia de conversão e a voz do Ruriá. Ao terminar, suba o material e marque o pedido como em_aprovacao.`,
+    );
+    setMsg("📋 Comando copiado — cole no Claude Code pra ele criar.");
+  };
+
+  return (
+    <div className="cf">
+      <div className="cf-intro">
+        <strong>🏭 Fábrica de Conteúdo</strong>
+        <span>Peça um post → acione o Claude pra criar com as skills → aprove → o motor agenda e publica. (A publicação automática liga quando as chaves do Instagram forem configuradas — ver docs/credenciais-pendentes.md.)</span>
+      </div>
+      <div className="cf-form">
+        <select value={tipo} onChange={(e) => setTipo(e.target.value)}>
+          <option value="story">Story</option>
+          <option value="feed">Feed</option>
+          <option value="carrossel">Carrossel</option>
+          <option value="reel">Reel</option>
+        </select>
+        <input placeholder="Tema do post (ex: o erro nº1 de quem desiste)" value={tema} onChange={(e) => setTema(e.target.value)} />
+        <input type="date" value={data} onChange={(e) => setData(e.target.value)} />
+        <input type="time" value={hora} onChange={(e) => setHora(e.target.value)} />
+        <button className="cf-btn" onClick={() => void criar()}>+ Criar pedido</button>
+      </div>
+      <p className="cf-skills">Skills usadas neste tipo: <b>{(CF_SKILLS_BY_TYPE[tipo] || []).join(" · ")}</b></p>
+      {msg ? <p className="cf-msg">{msg}</p> : null}
+      <div className="cf-list">
+        {loading ? (
+          <p className="cf-empty">Carregando…</p>
+        ) : items.length === 0 ? (
+          <p className="cf-empty">Nenhum pedido ainda. Crie o primeiro acima. (Se der erro ao criar, rode antes o SQL <b>docs/supabase-content-factory.sql</b> no Supabase.)</p>
+        ) : (
+          items.map((it) => (
+            <div className="cf-item" key={it.id}>
+              <div className="cf-item-top">
+                <span className="cf-tipo">{it.tipo}</span>
+                <strong>{it.tema || it.roteiro_ref || "—"}</strong>
+                <span className={`cmd-status ${it.status === "publicado" ? "ok" : it.status === "rejeitado" || it.status === "erro" ? "wait" : "run"}`}>
+                  {CF_STATUS_LABEL[it.status] || it.status}
+                </span>
+              </div>
+              <div className="cf-item-meta">{it.data_post || "sem data"} {it.hora_post || ""}</div>
+              <div className="cf-item-btns">
+                <button onClick={() => copyCmd(it)}>⚡ Acionar criação</button>
+                <button onClick={() => void patch(it.id, "aprovado")}>✅ Aprovar</button>
+                <button onClick={() => void patch(it.id, "rejeitado")}>❌ Rejeitar</button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 }
@@ -3273,6 +3402,32 @@ function CockpitStyles() {
       @media (min-width: 720px) {
         .cmd-pulse { grid-template-columns: repeat(4, 1fr); }
         .cmd-grid2 { grid-template-columns: repeat(2, 1fr); }
+      }
+
+      /* === Motor 24/7 — Fábrica de Conteúdo === */
+      .cf { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
+      .cf-intro { background: rgba(212,162,60,0.06); border: 1px solid rgba(212,162,60,0.2); border-radius: 13px; padding: 13px 15px; }
+      .cf-intro strong { display: block; color: #f0c969; font-size: 14px; margin-bottom: 4px; }
+      .cf-intro span { color: #a09c94; font-size: 12.5px; line-height: 1.5; }
+      .cf-form { display: grid; grid-template-columns: 1fr; gap: 8px; }
+      .cf-form select, .cf-form input { background: #0f0f12; border: 1px solid #26262e; border-radius: 10px; padding: 11px 12px; color: #f6f4ef; font-size: 13px; font-family: inherit; }
+      .cf-btn { background: linear-gradient(135deg,#d4a23c,#f0c969); color: #1a1206; font-weight: 800; border: none; border-radius: 10px; padding: 12px; cursor: pointer; font-family: inherit; font-size: 13.5px; }
+      .cf-skills { font-size: 11.5px; color: #a09c94; }
+      .cf-skills b { color: #f0c969; }
+      .cf-msg { font-size: 12.5px; color: #5bbb5f; background: rgba(91,187,95,0.08); border-radius: 8px; padding: 8px 11px; }
+      .cf-list { display: flex; flex-direction: column; gap: 9px; }
+      .cf-empty { font-size: 12.5px; color: #a09c94; background: #141418; border: 1px dashed #26262e; border-radius: 11px; padding: 14px; }
+      .cf-empty b { color: #f0c969; }
+      .cf-item { background: #141418; border: 1px solid #26262e; border-radius: 12px; padding: 11px 13px; }
+      .cf-item-top { display: flex; align-items: center; gap: 9px; }
+      .cf-item-top strong { flex: 1; font-size: 13px; color: #f6f4ef; }
+      .cf-tipo { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: #1a1206; background: #d4a23c; border-radius: 6px; padding: 3px 7px; }
+      .cf-item-meta { font-size: 11px; color: #6c6962; margin: 6px 0 9px; }
+      .cf-item-btns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+      .cf-item-btns button { background: #0f0f12; border: 1px solid #26262e; color: #f6f4ef; border-radius: 9px; padding: 8px 6px; font-size: 11.5px; font-weight: 700; cursor: pointer; font-family: inherit; }
+      .cf-item-btns button:hover { border-color: #d4a23c; }
+      @media (min-width: 720px) {
+        .cf-form { grid-template-columns: 130px 1fr 150px 110px auto; align-items: center; }
       }
 
       /* === Comando 4 — Painel de Estratégia (gráficos didáticos) === */
