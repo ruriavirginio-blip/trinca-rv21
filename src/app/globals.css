@@ -7081,3 +7081,41 @@ a {
     font-size: 24px;
   }
 }
+
+/* ============================================================
+   CAMADA PREMIUM — Revelacao suave ao rolar (entrada de cards)
+   Progressivo: so ativa quando .rv-anim-on existe (JS montado).
+   Sem JS, tudo aparece normal (acessivel).
+   ============================================================ */
+.rv-page.rv-anim-on .rv-reveal {
+  opacity: 0;
+  transform: translateY(34px) scale(0.985);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--rv-reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+
+.rv-page.rv-anim-on .rv-reveal.rv-in {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Brilho gold sutil que percorre a borda dos cards ao revelar */
+.rv-page.rv-anim-on .rv-video-card.rv-reveal,
+.rv-page.rv-anim-on .rv-objectives.rv-reveal {
+  position: relative;
+}
+
+.rv-page.rv-anim-on .rv-offer-button.rv-reveal {
+  transform: translateY(26px) scale(0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rv-page.rv-anim-on .rv-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}

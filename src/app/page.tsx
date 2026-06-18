@@ -431,6 +431,33 @@ export default function Home() {
     return () => observer.disconnect();
   }, []);
 
+  // Camada premium: revelacao suave de secoes/cards ao rolar (progressivo e seguro).
+  useEffect(() => {
+    const page = document.querySelector<HTMLElement>(".rv-page");
+    if (!page) return;
+    const selector =
+      ".rv-section, .rv-form-section, .rv-faq-section, .rv-video-card, .rv-authority-photo, .rv-objectives, .rv-section-head, .rv-offer-button";
+    const targets = Array.from(document.querySelectorAll<HTMLElement>(selector));
+    if (!targets.length) return;
+    targets.forEach((el, i) => {
+      el.classList.add("rv-reveal");
+      el.style.setProperty("--rv-reveal-delay", `${Math.min(i % 4, 3) * 70}ms`);
+    });
+    page.classList.add("rv-anim-on");
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("rv-in");
+          io.unobserve(entry.target);
+        });
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -8% 0px" },
+    );
+    targets.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, []);
+
   async function handleLeadSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
