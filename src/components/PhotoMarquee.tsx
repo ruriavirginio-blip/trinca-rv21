@@ -1,14 +1,18 @@
 'use client'
 
+// Imagens reais de transformacao das mulheres RV (assets locais existentes).
 const FOTOS: string[] = [
-  "https://res.cloudinary.com/drfs4s18a/image/upload/w_440,h_600,c_fill,g_auto,q_auto,f_auto/alunas/aluna1.jpg",
-  "https://res.cloudinary.com/drfs4s18a/image/upload/w_440,h_600,c_fill,g_auto,q_auto,f_auto/alunas/aluna2.jpg",
-  "https://res.cloudinary.com/drfs4s18a/image/upload/w_440,h_600,c_fill,g_auto,q_auto,f_auto/alunas/aluna3.jpg",
-  "https://res.cloudinary.com/drfs4s18a/image/upload/w_440,h_600,c_fill,g_auto,q_auto,f_auto/alunas/aluna4.jpg",
-  "https://res.cloudinary.com/drfs4s18a/image/upload/w_440,h_600,c_fill,g_auto,q_auto,f_auto/alunas/aluna5.jpg",
-  "https://res.cloudinary.com/drfs4s18a/image/upload/w_440,h_600,c_fill,g_auto,q_auto,f_auto/alunas/aluna6.jpg",
-  "https://res.cloudinary.com/drfs4s18a/image/upload/w_440,h_600,c_fill,g_auto,q_auto,f_auto/alunas/aluna7.jpg",
-  "https://res.cloudinary.com/drfs4s18a/image/upload/w_440,h_600,c_fill,g_auto,q_auto,f_auto/alunas/aluna8.jpg",
+  "/images/antesdepois.jpg",
+  "/images/antesdepoiss.jpg",
+  "/images/antesdepoisss.jpg",
+  "/images/antesdepoissss.jpg",
+  "/images/antesdepoissssss.jpg",
+  "/images/antesdepo.jpg",
+  "/images/antesdepoi.jpg",
+  "/images/antesdepoii.jpg",
+  "/images/antesdepoiii.jpg",
+  "/images/antesdepoiiii.jpg",
+  "/images/antesdepoo.jpg",
 ]
 
 const PLACEHOLDER_COUNT = 10

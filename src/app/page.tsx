@@ -435,6 +435,14 @@ export default function Home() {
   useEffect(() => {
     const page = document.querySelector<HTMLElement>(".rv-page");
     if (!page) return;
+    // Glow gold ambiente (atmosfera premium, referencia /bio)
+    if (!document.querySelector(".rv-ambient-glow")) {
+      const g1 = document.createElement("div");
+      g1.className = "rv-ambient-glow";
+      const g2 = document.createElement("div");
+      g2.className = "rv-ambient-glow two";
+      page.prepend(g1, g2);
+    }
     const selector =
       ".rv-section, .rv-form-section, .rv-faq-section, .rv-video-card, .rv-authority-photo, .rv-objectives, .rv-section-head, .rv-offer-button";
     const targets = Array.from(document.querySelectorAll<HTMLElement>(selector));
