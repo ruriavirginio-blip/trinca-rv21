@@ -297,9 +297,9 @@ export default function NovaLanding() {
         .mx *{margin:0;padding:0;box-sizing:border-box}
         .mx h1,.mx h2,.mx .mx-logo{font-family:"Bricolage Grotesque",sans-serif;letter-spacing:-0.03em;line-height:1.02}
         .mx .hl{color:var(--gold2)}
-        .mx-glow{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(10px)}
-        .mx-glow.a{top:-8%;left:60%;width:520px;height:520px;background:radial-gradient(circle,rgba(212,162,60,0.16),transparent 62%)}
-        .mx-glow.b{bottom:5%;left:-10%;width:420px;height:420px;background:radial-gradient(circle,rgba(212,162,60,0.09),transparent 60%)}
+        .mx .mx-glow{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(10px)}
+        .mx .mx-glow.a{top:-8%;left:60%;width:520px;height:520px;background:radial-gradient(circle,rgba(212,162,60,0.16),transparent 62%)}
+        .mx .mx-glow.b{bottom:5%;left:-10%;width:420px;height:420px;background:radial-gradient(circle,rgba(212,162,60,0.09),transparent 60%)}
         .mx > *{position:relative;z-index:1}
         .mx section,.mx header,.mx nav,.mx footer{max-width:1100px;margin:0 auto;padding-left:22px;padding-right:22px}
 
