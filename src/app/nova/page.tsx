@@ -1,6 +1,17 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import {
+  trackViewContent,
+  trackLead,
+  trackInitiateCheckout,
+  trackCustomEvent,
+} from "@/lib/meta-pixel";
+import {
+  gaTrackEvent,
+  gaTrackLead,
+  gaTrackBeginCheckout,
+} from "@/lib/google-analytics";
 
 /* =============================================================
    TRINCA RV21 — LANDING NOVA (maximalista, padrão agência)
@@ -57,8 +68,12 @@ export default function NovaLanding() {
   const [showSticky, setShowSticky] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
 
-  // Revelação flutuante ao rolar + sticky bar
+  // Revelação flutuante ao rolar + sticky bar + medição (Pixel/GA4)
   useEffect(() => {
+    // "Entrou na página" — uma vez por carregamento
+    trackViewContent({ content_name: "TRINCA RV21 - landing /nova" });
+    gaTrackEvent("page_view_nova", { page: "/nova" });
+
     const els = Array.from(document.querySelectorAll<HTMLElement>(".mx-reveal"));
     const io = new IntersectionObserver(
       (entries) => entries.forEach((e) => e.isIntersecting && (e.target.classList.add("mx-in"), io.unobserve(e.target))),
@@ -91,7 +106,22 @@ export default function NovaLanding() {
     );
     counters.forEach((el) => cio.observe(el));
 
-    const onScroll = () => setShowSticky(window.scrollY > 700);
+    // Profundidade de rolagem: dispara uma vez em cada marco (25/50/75/100%)
+    const milestones = [25, 50, 75, 100];
+    const fired = new Set<number>();
+    const onScroll = () => {
+      setShowSticky(window.scrollY > 700);
+      const doc = document.documentElement;
+      const scrollable = doc.scrollHeight - window.innerHeight;
+      const pct = scrollable > 0 ? Math.round((window.scrollY / scrollable) * 100) : 0;
+      milestones.forEach((m) => {
+        if (pct >= m && !fired.has(m)) {
+          fired.add(m);
+          trackCustomEvent("ScrollDepth", { percent: m, page: "/nova" });
+          gaTrackEvent("scroll_depth", { percent: m, page: "/nova" });
+        }
+      });
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => { io.disconnect(); cio.disconnect(); window.removeEventListener("scroll", onScroll); };
   }, []);
@@ -117,6 +147,11 @@ export default function NovaLanding() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(lead),
       });
+      // Medição: lead capturado + início de checkout (Pixel + GA4)
+      trackLead({ objetivo: lead.objetivo });
+      gaTrackLead({ objetivo: lead.objetivo });
+      trackInitiateCheckout({ objetivo: lead.objetivo });
+      gaTrackBeginCheckout({ objetivo: lead.objetivo });
       window.location.href = CHECKOUT;
     } catch {
       setErr("Não consegui registrar agora. Tenta de novo em instantes.");
@@ -124,7 +159,11 @@ export default function NovaLanding() {
     }
   }
 
-  const goForm = () => formRef.current?.scrollIntoView({ behavior: "smooth" });
+  const goForm = () => {
+    trackCustomEvent("CTAClick", { page: "/nova" });
+    gaTrackEvent("cta_click", { page: "/nova" });
+    formRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   return (
     <main className="mx">

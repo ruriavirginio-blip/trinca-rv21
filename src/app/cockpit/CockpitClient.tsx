@@ -988,6 +988,7 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
             <ProjectHealthPanel />
             <MonitorPanel />
             <CommandSection />
+            <StrategyPanel />
           </DashboardSection>
         ) : null}
 
@@ -1502,6 +1503,109 @@ function CommandSection() {
         Clique em <b>Acionar</b> para copiar o comando do setor e colar no Claude Code. <b>↻</b> pede uma atualização de status.
       </p>
     </>
+  );
+}
+
+const STRAT_PLAN = [
+  { icon: <Users size={16} />, t: "Pra quem anunciar", d: "Mulheres de 25 a 44 anos que já tentaram emagrecer e desistiram. Mães, ocupadas, cansadas de dieta que não encaixa na rotina." },
+  { icon: <Eye size={16} />, t: "O que mostrar no anúncio", d: "A mesma frase da página: \"Você não falhou. O método é que falhou.\" Um vídeo curto seu falando isso + um antes/depois real." },
+  { icon: <Target size={16} />, t: "Pra onde mandar o clique", d: "Direto pra página /nova — não pro perfil do Instagram. Quanto menos passos até o formulário, mais barato sai cada lead." },
+  { icon: <Zap size={16} />, t: "Quanto investir pra começar", d: "R$20 a R$30 por dia, por uns 5 dias, testando 2 ou 3 anúncios. O que performar melhor a gente aumenta." },
+];
+
+const STRAT_FUNNEL = [
+  { label: "Entraram na página", v: 1000, pct: 100, note: "100%", lead: false },
+  { label: "Rolaram até a oferta", v: 550, pct: 55, note: "55%", lead: false },
+  { label: "Clicaram no botão", v: 250, pct: 25, note: "25%", lead: false },
+  { label: "Preencheram o form", v: 120, pct: 12, note: "12% · LEAD", lead: true },
+  { label: "Foram pro checkout", v: 120, pct: 12, note: "12%", lead: false },
+  { label: "Compraram", v: 24, pct: 2.4, note: "2,4%", lead: false },
+];
+
+const STRAT_KPI = [
+  { t: "Custo por lead (quanto custa cada cadastro)", bom: "até R$8", ruim: "acima de R$15" },
+  { t: "Taxa do formulário (quem entra e preenche)", bom: "acima de 10%", ruim: "abaixo de 5%" },
+  { t: "Quem rola até ver a oferta", bom: "acima de 50%", ruim: "abaixo de 30%" },
+  { t: "Custo por venda", bom: "até R$40", ruim: "acima de R$80" },
+];
+
+const STRAT_GOAL = [
+  { label: "CPL R$5 (ótimo)", invest: 5000 },
+  { label: "CPL R$8 (bom)", invest: 8000 },
+  { label: "CPL R$12 (atenção)", invest: 12000 },
+];
+
+function StrategyPanel() {
+  const maxInvest = 12000;
+  return (
+    <div className="strat">
+      <div className="strat-intro">
+        <BarChart3 size={18} />
+        <div>
+          <strong>Comando 4 — Plano de Jogo do Tráfego Pago</strong>
+          <span>
+            Em português simples: pra quem anunciar, o caminho da cliente até a compra e quais
+            números olhar. Os percentuais são <b>referência (benchmark)</b> — viram reais assim que
+            o anúncio rodar com as câmeras de medição já instaladas na página.
+          </span>
+        </div>
+      </div>
+
+      <h4 className="strat-h">📣 O plano de campanha</h4>
+      <div className="strat-plan">
+        {STRAT_PLAN.map((p) => (
+          <div className="strat-plan-card" key={p.t}>
+            <span className="strat-ico">{p.icon}</span>
+            <strong>{p.t}</strong>
+            <p>{p.d}</p>
+          </div>
+        ))}
+      </div>
+
+      <h4 className="strat-h">🛤️ O caminho da cliente (funil)</h4>
+      <p className="strat-sub">De cada <b>1.000 mulheres</b> que entram na página, quantas chegam até a compra:</p>
+      <div className="strat-funnel">
+        {STRAT_FUNNEL.map((f) => (
+          <div className="strat-fn-row" key={f.label}>
+            <span className="strat-fn-label">{f.label}</span>
+            <div className="strat-fn-bar">
+              <span className={f.lead ? "lead" : ""} style={{ width: `${f.pct}%` }}>
+                <b>{f.v.toLocaleString("pt-BR")}</b>
+              </span>
+            </div>
+            <span className="strat-fn-pct">{f.note}</span>
+          </div>
+        ))}
+      </div>
+      <p className="strat-tip">💡 Cada degrau que cai muito é onde estamos perdendo dinheiro. As câmeras na página mostram <b>exatamente</b> em qual degrau a cliente desiste.</p>
+
+      <h4 className="strat-h">📊 Mapa de números — o que é bom e o que é alerta</h4>
+      <div className="strat-kpi">
+        {STRAT_KPI.map((k) => (
+          <div className="strat-kpi-row" key={k.t}>
+            <span className="strat-kpi-t">{k.t}</span>
+            <span className="strat-kpi-good">✓ bom: {k.bom}</span>
+            <span className="strat-kpi-bad">✗ alerta: {k.ruim}</span>
+          </div>
+        ))}
+      </div>
+      <p className="strat-tip">⚠️ O ticket é R$37,89. Por isso a conta fecha melhor com <b>recompra</b> (o cupom de 50% pra continuar) e <b>indicação</b>. Vender só uma vez por cliente aperta a margem.</p>
+
+      <h4 className="strat-h">🎯 Quanto custa chegar na meta de 1.000 leads</h4>
+      <div className="strat-goal">
+        {STRAT_GOAL.map((g) => (
+          <div className="strat-goal-row" key={g.label}>
+            <span className="strat-goal-label">{g.label}</span>
+            <div className="strat-goal-bar">
+              <span style={{ width: `${(g.invest / maxInvest) * 100}%` }}>R$ {g.invest.toLocaleString("pt-BR")}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+      <p className="strat-tip">Quanto mais barato o lead (CPL), menos você investe pra bater 1.000. Melhorar a página (Comando 3) e mirar o público certo <b>derruba o CPL</b> — por isso medir é tão importante.</p>
+
+      <p className="cmd-hint"><b>Reporte ao Comando:</b> medição instalada na /nova (Pixel + GA4). Próximo passo: ligar o anúncio e este painel vira números reais.</p>
+    </div>
   );
 }
 
@@ -3096,6 +3200,46 @@ function CockpitStyles() {
           align-items: stretch;
           flex-direction: column;
         }
+      }
+
+      /* === Comando 4 — Painel de Estratégia (gráficos didáticos) === */
+      .strat { display: flex; flex-direction: column; gap: 14px; margin-top: 6px; }
+      .strat-intro { display: flex; gap: 12px; background: rgba(212,162,60,0.06); border: 1px solid rgba(212,162,60,0.2); border-radius: 14px; padding: 14px 16px; }
+      .strat-intro svg { flex-shrink: 0; color: #f0c969; }
+      .strat-intro strong { display: block; color: #f0c969; font-size: 14px; margin-bottom: 4px; }
+      .strat-intro span { color: #a09c94; font-size: 12.5px; line-height: 1.5; }
+      .strat-intro b { color: #f6f4ef; }
+      .strat-h { font-size: 15px; font-weight: 800; margin-top: 6px; }
+      .strat-sub { color: #a09c94; font-size: 12.5px; }
+      .strat-sub b { color: #f6f4ef; }
+      .strat-plan { display: grid; grid-template-columns: 1fr; gap: 10px; }
+      .strat-plan-card { background: #141418; border: 1px solid #26262e; border-radius: 13px; padding: 13px 15px; }
+      .strat-ico { display: inline-flex; width: 30px; height: 30px; border-radius: 8px; background: rgba(212,162,60,0.12); color: #f0c969; align-items: center; justify-content: center; margin-bottom: 8px; }
+      .strat-plan-card strong { display: block; font-size: 13.5px; margin-bottom: 4px; }
+      .strat-plan-card p { color: #a09c94; font-size: 12.5px; line-height: 1.5; }
+      .strat-funnel { display: flex; flex-direction: column; gap: 8px; background: #141418; border: 1px solid #26262e; border-radius: 14px; padding: 14px; }
+      .strat-fn-row { display: grid; grid-template-columns: 110px 1fr 66px; align-items: center; gap: 8px; }
+      .strat-fn-label { font-size: 11px; color: #a09c94; }
+      .strat-fn-bar { background: #0f0f12; border-radius: 7px; overflow: hidden; height: 26px; }
+      .strat-fn-bar span { display: flex; align-items: center; justify-content: flex-end; height: 100%; background: linear-gradient(90deg,#a06f1e,#d4a23c); border-radius: 7px; padding: 0 8px; min-width: 36px; transition: width .8s ease; }
+      .strat-fn-bar span.lead { background: linear-gradient(90deg,#2e7d32,#5bbb5f); }
+      .strat-fn-bar b { font-size: 11px; color: #1a1206; font-weight: 800; }
+      .strat-fn-pct { font-size: 10.5px; color: #f0c969; font-weight: 700; text-align: right; }
+      .strat-tip { background: rgba(255,255,255,0.03); border-left: 3px solid #d4a23c; border-radius: 0 8px 8px 0; padding: 9px 12px; color: #a09c94; font-size: 12px; line-height: 1.5; }
+      .strat-tip b { color: #f6f4ef; }
+      .strat-kpi { display: flex; flex-direction: column; gap: 8px; }
+      .strat-kpi-row { display: grid; grid-template-columns: 1fr; gap: 4px; background: #141418; border: 1px solid #26262e; border-radius: 11px; padding: 11px 13px; }
+      .strat-kpi-t { font-size: 12.5px; font-weight: 700; }
+      .strat-kpi-good { font-size: 11.5px; color: #5bbb5f; }
+      .strat-kpi-bad { font-size: 11.5px; color: #e57373; }
+      .strat-goal { display: flex; flex-direction: column; gap: 9px; background: #141418; border: 1px solid #26262e; border-radius: 14px; padding: 14px; }
+      .strat-goal-row { display: grid; grid-template-columns: 120px 1fr; align-items: center; gap: 10px; }
+      .strat-goal-label { font-size: 11.5px; color: #a09c94; }
+      .strat-goal-bar { background: #0f0f12; border-radius: 7px; overflow: hidden; height: 24px; }
+      .strat-goal-bar span { display: flex; align-items: center; justify-content: flex-end; height: 100%; background: linear-gradient(90deg,#a06f1e,#d4a23c); border-radius: 7px; padding: 0 8px; color: #1a1206; font-weight: 800; font-size: 11px; min-width: 60px; transition: width .8s ease; }
+      @media (min-width: 720px) {
+        .strat-plan { grid-template-columns: repeat(2, 1fr); }
+        .strat-kpi-row { grid-template-columns: 1.6fr 1fr 1fr; align-items: center; }
       }
     `}</style>
   );

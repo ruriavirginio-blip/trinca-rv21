@@ -6,6 +6,21 @@ export const metadata: Metadata = {
   title: "TRINCA RV21 · Desafio Feminino de 21 Dias",
   description:
     "Você não falhou. O método é que falhou com você. 21 dias com treino direcionado, dieta por objetivo e acompanhamento diário. +5.000 mulheres transformadas.",
+  keywords: [
+    "desafio fitness feminino",
+    "emagrecer 21 dias",
+    "treino para mulheres",
+    "protocolo RV",
+    "Ruriá Virgínio",
+    "perder barriga",
+    "dieta por objetivo",
+  ],
+  alternates: { canonical: "https://protocolorv.com.br/nova" },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large" },
+  },
   openGraph: {
     title: "TRINCA RV21 · Você não falhou. O método falhou.",
     description:
