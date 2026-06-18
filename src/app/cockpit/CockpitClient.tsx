@@ -291,7 +291,7 @@ const contentCalendar: Array<{
 }> = [
   {
     id: "d1",
-    day: "D1",
+    day: "D1 · 18/06",
     title: "A promessa simples do desafio",
     time: "07:30",
     format: "Reels + 3 Stories",
@@ -313,7 +313,7 @@ TEXTO NA TELA: [00:00] "Você não falhou" | [00:03] "O método falhou" | [00:27
   },
   {
     id: "d2",
-    day: "D2",
+    day: "D2 · 19/06",
     title: "Quebra da culpa",
     time: "12:15",
     format: "Reels curto",
@@ -334,7 +334,7 @@ TEXTO NA TELA: [00:00] "Você não falhou" | [00:03] "O método falhou" | [00:27
   },
   {
     id: "d3",
-    day: "D3",
+    day: "D3 · 20/06",
     title: "Prova social Jessica",
     time: "19:00",
     format: "Depoimento + bastidor",
@@ -355,7 +355,7 @@ TEXTO NA TELA: [00:15] "-6kg • -8cm de barriga" (verde) | [00:30] "'Voltei a g
   },
   {
     id: "d4",
-    day: "D4",
+    day: "D4 · 21/06",
     title: "O que tem dentro",
     time: "08:00",
     format: "Carrossel + Stories",
@@ -372,7 +372,7 @@ TEXTO NA TELA: [00:15] "-6kg • -8cm de barriga" (verde) | [00:30] "'Voltei a g
   },
   {
     id: "d5",
-    day: "D5",
+    day: "D5 · 22/06",
     title: "Objeções comuns",
     time: "12:30",
     format: "Reels + perguntas",
@@ -392,7 +392,7 @@ TEXTO NA TELA: [00:15] "-6kg • -8cm de barriga" (verde) | [00:30] "'Voltei a g
   },
   {
     id: "d6",
-    day: "D6",
+    day: "D6 · 23/06",
     title: "Urgência honesta",
     time: "18:30",
     format: "Sequência de Stories",
@@ -408,7 +408,7 @@ TEXTO NA TELA: [00:15] "-6kg • -8cm de barriga" (verde) | [00:30] "'Voltei a g
   },
   {
     id: "d7",
-    day: "D7",
+    day: "D7 · 24/06",
     title: "Abertura oficial",
     time: "07:00",
     format: "Reels + Stories + Bio",
@@ -426,6 +426,137 @@ TEXTO NA TELA: [00:15] "-6kg • -8cm de barriga" (verde) | [00:30] "'Voltei a g
 [00:20-00:32] CLOSE | "Quem está na lista paga preço de lançamento e entra primeiro. Quem não está... paga mais caro quando abrir amanhã."
 [00:32-00:40] CLOSE + APONTA | "Comenta ÚLTIMA CHANCE agora. Sua vaga ainda está aqui."
 TEXTO NA TELA: [00:04] "Lista VIP → acesso 24h antes" | [00:35] "ÚLTIMA CHANCE 👇" (pulsando)`,
+  },
+  {
+    id: "d8",
+    day: "D8 · 25/06",
+    title: "Carrossel — As 3 mulheres que NÃO devem entrar",
+    time: "08:10",
+    format: "Carrossel (6 slides) + Stories",
+    objective: "Qualificação reversa: filtrar lead frio e fazer a mulher certa se identificar e desejar entrar (90-100% de fit).",
+    channel: "Feed (carrossel) + Stories",
+    status: "RASCUNHO",
+    script: [
+      "Slide 1 (capa): 'O TRINCA RV21 NÃO é pra você se...' (fundo gold, tipografia forte)",
+      "Slide 2: '...você quer resultado sem mudar NADA na rotina.'",
+      "Slide 3: '...você desiste no primeiro dia que sai do plano.'",
+      "Slide 4: '...você acha que 21 dias é pouco. (Spoiler: muda tudo.)'",
+      "Slide 5: 'Mas se você é mulher real, ocupada, e SÓ precisa de direção — é exatamente pra você.'",
+      "Slide 6 (CTA): 'Comenta EU SOU que eu te coloco na lista VIP.'",
+      "Palavras-chave (algoritmo): emagrecer depois dos 30, protocolo feminino, rotina real, recomeçar",
+      "Hashtags: #protocolorv #emagrecimentofeminino #desafio21dias #mulheresreais #vidasaudavel",
+    ],
+    roteiro: `[CARROSSEL — copy de cada slide acima. Direção visual: tons gold/preto da bio, fotos reais, tipografia editorial. Legenda do post abaixo:]
+LEGENDA: "A maioria das mulheres NÃO deveria entrar no TRINCA RV21. 👇 Eu explico sem medo no carrossel. Se você se identificar com o último slide, comenta EU SOU — eu te mando o acesso da lista VIP antes de abrir pra todo mundo. Vagas da primeira turma são limitadas."`,
+  },
+  {
+    id: "d9",
+    day: "D9 · 26/06",
+    title: "Reels — Prova social acumulada (+5.000)",
+    time: "19:10",
+    format: "Reels (depoimentos em sequência)",
+    objective: "Empilhar prova social para quebrar a objeção 'será que funciona pra mim?' na reta do lançamento.",
+    channel: "Reels + Stories",
+    status: "RASCUNHO",
+    script: [
+      "Gancho: '5.000 mulheres. A mesma frase.'",
+      "Corpo: cortes rápidos de prints/depoimentos com a frase 'achei que era tarde demais'.",
+      "Virada: 'Não era tarde. Era método errado.'",
+      "CTA: 'Comenta PRÓXIMA pra ser a história do mês que vem.'",
+      "Melhor horário 19h (pico de mulher 25-44 no feed à noite). Palavras-chave: antes e depois, transformação real, autoestima",
+    ],
+    roteiro: `[00:00-00:03] CLOSE | "5.000 mulheres treinaram comigo em 14 anos. E quase todas me disseram a MESMA frase no começo."
+[00:03-00:12] CORTES RÁPIDOS (prints/vídeos) | "'Ruriá, acho que é tarde demais pra mim.'" [repetir a frase em sobreposição]
+[00:12-00:22] MEIO CORPO | "Não era tarde. Nunca foi. Era método feito pra todo mundo igual — e você não é todo mundo."
+[00:22-00:30] CLOSE | "Semana que vem abre a primeira turma do TRINCA RV21. Comenta PRÓXIMA que eu te mando o acesso."
+TEXTO NA TELA: [00:03] "+5.000 mulheres" | [00:14] "Não era tarde" | [00:25] "PRÓXIMA 👇"`,
+  },
+  {
+    id: "d10",
+    day: "D10 · 27/06",
+    title: "Reels — A real sobre o preço (R$37,89)",
+    time: "12:20",
+    format: "Reels + Caixa de perguntas",
+    objective: "Ancoragem de valor: dissolver a objeção de preço antes da abertura. Foco em VENDA.",
+    channel: "Reels + Stories",
+    status: "RASCUNHO",
+    script: [
+      "Gancho: 'Quanto custa continuar do jeito que está?'",
+      "Ancoragem: comparar com consulta, academia, dietas que não funcionaram.",
+      "Virada: '21 dias com direção custa menos que um delivery de sexta.'",
+      "CTA: 'Manda EU QUERO no direct.'",
+      "Palavras-chave: vale a pena, investimento em si mesma, barato. Horário 12h (almoço, alto alcance).",
+    ],
+    roteiro: `[00:00-00:04] CLOSE | "Você já gastou quanto em dieta que não funcionou? Para e pensa."
+[00:04-00:14] MEIO CORPO | "Consulta, academia que você não foi, aquele app que abandonou... Continuar perdida custa CARO — em dinheiro e em autoestima."
+[00:14-00:24] CLOSE FIRME | "O TRINCA RV21 custa R$37,89. Menos que um delivery de sexta. Por 21 dias de direção real, treino, dieta e acompanhamento no seu WhatsApp."
+[00:24-00:32] CLOSE + APONTA | "Abre essa semana. Comenta EU QUERO pra entrar na lista."
+TEXTO NA TELA: [00:14] "R$ 37,89" (gold, grande) | [00:18] "= 1 delivery" | [00:28] "EU QUERO 👇"`,
+  },
+  {
+    id: "d11",
+    day: "D11 · 28/06",
+    title: "Storytelling — Por que eu criei o Protocolo RV",
+    time: "20:00",
+    format: "Reels narrativo (face)",
+    objective: "Conexão emocional profunda com a fundadora; elevar confiança e desejo na véspera da véspera.",
+    channel: "Reels + Stories",
+    status: "RASCUNHO",
+    script: [
+      "Gancho: 'Eu cansei de ver mulher boa desistindo de si mesma.'",
+      "História: origem do método, dor que viu, propósito.",
+      "Virada: o método nasceu pra mulher real, não pra capa de revista.",
+      "CTA: 'Falta 2 dias. Comenta ESTOU PRONTA.'",
+      "Horário 20h (prime time emocional). Palavras-chave: história, propósito, acolhimento, autoestima",
+    ],
+    roteiro: `[00:00-00:05] CLOSE ÍNTIMO | "Eu vou te contar por que eu criei o Protocolo RV. E não é a história que você imagina."
+[00:05-00:18] MEIO CORPO | "Em 14 anos eu vi centenas de mulheres incríveis desistirem de si mesmas. Não por preguiça. Por estarem cansadas de métodos que não enxergam quem elas são."
+[00:18-00:30] CLOSE | "Aí eu criei um protocolo que se encaixa na mulher real — a que tem filho, trabalho, casa, e 30 minutos no dia. Não na mulher perfeita que não existe."
+[00:30-00:38] CLOSE + SORRISO | "Daqui 2 dias abre a primeira turma. Comenta ESTOU PRONTA se você sente que é a sua vez."
+TEXTO NA TELA: [00:05] "14 anos" | [00:22] "pra mulher REAL" | [00:34] "faltam 2 dias"`,
+  },
+  {
+    id: "d12",
+    day: "D12 · 29/06",
+    title: "Véspera — Sequência de Stories de antecipação",
+    time: "18:30",
+    format: "Sequência de Stories (6-8 telas) + enquete",
+    objective: "Maximizar antecipação e coletar interesse final (lista quente) 1 dia antes da abertura.",
+    channel: "Stories sequenciais",
+    status: "RASCUNHO",
+    script: [
+      "Story 1: 'AMANHÃ.' (fundo gold, contagem)",
+      "Story 2: 'A primeira turma do TRINCA RV21 abre às 07h.'",
+      "Story 3: enquete 'Você vai entrar?' (Sim, com certeza / Quero saber mais)",
+      "Story 4: print de depoimento + 'É isso que te espera.'",
+      "Story 5: 'Lista VIP recebe o link 1h antes. Caixinha aberta 👇'",
+      "Story 6 (CTA): caixinha 'me lembra amanhã' + sticker de contagem regressiva",
+      "Horário 18h30 (saída do trabalho, pico de stories).",
+    ],
+  },
+  {
+    id: "d13",
+    day: "D13 · 30/06 — 🚀 LANÇAMENTO",
+    title: "ABERTURA OFICIAL — Reels + Stories + Bio + Link",
+    time: "07:00",
+    format: "Reels + Stories (dia todo) + Bio + Link",
+    objective: "Converter toda a audiência aquecida em VENDA. Tráfego máximo pra landing. Foco total em vendas.",
+    channel: "Reels + Stories + Bio + DM",
+    status: "RASCUNHO",
+    script: [
+      "07h Reels de abertura: 'ABRIU. A primeira turma do TRINCA RV21 está no ar.'",
+      "07h05 Stories: link na bio + caixinha + senso de urgência (vagas da turma).",
+      "Ao longo do dia: 3-4 ondas de Stories com depoimento + contador de vagas + CTA.",
+      "DM automática pra quem comentou QUERO/EU SOU nos dias anteriores (lista quente).",
+      "20h Stories de fechamento: 'Últimas vagas da primeira turma.'",
+      "CTA principal: 'Link na bio. Sua vaga te espera.'",
+      "Palavras-chave: vagas limitadas, primeira turma, abriu, última chance",
+    ],
+    roteiro: `[00:00-00:04] CLOSE ENERGIA | "ABRIU. A primeira turma do TRINCA RV21 está oficialmente no ar."
+[00:04-00:14] MEIO CORPO | "21 dias de treino, dieta e acompanhamento no seu WhatsApp pra você voltar a se reconhecer no espelho. Feito pra mulher real."
+[00:14-00:24] CLOSE | "As vagas da primeira turma são limitadas — eu quero acompanhar de perto. Quem entrar hoje entra no preço de lançamento: R$37,89."
+[00:24-00:32] CLOSE + APONTA | "Link na bio AGORA. Sua vaga te espera. Bora?"
+TEXTO NA TELA: [00:00] "ABRIU 🚀" | [00:16] "vagas limitadas" | [00:26] "Link na bio 👇" (pulsando gold)`,
   },
 ];
 
