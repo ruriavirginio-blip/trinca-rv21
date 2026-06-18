@@ -42,9 +42,12 @@ const INCLUI = [
 
 const FAQ = [
   ["Será que funciona pra mim?", "O TRINCA foi feito pra mulher real — iniciante, ocupada, que já tentou de tudo. O treino se adapta ao seu nível e você é acompanhada todo dia. Não é sobre força de vontade. É sobre direção."],
-  ["Preciso de academia?", "Não. Tem versão pra fazer em casa ou na academia. Você escolhe o que cabe na sua rotina."],
+  ["Já comprei coisas que nunca usei. Por que dessa vez vai ser diferente?", "Porque dessa vez você não fica sozinha. Tem grupo no WhatsApp, acompanhamento diário e uma análise do que te fez parar antes. A diferença nunca foi o conteúdo — foi não ter ninguém te puxando todo dia. Aqui tem."],
+  ["Quanto tempo por dia eu preciso?", "De 30 a 40 minutos. O protocolo foi montado pra caber na rotina de quem tem filho, trabalho e casa — não pra virar sua vida de cabeça pra baixo."],
   ["E se eu nunca treinei na vida?", "Melhor ainda — é exatamente pra quem está começando. Tudo explicado passo a passo, no seu ritmo."],
-  ["R$37,89 é pagamento único?", "Sim. Pagamento único, sem mensalidade escondida. E você ainda ganha 50% de desconto pra continuar depois dos 21 dias."],
+  ["Preciso de academia?", "Não. Tem versão pra fazer em casa ou na academia. Você escolhe o que cabe na sua rotina."],
+  ["O pagamento é seguro?", "Totalmente. A inscrição é pela Kiwify, uma das maiores plataformas de pagamento do Brasil. Você pode pagar no Pix ou em até 8x no cartão, com os dados protegidos."],
+  ["R$37,89 é pagamento único?", "Sim. Pagamento único, sem mensalidade escondida. E você ainda ganha 50% de desconto pra continuar comigo depois dos 21 dias."],
 ];
 
 export default function NovaLanding() {
@@ -151,7 +154,7 @@ export default function NovaLanding() {
               <button className="mx-cta" onClick={goForm}>QUERO ENTRAR NO TRINCA RV21 →</button>
               <button className="mx-cta ghost" onClick={goForm}>Ver resultados reais</button>
             </div>
-            <p className="mx-cta-note">Acesso imediato no WhatsApp · inscrição via Kiwify</p>
+            <p className="mx-cta-note">Acesso imediato no WhatsApp · pagamento 100% seguro pela Kiwify</p>
           </div>
           <div className="mx-hero-photo">
             <span className="mx-21">21</span>
@@ -238,9 +241,11 @@ export default function NovaLanding() {
             <text x="60" y="72" textAnchor="middle" fontSize="10" fontWeight="700" letterSpacing="2" fill="#f0c969">DIAS</text>
           </svg>
           <div className="mx-price">
+            <span className="anchor">Personal + nutri por fora passa de <b>R$300 por mês</b>. Aqui você paga <b>uma vez só</b>.</span>
             <span className="old">R$97</span>
             <span className="now"><i>R$</i>37<i>,89</i></span>
-            <span className="split">ou 8x de R$5,51 · acesso imediato</span>
+            <span className="split">pagamento único · ou 8x de R$5,51 (menos que um lanche)</span>
+            <span className="perday">dá <b>R$1,80 por dia</b> de acompanhamento de verdade</span>
           </div>
           <ul className="mx-incl">
             {INCLUI.map(([t, d]) => (
@@ -248,7 +253,7 @@ export default function NovaLanding() {
             ))}
           </ul>
           <button className="mx-cta full" onClick={goForm}>GARANTIR MINHA VAGA AGORA →</button>
-          <div className="mx-scarcity"><span className="pulse" />Turmas <b>limitadas</b> pra garantir acompanhamento de verdade.</div>
+          <div className="mx-scarcity"><span className="pulse" />As turmas são <b>limitadas</b> pra eu acompanhar cada uma de perto. Quando fecha, fecha — e a próxima só abre lá na frente.</div>
         </div>
       </section>
 
@@ -406,6 +411,10 @@ export default function NovaLanding() {
         .mx-price .now{font-family:"Bricolage Grotesque";font-size:clamp(48px,9vw,68px);font-weight:800}
         .mx-price .now i{font-style:normal;font-size:24px;color:var(--gold2);vertical-align:super}
         .mx-price .split{display:block;color:var(--gold2);font-size:14px;font-weight:600;margin-top:6px}
+        .mx-price .anchor{display:block;color:var(--muted);font-size:13px;font-weight:600;max-width:380px;margin:0 auto 12px;line-height:1.45}
+        .mx-price .anchor b{color:var(--txt)}
+        .mx-price .perday{display:block;color:var(--muted);font-size:12.5px;font-weight:600;margin-top:7px}
+        .mx-price .perday b{color:var(--gold2)}
         .mx-incl{list-style:none;margin-bottom:22px}
         .mx-incl li{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,0.05)}
         .mx-incl li:last-child{border-bottom:none}
@@ -461,7 +470,7 @@ export default function NovaLanding() {
         .mx-faq-item button i{color:var(--gold2);font-size:22px;font-style:normal;transition:transform .3s}
         .mx-faq-item.open button i{transform:rotate(45deg)}
         .mx-faq-a{max-height:0;overflow:hidden;transition:max-height .35s ease,padding .35s ease;padding:0 18px}
-        .mx-faq-item.open .mx-faq-a{max-height:260px;padding:0 18px 17px}
+        .mx-faq-item.open .mx-faq-a{max-height:340px;padding:0 18px 17px}
         .mx-faq-a p{color:var(--muted);font-size:13.5px;line-height:1.6}
 
         .mx-final{text-align:center;background:linear-gradient(165deg,rgba(212,162,60,0.09),rgba(212,162,60,0.02));border:1px solid rgba(212,162,60,0.22);border-radius:26px;padding:40px 24px 32px;margin-top:24px}
