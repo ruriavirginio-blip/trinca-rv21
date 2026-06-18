@@ -62,9 +62,35 @@ export default function NovaLanding() {
       { threshold: 0.12, rootMargin: "0px 0px -6% 0px" },
     );
     els.forEach((el) => io.observe(el));
+
+    // Contadores animados (premium "alive") — respeita reduced-motion
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const counters = Array.from(document.querySelectorAll<HTMLElement>("b[data-count]"));
+    const fmt = (n: number) => new Intl.NumberFormat("pt-BR").format(Math.round(n));
+    const cio = new IntersectionObserver(
+      (entries) => entries.forEach((e) => {
+        if (!e.isIntersecting) return;
+        const el = e.target as HTMLElement;
+        const target = Number(el.dataset.count || 0);
+        const prefix = el.dataset.prefix || "";
+        if (reduce) { el.textContent = prefix + fmt(target); cio.unobserve(el); return; }
+        const dur = 1400; const t0 = performance.now();
+        const tick = (now: number) => {
+          const p = Math.min((now - t0) / dur, 1);
+          const eased = 1 - Math.pow(1 - p, 3);
+          el.textContent = prefix + fmt(target * eased);
+          if (p < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+        cio.unobserve(el);
+      }),
+      { threshold: 0.5 },
+    );
+    counters.forEach((el) => cio.observe(el));
+
     const onScroll = () => setShowSticky(window.scrollY > 700);
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => { io.disconnect(); window.removeEventListener("scroll", onScroll); };
+    return () => { io.disconnect(); cio.disconnect(); window.removeEventListener("scroll", onScroll); };
   }, []);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -137,9 +163,9 @@ export default function NovaLanding() {
 
       {/* STATS */}
       <section className="mx-stats mx-reveal">
-        <div className="mx-stat"><b>+5.000</b><span>mulheres transformadas</span></div>
-        <div className="mx-stat"><b>14</b><span>anos de experiência</span></div>
-        <div className="mx-stat"><b>21</b><span>dias pra virar a chave</span></div>
+        <div className="mx-stat"><b data-count="5000" data-prefix="+">+5.000</b><span>mulheres transformadas</span></div>
+        <div className="mx-stat"><b data-count="14">14</b><span>anos de experiência</span></div>
+        <div className="mx-stat"><b data-count="21">21</b><span>dias pra virar a chave</span></div>
       </section>
 
       {/* IDENTIFICAÇÃO */}
@@ -196,6 +222,21 @@ export default function NovaLanding() {
         <p className="mx-eyebrow mx-reveal">A oferta</p>
         <h2 className="mx-h2 mx-reveal">Tudo que você recebe</h2>
         <div className="mx-offer mx-reveal">
+          <svg className="mx-seal" viewBox="0 0 120 120" aria-label="Selo 21 dias Protocolo RV" role="img">
+            <defs>
+              <path id="mxcirc" d="M60,60 m-44,0 a44,44 0 1,1 88,0 a44,44 0 1,1 -88,0" />
+              <linearGradient id="mxg" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stopColor="#f0c969" /><stop offset="1" stopColor="#d4a23c" />
+              </linearGradient>
+            </defs>
+            <circle cx="60" cy="60" r="56" fill="none" stroke="url(#mxg)" strokeWidth="1.5" opacity="0.6" />
+            <circle cx="60" cy="60" r="48" fill="rgba(212,162,60,0.08)" stroke="url(#mxg)" strokeWidth="1" />
+            <text fontSize="9" fontWeight="700" letterSpacing="2" fill="#f0c969">
+              <textPath href="#mxcirc" startOffset="2%">PROTOCOLO RV · ACOMPANHAMENTO REAL · </textPath>
+            </text>
+            <text x="60" y="54" textAnchor="middle" fontFamily="Bricolage Grotesque, sans-serif" fontSize="34" fontWeight="800" fill="url(#mxg)">21</text>
+            <text x="60" y="72" textAnchor="middle" fontSize="10" fontWeight="700" letterSpacing="2" fill="#f0c969">DIAS</text>
+          </svg>
           <div className="mx-price">
             <span className="old">R$97</span>
             <span className="now"><i>R$</i>37<i>,89</i></span>
@@ -372,6 +413,29 @@ export default function NovaLanding() {
         .mx-incl b{font-size:14.5px;display:block} .mx-incl span{font-size:13px;color:var(--muted)}
         .mx-scarcity{display:flex;align-items:center;gap:11px;background:rgba(212,162,60,0.07);border:1px solid rgba(212,162,60,0.22);border-radius:13px;padding:14px 16px;margin-top:14px;font-size:13px;font-weight:600}
         .mx-scarcity b{color:var(--gold2)}
+
+        /* === COMANDO 2: aprimoramentos premium (ui-ux-pro-max + banner + animação) === */
+        /* tabular numbers — preço/stats não saltam (number-tabular) */
+        .mx-stat b,.mx-price .now,.mx-sticky .sp b{font-variant-numeric:tabular-nums}
+        /* selo de garantia */
+        .mx-offer{position:relative}
+        .mx-seal{position:absolute;top:-26px;right:14px;width:92px;height:92px;filter:drop-shadow(0 6px 16px rgba(0,0,0,.5));animation:mxspin 26s linear infinite;z-index:2}
+        @keyframes mxspin{to{transform:rotate(360deg)}}
+        .mx-seal text[font-family]{animation:none}
+        /* shimmer no "21" do hero */
+        .mx-21{background:linear-gradient(110deg,rgba(212,162,60,0.35) 30%,rgba(255,240,200,0.9) 50%,rgba(212,162,60,0.35) 70%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;-webkit-text-stroke:1px rgba(212,162,60,0.4);background-size:220% 100%;animation:mxshine 5s ease-in-out infinite}
+        @keyframes mxshine{0%,100%{background-position:130% 0}50%{background-position:-30% 0}}
+        /* borda animada no CTA primário */
+        .mx-cta:not(.ghost){position:relative;isolation:isolate}
+        .mx-cta:not(.ghost)::after{content:"";position:absolute;inset:-2px;border-radius:15px;padding:2px;background:linear-gradient(120deg,transparent,rgba(255,240,200,0.9),transparent);background-size:200% 100%;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:mxborder 3.5s linear infinite;z-index:-1;opacity:.7}
+        @keyframes mxborder{to{background-position:200% 0}}
+        /* acessibilidade: foco visível (focus-states) + touch (tap-delay) */
+        .mx button,.mx a,.mx input{touch-action:manipulation}
+        .mx button:focus-visible,.mx input:focus-visible,.mx .mx-obj input:focus-visible + .mx-obj-card{outline:3px solid var(--gold2);outline-offset:2px}
+        @media(prefers-reduced-motion:reduce){
+          .mx-seal,.mx-21,.mx-cta:not(.ghost)::after{animation:none}
+          .mx-21{-webkit-text-fill-color:transparent}
+        }
         .pulse{flex-shrink:0;width:9px;height:9px;border-radius:50%;background:var(--gold2);animation:mxpulse 2s infinite}
         @keyframes mxpulse{0%{box-shadow:0 0 0 0 rgba(240,201,105,.5)}70%{box-shadow:0 0 0 11px rgba(240,201,105,0)}100%{box-shadow:0 0 0 0 rgba(240,201,105,0)}}
 
