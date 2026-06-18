@@ -1077,24 +1077,32 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
             description="Calendário da semana pré-lançamento com roteiro, aprovação e publicação."
             loading={contentQueueLoading}
           >
-            <ContentApprovalQueue
-              error={contentQueueError}
-              items={contentQueue}
-              onRefresh={() => void loadContentQueue()}
-              onStatusChange={(id, status) => void updateQueueItemStatus(id, status)}
-              pendingCount={pendingContentApproval}
-            />
-            <ContentCalendar
-              expandedPostId={expandedPostId}
-              notionContent={notionContent}
-              onRefresh={() => void loadContentFromNotion()}
-              onExpand={setExpandedPostId}
-              onStatusChange={updateContentStatus}
-              statuses={contentStatuses}
-              syncStatus={contentSyncStatus}
-              syncing={contentSyncing}
-            />
             <ContentFactoryPanel />
+            <details className="legacy-notion">
+              <summary>📚 Calendário/roteiros completos + sincronização Notion (avançado)</summary>
+              <p className="legacy-note">
+                A sincronização com o Notion ainda não está ligada (falta configurar as chaves NOTION_* no servidor).
+                O roteiro completo já está disponível na Fábrica acima. Esta seção é só pra quando você quiser
+                gerenciar pelo Notion.
+              </p>
+              <ContentApprovalQueue
+                error={contentQueueError}
+                items={contentQueue}
+                onRefresh={() => void loadContentQueue()}
+                onStatusChange={(id, status) => void updateQueueItemStatus(id, status)}
+                pendingCount={pendingContentApproval}
+              />
+              <ContentCalendar
+                expandedPostId={expandedPostId}
+                notionContent={notionContent}
+                onRefresh={() => void loadContentFromNotion()}
+                onExpand={setExpandedPostId}
+                onStatusChange={updateContentStatus}
+                statuses={contentStatuses}
+                syncStatus={contentSyncStatus}
+                syncing={contentSyncing}
+              />
+            </details>
           </DashboardSection>
         ) : null}
 
@@ -1666,13 +1674,22 @@ const CF_STATUS_LABEL: Record<string, string> = {
   aprovado: "Aprovado", agendado: "Agendado", publicado: "Publicado", rejeitado: "Rejeitado", erro: "Erro",
 };
 
+const fmtToTipo = (format: string): string => {
+  const f = (format || "").toLowerCase();
+  if (f.includes("carrossel")) return "carrossel";
+  if (f.includes("reel")) return "reel";
+  if (f.includes("stor")) return "story";
+  return "feed";
+};
+// "D1 · 18/06" + "07:30" -> data ISO e hora
+const parseDia = (day: string): string => {
+  const m = day.match(/(\d{2})\/(\d{2})/);
+  return m ? `2026-${m[2]}-${m[1]}` : "";
+};
+
 function ContentFactoryPanel() {
   const [items, setItems] = useState<CFItem[]>([]);
   const [loading, setLoading] = useState(false);
-  const [tipo, setTipo] = useState("feed");
-  const [tema, setTema] = useState("");
-  const [data, setData] = useState("");
-  const [hora, setHora] = useState("");
   const [msg, setMsg] = useState("");
 
   const load = useCallback(async () => {
@@ -1688,25 +1705,6 @@ function ContentFactoryPanel() {
   }, []);
   useEffect(() => { void load(); }, [load]);
 
-  const criar = async () => {
-    if (!tema.trim()) { setMsg("Escreva o tema do post."); return; }
-    setMsg("");
-    const skills = CF_SKILLS_BY_TYPE[tipo] || [];
-    const r = await fetch("/api/content-factory", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ tipo, tema, data_post: data, hora_post: hora, skills }),
-    });
-    if (r.ok) {
-      setTema(""); setData(""); setHora("");
-      setMsg("✅ Pedido criado! Use 'Acionar criação' pra o Claude gerar o material.");
-      void load();
-    } else {
-      const j = (await r.json().catch(() => ({}))) as { error?: string };
-      setMsg("Erro: " + (j.error || "tente de novo. Rodou o SQL no Supabase?"));
-    }
-  };
-
   const patch = async (id: string, status: string) => {
     await fetch("/api/content-factory", {
       method: "PATCH",
@@ -1716,53 +1714,92 @@ function ContentFactoryPanel() {
     void load();
   };
 
-  const copyCmd = (it: CFItem) => {
-    const skills = (it.skills || []).join(", ");
-    void navigator.clipboard?.writeText(
-      `CRIAR CONTEÚDO TRINCA RV21 — pedido ${it.id}: gere um ${it.tipo} sobre "${it.tema || it.roteiro_ref || ""}" no padrão premium da landing /nova. Use as skills: ${skills}. Aplique psicologia de conversão e a voz do Ruriá. Ao terminar, suba o material e marque o pedido como em_aprovacao.`,
-    );
-    setMsg("📋 Comando copiado — cole no Claude Code pra ele criar.");
+  // 1.1 — Aciona a criação de um DIA do roteiro fixo, travando o contexto do pré-lançamento
+  const acionarDia = async (c: (typeof contentCalendar)[number]) => {
+    const tipo = fmtToTipo(c.format);
+    const skills = CF_SKILLS_BY_TYPE[tipo] || CF_SKILLS_BY_TYPE.feed;
+    const data_post = parseDia(c.day);
+    const contexto = [
+      `CRIAR CONTEÚDO TRINCA RV21 — ${c.day} (${c.format})`,
+      `PROPÓSITO PRÉ-LANÇAMENTO: aquecer leads, qualificar a mulher 25-44 que já desistiu, e gerar dados/métricas pro lançamento. NÃO fuja deste contexto.`,
+      `OBJETIVO DO DIA: ${c.objective}`,
+      `TÍTULO: ${c.title}`,
+      `ROTEIRO/DIREÇÃO:`,
+      ...c.script.map((s) => `- ${s}`),
+      c.roteiro ? `\nROTEIRO DETALHADO (timecode):\n${c.roteiro}` : "",
+      `\nPADRÃO: nível premium da landing /nova (preto+ouro, tipografia editorial). Aplique psicologia de conversão e a voz do Ruriá.`,
+      `SKILLS A USAR: ${skills.join(", ")}.`,
+      `AO TERMINAR: suba o material e marque o pedido como "em_aprovacao" no cockpit.`,
+    ].filter(Boolean).join("\n");
+    void navigator.clipboard?.writeText(contexto);
+    // registra o pedido na fila (com contexto travado)
+    await fetch("/api/content-factory", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        tipo,
+        tema: `${c.title} — ${c.objective}`,
+        roteiro_ref: c.day,
+        data_post,
+        hora_post: c.time,
+        skills,
+      }),
+    }).catch(() => {});
+    setMsg(`📋 ${c.day}: comando copiado (contexto travado) + pedido criado na fila. Cole no Claude Code pra gerar.`);
+    void load();
   };
 
   return (
     <div className="cf">
       <div className="cf-intro">
-        <strong>🏭 Fábrica de Conteúdo</strong>
-        <span>Peça um post → acione o Claude pra criar com as skills → aprove → o motor agenda e publica. (A publicação automática liga quando as chaves do Instagram forem configuradas — ver docs/credenciais-pendentes.md.)</span>
+        <strong>🏭 Fábrica de Conteúdo — Roteiro do Pré-lançamento</strong>
+        <span>Cada dia já vem com o <b>propósito travado</b> (aquecer leads · qualificar · coletar métricas) pra criação nunca fugir do contexto. Aperte <b>⚡ Acionar criação</b> → o Claude cria com as skills certas → você aprova → o motor agenda/publica. (Publicação automática liga com as chaves do Instagram — docs/credenciais-pendentes.md.)</span>
       </div>
-      <div className="cf-form">
-        <select value={tipo} onChange={(e) => setTipo(e.target.value)}>
-          <option value="story">Story</option>
-          <option value="feed">Feed</option>
-          <option value="carrossel">Carrossel</option>
-          <option value="reel">Reel</option>
-        </select>
-        <input placeholder="Tema do post (ex: o erro nº1 de quem desiste)" value={tema} onChange={(e) => setTema(e.target.value)} />
-        <input type="date" value={data} onChange={(e) => setData(e.target.value)} />
-        <input type="time" value={hora} onChange={(e) => setHora(e.target.value)} />
-        <button className="cf-btn" onClick={() => void criar()}>+ Criar pedido</button>
-      </div>
-      <p className="cf-skills">Skills usadas neste tipo: <b>{(CF_SKILLS_BY_TYPE[tipo] || []).join(" · ")}</b></p>
       {msg ? <p className="cf-msg">{msg}</p> : null}
+
+      <div className="cf-list">
+        {contentCalendar.map((c) => {
+          const tipo = fmtToTipo(c.format);
+          return (
+            <div className="cf-item" key={c.id}>
+              <div className="cf-item-top">
+                <span className="cf-tipo">{tipo}</span>
+                <strong>{c.day} · {c.title}</strong>
+                <span className="cf-when">{c.time}</span>
+              </div>
+              <div className="cf-objective">🎯 {c.objective}</div>
+              <div className="cf-item-meta">Skills: {(CF_SKILLS_BY_TYPE[tipo] || []).join(" · ")}</div>
+              <div className="cf-item-btns one">
+                <button onClick={() => void acionarDia(c)}>⚡ Acionar criação deste dia</button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="cf-intro" style={{ marginTop: 14 }}>
+        <strong>📥 Fila de produção</strong>
+        <span>Pedidos já acionados — aprove ou rejeite o material que o Claude subir.</span>
+      </div>
       <div className="cf-list">
         {loading ? (
           <p className="cf-empty">Carregando…</p>
         ) : items.length === 0 ? (
-          <p className="cf-empty">Nenhum pedido ainda. Crie o primeiro acima. (Se der erro ao criar, rode antes o SQL <b>docs/supabase-content-factory.sql</b> no Supabase.)</p>
+          <p className="cf-empty">Nenhum pedido na fila ainda. Acione um dia do roteiro acima.</p>
         ) : (
           items.map((it) => (
             <div className="cf-item" key={it.id}>
               <div className="cf-item-top">
                 <span className="cf-tipo">{it.tipo}</span>
-                <strong>{it.tema || it.roteiro_ref || "—"}</strong>
-                <span className={`cmd-status ${it.status === "publicado" ? "ok" : it.status === "rejeitado" || it.status === "erro" ? "wait" : "run"}`}>
+                <strong>{it.roteiro_ref ? `${it.roteiro_ref} · ` : ""}{it.tema || "—"}</strong>
+                <span className={`cmd-status ${it.status === "publicado" || it.status === "aprovado" ? "ok" : it.status === "rejeitado" || it.status === "erro" ? "wait" : "run"}`}>
                   {CF_STATUS_LABEL[it.status] || it.status}
                 </span>
               </div>
               <div className="cf-item-meta">{it.data_post || "sem data"} {it.hora_post || ""}</div>
               <div className="cf-item-btns">
-                <button onClick={() => copyCmd(it)}>⚡ Acionar criação</button>
                 <button onClick={() => void patch(it.id, "aprovado")}>✅ Aprovar</button>
+                <button onClick={() => void patch(it.id, "em_aprovacao")}>👀 Em aprovação</button>
                 <button onClick={() => void patch(it.id, "rejeitado")}>❌ Rejeitar</button>
               </div>
             </div>
@@ -3404,6 +3441,10 @@ function CockpitStyles() {
         .cmd-grid2 { grid-template-columns: repeat(2, 1fr); }
       }
 
+      .legacy-notion { margin-top: 16px; background: #0f0f12; border: 1px solid #26262e; border-radius: 12px; padding: 12px 14px; }
+      .legacy-notion summary { cursor: pointer; font-size: 13px; font-weight: 700; color: #a09c94; }
+      .legacy-note { font-size: 12px; color: #6c6962; line-height: 1.5; margin: 10px 0; }
+
       /* === Motor 24/7 — Fábrica de Conteúdo === */
       .cf { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
       .cf-intro { background: rgba(212,162,60,0.06); border: 1px solid rgba(212,162,60,0.2); border-radius: 13px; padding: 13px 15px; }
@@ -3423,6 +3464,10 @@ function CockpitStyles() {
       .cf-item-top strong { flex: 1; font-size: 13px; color: #f6f4ef; }
       .cf-tipo { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: #1a1206; background: #d4a23c; border-radius: 6px; padding: 3px 7px; }
       .cf-item-meta { font-size: 11px; color: #6c6962; margin: 6px 0 9px; }
+      .cf-when { font-size: 11px; font-weight: 800; color: #f0c969; background: rgba(212,162,60,0.12); border-radius: 6px; padding: 3px 8px; }
+      .cf-objective { font-size: 12.5px; color: #cfcabf; line-height: 1.5; margin: 8px 0 4px; }
+      .cf-item-btns.one { grid-template-columns: 1fr; }
+      .cf-item-btns.one button { background: linear-gradient(135deg,#d4a23c,#f0c969); color: #1a1206; border: none; font-weight: 800; }
       .cf-item-btns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
       .cf-item-btns button { background: #0f0f12; border: 1px solid #26262e; color: #f6f4ef; border-radius: 9px; padding: 8px 6px; font-size: 11.5px; font-weight: 700; cursor: pointer; font-family: inherit; }
       .cf-item-btns button:hover { border-color: #d4a23c; }
