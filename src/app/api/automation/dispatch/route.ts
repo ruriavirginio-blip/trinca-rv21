@@ -45,18 +45,24 @@ function getSupabaseClient() {
 }
 
 function authorize(request: Request) {
-  const secret = cleanText(
-    process.env.AUTOMATION_API_SECRET || process.env.KIWIFY_WEBHOOK_SECRET
-  );
+  // Aceita o secret geral OU o token dedicado de operação (MONITOR_TOKEN),
+  // usado pelo gatilho 24/7 do Make.com que drena a fila (substitui o worker).
+  const secrets = [
+    process.env.AUTOMATION_API_SECRET,
+    process.env.KIWIFY_WEBHOOK_SECRET,
+    process.env.MONITOR_TOKEN,
+  ]
+    .map(cleanText)
+    .filter(Boolean);
 
-  if (!secret) {
+  if (!secrets.length) {
     return NextResponse.json(
       { error: "AUTOMATION_API_SECRET ainda nao configurado." },
       { status: 503 }
     );
   }
 
-  if (!readAutomationToken(request).includes(secret)) {
+  if (!readAutomationToken(request).some((token) => secrets.includes(token))) {
     return NextResponse.json({ error: "Token invalido." }, { status: 401 });
   }
 
