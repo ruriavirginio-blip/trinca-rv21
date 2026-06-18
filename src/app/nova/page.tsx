@@ -131,12 +131,27 @@ export default function NovaLanding() {
     setLoading(true);
     setErr("");
     const fd = new FormData(e.currentTarget);
+    // Captura a origem do tráfego (Google, anúncio, etc.) pela URL
+    const sp = new URLSearchParams(window.location.search);
+    const utmParts = ["utm_source", "utm_medium", "utm_campaign"]
+      .map((k) => sp.get(k))
+      .filter(Boolean);
+    const referrerHost = (() => {
+      try { return document.referrer ? new URL(document.referrer).hostname : ""; } catch { return ""; }
+    })();
+    const isGoogle = utmParts.join(" ").toLowerCase().includes("google") || /google\./i.test(referrerHost);
+    const utm = utmParts.length
+      ? utmParts.join(" | ")
+      : referrerHost
+        ? `referrer:${referrerHost}`
+        : "direto";
     const lead = {
       nome: String(fd.get("nome") || "").trim(),
       email: String(fd.get("email") || "").trim(),
       whatsapp: String(fd.get("whatsapp") || "").trim(),
       objetivo: String(fd.get("objetivo") || ""),
-      origem: "landing-trinca-rv21-nova",
+      origem: isGoogle ? "google" : "landing-trinca-rv21-nova",
+      utm,
       status: "checkout-iniciado",
       etapaFunil: "checkout",
       data: new Date().toISOString(),

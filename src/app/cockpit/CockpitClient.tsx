@@ -987,7 +987,15 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
           >
             <ProjectHealthPanel />
             <MonitorPanel />
-            <CommandSection />
+            <CommandSection
+              live={{
+                leads: leads.length,
+                leadGoal,
+                googleLeads: leads.filter((l) => /google/i.test(`${l.utm ?? ""} ${l.origem ?? ""}`)).length,
+                sales: metrics.salesToday.length,
+                revenue: metrics.revenueToday,
+              }}
+            />
             <StrategyPanel />
           </DashboardSection>
         ) : null}
@@ -1419,88 +1427,115 @@ function ProjectHealthPanel() {
   );
 }
 
-function CommandSection() {
+const PHASE_META: Record<string, { label: string; date: string }> = {
+  pre: { label: "Pré-lançamento", date: "até 23/jun" },
+  dur: { label: "Durante o pré", date: "23–30/jun" },
+  lanc: { label: "Lançamento", date: "30/jun" },
+};
+const DEPT_PHASE: Record<string, string[]> = {
+  "TECH OPS": ["pre"],
+  "CONVERSION ENGINE": ["pre", "dur"],
+  "TRAFFIC HUNTER": ["dur", "lanc"],
+  "CONTENT CREATOR": ["pre", "dur"],
+  "SALES CLOSER": ["dur", "lanc"],
+  "DATA ANALYST": ["lanc"],
+  "FINANCE · CFO": ["lanc"],
+};
+function deptProgress(d: Department) {
+  const total = d.check.length || 1;
+  const score = d.check.reduce((a, c) => a + (c.s === "d" ? 1 : c.s === "p" ? 0.5 : 0), 0);
+  return Math.round((score / total) * 100);
+}
+
+type LivePulse = {
+  leads: number;
+  leadGoal: number;
+  googleLeads: number;
+  sales: number;
+  revenue: number;
+};
+
+function CommandSection({ live }: { live?: LivePulse }) {
   const [copied, setCopied] = useState<string | null>(null);
+  const [phase, setPhase] = useState<string>("all");
+  const [open, setOpen] = useState<string | null>(null);
   const copy = (text: string, label: string) => {
     void navigator.clipboard?.writeText(text).then(() => {
       setCopied(label);
       window.setTimeout(() => setCopied(null), 2200);
     });
   };
-  const ready = DEPARTMENTS.filter((d) => d.status === "ok").length;
-  const running = DEPARTMENTS.filter((d) => d.status === "run").length;
-  const pending = DEPARTMENTS.filter((d) => d.status === "wait" || d.status === "new").length;
+  const phases = ["all", "pre", "dur", "lanc"];
+  const list = DEPARTMENTS.filter((d) => phase === "all" || (DEPT_PHASE[d.name] || []).includes(phase));
+  const money = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
   return (
     <>
-      <MetricGrid
-        items={[
-          { label: "Setores", value: String(DEPARTMENTS.length), tone: "gold" },
-          { label: "Prontos", value: String(ready), tone: "green" },
-          { label: "Em andamento", value: String(running), tone: "yellow" },
-          { label: "Pendentes", value: String(pending), tone: "red" },
-        ]}
-      />
-      <div className="cmd-grid">
-        {DEPARTMENTS.map((d) => (
-          <article className="cmd-card" key={d.name}>
-            <div className="cmd-card-head">
-              <span className="cmd-ico">{d.icon}</span>
-              <div className="cmd-card-title">
-                <strong>{d.name}</strong>
-                <span>{d.agent}</span>
-              </div>
-              <span className={`cmd-status ${d.status}`}>{STATUS_LABEL[d.status]}</span>
-            </div>
-            <p className="cmd-domain">{d.domain}</p>
-            <p className="cmd-report">
-              <b>Reporte ao Comando</b>
-              {d.report}
-            </p>
-            <div className="cmd-chips">
-              {d.skills.map((s) => (
-                <span className="chip chip-skill" key={s}>
-                  {s}
-                </span>
-              ))}
-            </div>
-            <div className="cmd-chips">
-              {d.conn.map((c) => (
-                <span className="chip chip-conn" key={c}>
-                  {c}
-                </span>
-              ))}
-            </div>
-            <ul className="cmd-check">
-              {d.check.map((c, i) => (
-                <li className={c.s === "d" ? "done" : ""} key={i}>
-                  <span className={`check-mark ${c.s}`}>{c.s === "d" ? "✓" : c.s === "p" ? "~" : "!"}</span>
-                  {c.t}
-                </li>
-              ))}
-            </ul>
-            <div className="cmd-actions">
-              <button className="cmd-btn" onClick={() => copy(d.cmd, d.name)}>
-                {copied === d.name ? <CheckCircle2 size={15} /> : <Send size={15} />}
-                {copied === d.name ? "Copiado" : "Acionar"}
-              </button>
-              <button
-                className="cmd-btn-upd"
-                title="Pedir atualização deste setor"
-                onClick={() =>
-                  copy(
-                    `COMANDO ATUALIZAÇÃO — ${d.name}: revise o estado atual, atualize o checklist e o reporte, e me diga em português simples o que mudou, o que falta e o próximo passo.`,
-                    `${d.name}-upd`,
-                  )
-                }
-              >
-                {copied === `${d.name}-upd` ? <CheckCircle2 size={15} /> : <RefreshCw size={15} />}
-              </button>
-            </div>
-          </article>
+      {live ? (
+        <div className="cmd-pulse">
+          <div className="cmd-pulse-item"><span>Leads</span><b>{live.leads}<i>/{live.leadGoal}</i></b></div>
+          <div className="cmd-pulse-item"><span>Vindos do Google</span><b className="g">{live.googleLeads}</b></div>
+          <div className="cmd-pulse-item"><span>Vendas hoje</span><b>{live.sales}</b></div>
+          <div className="cmd-pulse-item"><span>Receita hoje</span><b>{money(live.revenue)}</b></div>
+        </div>
+      ) : null}
+
+      <div className="cmd-phases">
+        {phases.map((p) => (
+          <button key={p} className={`cmd-phase-chip ${phase === p ? "on" : ""}`} onClick={() => setPhase(p)}>
+            {p === "all" ? "Tudo" : PHASE_META[p].label}
+            {p !== "all" ? <i>{PHASE_META[p].date}</i> : null}
+          </button>
         ))}
       </div>
+
+      <div className="cmd-grid2">
+        {list.map((d) => {
+          const prog = deptProgress(d);
+          const isOpen = open === d.name;
+          return (
+            <article className={`cmd-card2 ${isOpen ? "open" : ""}`} key={d.name}>
+              <button className="cmd-card2-head" onClick={() => setOpen(isOpen ? null : d.name)}>
+                <span className="cmd-ico2">{d.icon}</span>
+                <span className="cmd-c2-title"><strong>{d.name}</strong><span>{d.agent}</span></span>
+                <span className={`cmd-status ${d.status}`}>{STATUS_LABEL[d.status]}</span>
+              </button>
+              <div className="cmd-prog">
+                <div className="cmd-prog-bar"><span style={{ width: `${prog}%` }} /></div>
+                <b>{prog}%</b>
+              </div>
+              <p className="cmd-c2-report">{d.report}</p>
+              <div className="cmd-c2-btns">
+                <button className="c2b urg" onClick={() => copy(`🚨 URGÊNCIA — ${d.name}: pare tudo e me diga AGORA, em português simples, se tem algo quebrado, travado ou que vai me fazer perder lead/venda neste setor. Se tiver, conserte na hora e me reporte.`, `${d.name}-urg`)}>
+                  {copied === `${d.name}-urg` ? "✓ copiado" : "🚨 Urgência"}
+                </button>
+                <button className="c2b act" onClick={() => copy(d.cmd, d.name)}>
+                  {copied === d.name ? "✓ copiado" : "⚡ Acionar"}
+                </button>
+                <button className="c2b rep" onClick={() => copy(`📊 RELATÓRIO — ${d.name}: me dê um resumo curto e didático (linguagem simples) do estado deste setor: o que está pronto, o que falta e o próximo passo. Com números se tiver.`, `${d.name}-rep`)}>
+                  {copied === `${d.name}-rep` ? "✓ copiado" : "📊 Relatório"}
+                </button>
+              </div>
+              {isOpen ? (
+                <div className="cmd-c2-detail">
+                  <p className="cmd-domain">{d.domain}</p>
+                  <div className="cmd-chips">{d.skills.map((s) => <span className="chip chip-skill" key={s}>{s}</span>)}</div>
+                  <div className="cmd-chips">{d.conn.map((c) => <span className="chip chip-conn" key={c}>{c}</span>)}</div>
+                  <ul className="cmd-check">
+                    {d.check.map((c, i) => (
+                      <li className={c.s === "d" ? "done" : ""} key={i}>
+                        <span className={`check-mark ${c.s}`}>{c.s === "d" ? "✓" : c.s === "p" ? "~" : "!"}</span>
+                        {c.t}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </article>
+          );
+        })}
+      </div>
       <p className="cmd-hint">
-        Clique em <b>Acionar</b> para copiar o comando do setor e colar no Claude Code. <b>↻</b> pede uma atualização de status.
+        Toque num setor pra abrir os detalhes. <b>🚨 Urgência</b> = checar/consertar problema agora · <b>⚡ Acionar</b> = pôr o setor pra trabalhar · <b>📊 Relatório</b> = pedir resumo simples.
       </p>
     </>
   );
@@ -3200,6 +3235,44 @@ function CockpitStyles() {
           align-items: stretch;
           flex-direction: column;
         }
+      }
+
+      /* === Comando 4.5 — Aba Comando reorganizada (fases + cards + pulso) === */
+      .cmd-pulse { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; }
+      .cmd-pulse-item { background: #141418; border: 1px solid #26262e; border-radius: 12px; padding: 11px 13px; }
+      .cmd-pulse-item span { display: block; font-size: 10.5px; color: #a09c94; text-transform: uppercase; letter-spacing: .04em; }
+      .cmd-pulse-item b { font-size: 20px; font-weight: 800; color: #f0c969; font-variant-numeric: tabular-nums; }
+      .cmd-pulse-item b i { font-style: normal; font-size: 12px; color: #6c6962; }
+      .cmd-pulse-item b.g { color: #5bbb5f; }
+      .cmd-phases { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+      .cmd-phase-chip { display: inline-flex; flex-direction: column; align-items: flex-start; background: #141418; border: 1px solid #26262e; border-radius: 11px; padding: 8px 13px; color: #a09c94; font-size: 12.5px; font-weight: 700; cursor: pointer; transition: .18s; font-family: inherit; }
+      .cmd-phase-chip i { font-style: normal; font-size: 10px; font-weight: 600; color: #6c6962; }
+      .cmd-phase-chip.on { border-color: #d4a23c; background: rgba(212,162,60,0.1); color: #f0c969; }
+      .cmd-phase-chip.on i { color: #d4a23c; }
+      .cmd-grid2 { display: grid; grid-template-columns: 1fr; gap: 11px; }
+      .cmd-card2 { background: #141418; border: 1px solid #26262e; border-radius: 15px; padding: 13px 15px; }
+      .cmd-card2.open { border-color: rgba(212,162,60,0.4); }
+      .cmd-card2-head { display: flex; align-items: center; gap: 11px; width: 100%; background: none; border: none; cursor: pointer; font-family: inherit; text-align: left; padding: 0; }
+      .cmd-ico2 { display: inline-flex; width: 36px; height: 36px; border-radius: 10px; background: rgba(212,162,60,0.12); color: #f0c969; align-items: center; justify-content: center; flex-shrink: 0; }
+      .cmd-c2-title { flex: 1; min-width: 0; }
+      .cmd-c2-title strong { display: block; font-size: 14px; color: #f6f4ef; }
+      .cmd-c2-title span { font-size: 11px; color: #a09c94; }
+      .cmd-prog { display: flex; align-items: center; gap: 9px; margin: 11px 0 9px; }
+      .cmd-prog-bar { flex: 1; height: 8px; background: #0f0f12; border-radius: 5px; overflow: hidden; }
+      .cmd-prog-bar span { display: block; height: 100%; background: linear-gradient(90deg,#a06f1e,#d4a23c); border-radius: 5px; transition: width .8s ease; }
+      .cmd-prog b { font-size: 12px; color: #f0c969; font-weight: 800; font-variant-numeric: tabular-nums; min-width: 36px; text-align: right; }
+      .cmd-c2-report { font-size: 12.5px; color: #a09c94; line-height: 1.5; margin-bottom: 11px; }
+      .cmd-c2-btns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+      .c2b { padding: 9px 6px; border-radius: 10px; font-size: 11.5px; font-weight: 700; cursor: pointer; font-family: inherit; border: 1px solid #26262e; background: #0f0f12; color: #f6f4ef; transition: .16s; }
+      .c2b.urg { border-color: rgba(229,115,115,0.4); color: #e57373; }
+      .c2b.urg:hover { background: rgba(229,115,115,0.1); }
+      .c2b.act { border-color: rgba(212,162,60,0.45); color: #f0c969; }
+      .c2b.act:hover { background: rgba(212,162,60,0.1); }
+      .c2b.rep:hover { background: rgba(255,255,255,0.04); }
+      .cmd-c2-detail { margin-top: 12px; padding-top: 12px; border-top: 1px solid #26262e; }
+      @media (min-width: 720px) {
+        .cmd-pulse { grid-template-columns: repeat(4, 1fr); }
+        .cmd-grid2 { grid-template-columns: repeat(2, 1fr); }
       }
 
       /* === Comando 4 — Painel de Estratégia (gráficos didáticos) === */
