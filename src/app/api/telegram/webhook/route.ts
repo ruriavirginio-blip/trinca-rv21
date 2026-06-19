@@ -95,5 +95,14 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
-  return NextResponse.json({ ok: true, info: "Telegram webhook ativo." });
+  return NextResponse.json({
+    ok: true,
+    info: "Telegram webhook ativo.",
+    env: {
+      hasToken: Boolean(clean(process.env.TELEGRAM_BOT_TOKEN)),
+      hasSecret: Boolean(clean(process.env.TELEGRAM_WEBHOOK_SECRET)),
+      hasChat: Boolean(clean(process.env.TELEGRAM_CHAT_ID)),
+      hasClaude: Boolean(clean(process.env.ANTHROPIC_API_KEY)),
+    },
+  });
 }
