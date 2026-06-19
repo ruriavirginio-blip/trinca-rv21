@@ -985,9 +985,7 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
             description="Cadeia de comando: cada setor reporta status e recebe ordens diretas."
             loading={loading}
           >
-            <ProjectHealthPanel />
-            <MonitorPanel />
-            <CommandSection
+            <ComandoHub
               live={{
                 leads: leads.length,
                 leadGoal,
@@ -996,7 +994,6 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
                 revenue: metrics.revenueToday,
               }}
             />
-            <StrategyPanel />
           </DashboardSection>
         ) : null}
 
@@ -1464,7 +1461,7 @@ type LivePulse = {
   revenue: number;
 };
 
-function CommandSection({ live }: { live?: LivePulse }) {
+function CommandSection({ live, hidePulse }: { live?: LivePulse; hidePulse?: boolean }) {
   const [copied, setCopied] = useState<string | null>(null);
   const [phase, setPhase] = useState<string>("all");
   const [open, setOpen] = useState<string | null>(null);
@@ -1479,7 +1476,7 @@ function CommandSection({ live }: { live?: LivePulse }) {
   const money = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
   return (
     <>
-      {live ? (
+      {live && !hidePulse ? (
         <div className="cmd-pulse">
           <div className="cmd-pulse-item"><span>Leads</span><b>{live.leads}<i>/{live.leadGoal}</i></b></div>
           <div className="cmd-pulse-item"><span>Vindos do Google</span><b className="g">{live.googleLeads}</b></div>
@@ -1805,6 +1802,49 @@ function ContentFactoryPanel() {
             </div>
           ))
         )}
+      </div>
+    </div>
+  );
+}
+
+function ComandoHub({ live }: { live?: LivePulse }) {
+  const [view, setView] = useState<"setores" | "saude" | "estrategia" | "conteudo">("setores");
+  const tabs = [
+    { key: "setores", icon: <LayoutGrid size={22} />, label: "Setores", desc: "7 departamentos por fase", tone: "gold" },
+    { key: "saude", icon: <Radio size={22} />, label: "Saúde do Sistema", desc: "Erros, monitor, prontidão", tone: "green" },
+    { key: "estrategia", icon: <BarChart3 size={22} />, label: "Estratégia", desc: "Tráfego, funil, meta 1.000", tone: "blue" },
+    { key: "conteudo", icon: <CalendarDays size={22} />, label: "Atalho Conteúdo", desc: "Ir pra Fábrica de posts", tone: "purple" },
+  ] as const;
+  return (
+    <div className="hub">
+      {live ? (
+        <div className="cmd-pulse hub-pulse">
+          <div className="cmd-pulse-item"><span>Leads</span><b>{live.leads}<i>/{live.leadGoal}</i></b></div>
+          <div className="cmd-pulse-item"><span>Do Google</span><b className="g">{live.googleLeads}</b></div>
+          <div className="cmd-pulse-item"><span>Vendas hoje</span><b>{live.sales}</b></div>
+          <div className="cmd-pulse-item"><span>Receita hoje</span><b>{live.revenue.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</b></div>
+        </div>
+      ) : null}
+      <div className="hub-nav">
+        {tabs.map((t) => (
+          <button
+            key={t.key}
+            className={`hub-btn ${t.tone} ${view === t.key ? "on" : ""}`}
+            onClick={() => setView(t.key)}
+          >
+            <span className="hub-ico">{t.icon}</span>
+            <strong>{t.label}</strong>
+            <span className="hub-desc">{t.desc}</span>
+          </button>
+        ))}
+      </div>
+      <div className="hub-view">
+        {view === "setores" ? <CommandSection live={live} hidePulse /> : null}
+        {view === "saude" ? (<><ProjectHealthPanel /><MonitorPanel /></>) : null}
+        {view === "estrategia" ? <StrategyPanel /> : null}
+        {view === "conteudo" ? (
+          <p className="hub-hint">📅 A criação de posts está na aba <b>Conteúdo</b> (barra de baixo). Lá você aciona o roteiro dos 13 dias com 1 toque.</p>
+        ) : null}
       </div>
     </div>
   );
@@ -3402,6 +3442,31 @@ function CockpitStyles() {
           flex-direction: column;
         }
       }
+
+      /* === Comando 1.5 — HUB interativo da Central de Comando === */
+      .hub { display: flex; flex-direction: column; gap: 14px; }
+      .hub-pulse { margin-bottom: 2px; }
+      .hub-nav { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .hub-btn { position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: left; background: #141418; border: 1px solid #26262e; border-radius: 16px; padding: 15px 16px; cursor: pointer; font-family: inherit; color: #f6f4ef; transition: transform .18s cubic-bezier(.34,1.56,.64,1), border-color .18s, background .18s; }
+      .hub-btn:hover { transform: translateY(-3px); }
+      .hub-btn .hub-ico { display: inline-flex; width: 44px; height: 44px; border-radius: 12px; align-items: center; justify-content: center; margin-bottom: 6px; transition: transform .25s; }
+      .hub-btn:hover .hub-ico { transform: scale(1.08) rotate(-3deg); }
+      .hub-btn strong { font-size: 15px; }
+      .hub-btn .hub-desc { font-size: 11.5px; color: #a09c94; }
+      .hub-btn.gold .hub-ico { background: rgba(212,162,60,0.16); color: #f0c969; }
+      .hub-btn.green .hub-ico { background: rgba(91,187,95,0.16); color: #5bbb5f; }
+      .hub-btn.blue .hub-ico { background: rgba(96,165,250,0.16); color: #7eb6ff; }
+      .hub-btn.purple .hub-ico { background: rgba(186,140,255,0.16); color: #c4a2ff; }
+      .hub-btn.on { background: linear-gradient(160deg, rgba(212,162,60,0.10), #141418); border-color: rgba(212,162,60,0.5); }
+      .hub-btn.green.on { border-color: rgba(91,187,95,0.5); background: linear-gradient(160deg, rgba(91,187,95,0.10), #141418); }
+      .hub-btn.blue.on { border-color: rgba(96,165,250,0.5); background: linear-gradient(160deg, rgba(96,165,250,0.10), #141418); }
+      .hub-btn.purple.on { border-color: rgba(186,140,255,0.5); background: linear-gradient(160deg, rgba(186,140,255,0.10), #141418); }
+      .hub-btn.on::after { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: currentColor; opacity: .5; }
+      .hub-view { animation: hubfade .35s ease; }
+      .hub-hint { background: rgba(186,140,255,0.07); border: 1px solid rgba(186,140,255,0.25); border-radius: 12px; padding: 14px 16px; font-size: 13px; color: #cfcabf; line-height: 1.5; }
+      .hub-hint b { color: #c4a2ff; }
+      @keyframes hubfade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+      @media (min-width: 720px) { .hub-nav { grid-template-columns: repeat(4, 1fr); } }
 
       /* === Comando 4.5 — Aba Comando reorganizada (fases + cards + pulso) === */
       .cmd-pulse { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; }
