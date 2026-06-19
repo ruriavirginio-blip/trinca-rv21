@@ -29,7 +29,11 @@ async function projectContext(): Promise<string> {
       .from("leads")
       .select("*", { count: "exact", head: true })
       .eq("origem", "google");
-    return `Leads totais: ${totalLeads ?? 0}. Leads hoje: ${leadsHoje ?? 0}. Leads do Google: ${googleLeads ?? 0}. Meta: 1.000 leads. Lançamento: 30/06/2026.`;
+    const { data: st } = await db.from("project_status").select("*").eq("id", 1).single();
+    const statusTxt = st
+      ? `\nANDAMENTO ATUAL (centro operacional): Fase: ${st.fase}. Em execução agora: ${st.em_execucao}. Resumo: ${st.resumo}. Próximos passos: ${st.proximos_passos}. (atualizado ${st.atualizado_em})`
+      : "";
+    return `Leads totais: ${totalLeads ?? 0}. Leads hoje: ${leadsHoje ?? 0}. Leads do Google: ${googleLeads ?? 0}. Meta: 1.000 leads. Lançamento: 30/06/2026.${statusTxt}`;
   } catch {
     return "Sem acesso ao banco agora.";
   }
