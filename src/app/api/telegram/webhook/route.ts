@@ -80,6 +80,25 @@ export async function POST(request: NextRequest) {
   const chatId = message?.chat?.id ? String(message.chat.id) : "";
   if (!chatId || !text) return NextResponse.json({ ok: true });
 
+  // Salva toda mensagem recebida (fila de lembranças do Ruriá)
+  try {
+    const url = process.env.SUPABASE_URL;
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (url && key && message?.message_id) {
+      const db = createClient(url, key, { auth: { persistSession: false } });
+      const isLembrete = /lembr|n[ãa]o esque|anota|guarda|me lembr|tarefa|pend[êe]ncia/i.test(text);
+      await db.from("telegram_messages").upsert({
+        id: message.message_id,
+        chat_id: chatId,
+        nome: clean(message?.chat?.first_name),
+        texto: text,
+        is_lembrete: isLembrete,
+      });
+    }
+  } catch {
+    /* log silencioso */
+  }
+
   // comandos utilitários
   if (text === "/start" || text === "/id") {
     await sendTelegramMessage(
