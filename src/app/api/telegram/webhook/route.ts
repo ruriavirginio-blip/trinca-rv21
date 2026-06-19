@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { sendTelegramMessage } from "@/lib/telegram";
+import { publishByType } from "@/lib/instagram";
+
+export const maxDuration = 60;
 
 /* ============================================================
    Telegram Webhook — você fala com @RVexpert_bot, o Claude responde.
@@ -97,6 +100,44 @@ export async function POST(request: NextRequest) {
     }
   } catch {
     /* log silencioso */
+  }
+
+  // Aprovação/rejeição de post pendente (funciona com Ruriá offline)
+  const lc = text.toLowerCase().trim();
+  const isApprove = /^(sim|aprovad|aprovar|publicar|publica|pode publicar|👍|✅)/.test(lc);
+  const isReject = /^(n[ãa]o|rejeit|cancela|nao publica)/.test(lc);
+  if (isApprove || isReject) {
+    const url = process.env.SUPABASE_URL;
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (url && key) {
+      const db = createClient(url, key, { auth: { persistSession: false } });
+      const { data: pend } = await db
+        .from("content_factory")
+        .select("*")
+        .eq("status", "em_aprovacao")
+        .order("criado_em", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (!pend) {
+        await sendTelegramMessage("Não tem nenhum post aguardando aprovação agora. 👍", chatId);
+        return NextResponse.json({ ok: true });
+      }
+      if (isReject) {
+        await db.from("content_factory").update({ status: "rejeitado" }).eq("id", pend.id);
+        await sendTelegramMessage("❌ Beleza, post rejeitado — não publiquei nada. Me diz o que ajustar.", chatId);
+        return NextResponse.json({ ok: true });
+      }
+      await sendTelegramMessage("⏳ Publicando seu carrossel no Instagram...", chatId);
+      const res = await publishByType(pend.tipo, pend.asset_url || "", pend.legenda || "");
+      if (res.ok) {
+        await db.from("content_factory").update({ status: "publicado", instagram_media_id: res.mediaId, publicado_em: new Date().toISOString() }).eq("id", pend.id);
+        await sendTelegramMessage("✅ Publicado no seu Instagram! 🎉 Já pode conferir no @ruriavirginio.", chatId);
+      } else {
+        await db.from("content_factory").update({ status: "erro", erro_msg: res.reason }).eq("id", pend.id);
+        await sendTelegramMessage("⚠️ Deu erro ao publicar: " + res.reason, chatId);
+      }
+      return NextResponse.json({ ok: true });
+    }
   }
 
   // comandos utilitários
