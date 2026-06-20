@@ -80,6 +80,16 @@ export default function NovaLanding() {
       { threshold: 0.12, rootMargin: "0px 0px -6% 0px" },
     );
     els.forEach((el) => io.observe(el));
+    // Rede de segurança: revela o que já está na tela e garante que NADA fique invisível
+    const revealInView = () =>
+      els.forEach((el) => {
+        if (!el.classList.contains("mx-in") && el.getBoundingClientRect().top < window.innerHeight * 0.95) {
+          el.classList.add("mx-in");
+          io.unobserve(el);
+        }
+      });
+    revealInView();
+    requestAnimationFrame(revealInView);
 
     // Contadores animados (premium "alive") — respeita reduced-motion
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -110,6 +120,7 @@ export default function NovaLanding() {
     const milestones = [25, 50, 75, 100];
     const fired = new Set<number>();
     const onScroll = () => {
+      revealInView();
       setShowSticky(window.scrollY > 700);
       const doc = document.documentElement;
       const scrollable = doc.scrollHeight - window.innerHeight;
@@ -174,6 +185,10 @@ export default function NovaLanding() {
     }
   }
 
+  const goResults = () => {
+    document.getElementById("resultados")?.scrollIntoView({ behavior: "smooth" });
+  };
+
   const goForm = () => {
     trackCustomEvent("CTAClick", { page: "/nova" });
     gaTrackEvent("cta_click", { page: "/nova" });
@@ -206,9 +221,10 @@ export default function NovaLanding() {
             </p>
             <div className="mx-cta-row">
               <button className="mx-cta" onClick={goForm}>QUERO ENTRAR NO TRINCA RV21 →</button>
-              <button className="mx-cta ghost" onClick={goForm}>Ver resultados reais</button>
+              <button className="mx-cta ghost" onClick={goResults}>Ver resultados reais</button>
             </div>
             <p className="mx-cta-note">Acesso imediato no WhatsApp · pagamento 100% seguro pela Kiwify</p>
+            <span className="mx-hero-price"><b>R$37,89</b> à vista · ou 8x de R$5,51 <i>(menos que um lanche)</i></span>
           </div>
           <div className="mx-hero-photo">
             <span className="mx-21">21</span>
@@ -219,7 +235,7 @@ export default function NovaLanding() {
       </header>
 
       {/* STATS */}
-      <section className="mx-stats mx-reveal">
+      <section className="mx-stats mx-reveal mx-stagger">
         <div className="mx-stat"><b data-count="5000" data-prefix="+">+5.000</b><span>mulheres transformadas</span></div>
         <div className="mx-stat"><b data-count="14">14</b><span>anos de experiência</span></div>
         <div className="mx-stat"><b data-count="21">21</b><span>dias pra virar a chave</span></div>
@@ -240,7 +256,7 @@ export default function NovaLanding() {
       </section>
 
       {/* MARQUEE de transformações */}
-      <section className="mx-marquee-wrap mx-reveal">
+      <section className="mx-marquee-wrap mx-reveal" id="resultados">
         <p className="mx-eyebrow center">Elas viraram a chave</p>
         <div className="mx-marquee">
           <div className="mx-marquee-track">
@@ -258,7 +274,7 @@ export default function NovaLanding() {
       <section className="mx-section">
         <p className="mx-eyebrow mx-reveal">Elas falam por nós</p>
         <h2 className="mx-h2 mx-reveal">Depoimentos <span className="hl">reais</span></h2>
-        <div className="mx-videos mx-reveal">
+        <div className="mx-videos mx-reveal mx-stagger">
           <figure className="mx-video">
             <video controls preload="metadata" playsInline poster="/images/depoimento-jessica-poster.jpg">
               <source src="/media/depoimento-jessica.mp4" type="video/mp4" />
@@ -301,12 +317,13 @@ export default function NovaLanding() {
             <span className="split">pagamento único · ou 8x de R$5,51 (menos que um lanche)</span>
             <span className="perday">dá <b>R$1,80 por dia</b> de acompanhamento de verdade</span>
           </div>
-          <ul className="mx-incl">
+          <ul className="mx-incl mx-stagger">
             {INCLUI.map(([t, d]) => (
               <li key={t}><span className="ck">✓</span><div><b>{t}</b><span>{d}</span></div></li>
             ))}
           </ul>
           <button className="mx-cta full" onClick={goForm}>GARANTIR MINHA VAGA AGORA →</button>
+          <div className="mx-guarantee"><span className="shield">🛡️</span><div><b>Garantia de 7 dias.</b> Entrou e não era pra você? Pede o reembolso em até 7 dias — é seu direito por lei. O risco é meu, não seu.</div></div>
           <div className="mx-scarcity"><span className="pulse" />As turmas são <b>limitadas</b> pra eu acompanhar cada uma de perto. Quando fecha, fecha — e a próxima só abre lá na frente.</div>
         </div>
       </section>
@@ -315,7 +332,7 @@ export default function NovaLanding() {
       <section className="mx-section">
         <p className="mx-eyebrow mx-reveal">Quem te guia</p>
         <h2 className="mx-h2 mx-reveal">Prazer, <span className="hl">Ruriá Virgínio</span></h2>
-        <div className="mx-about mx-reveal">
+        <div className="mx-about mx-reveal mx-about-stagger">
           <img src="/images/ruria-sobre.jpg" alt="Ruriá Virgínio" />
           <div className="mx-about-body">
             <p><b>14 anos transformando corpos e autoestima</b> — mais de 5.000 mulheres que descobriram que dava, sim, pra virar a chave.</p>
@@ -335,7 +352,7 @@ export default function NovaLanding() {
           <input type="tel" name="whatsapp" placeholder="(84) 99999-9999" required />
           <fieldset className="mx-objetivos">
             <legend>Principal objetivo</legend>
-            <div className="mx-obj-grid">
+            <div className="mx-obj-grid mx-stagger">
               {OBJETIVOS.map((o) => (
                 <label className="mx-obj" key={o.value}>
                   <input type="radio" name="objetivo" value={o.value} required />
@@ -356,7 +373,7 @@ export default function NovaLanding() {
       <section className="mx-section">
         <p className="mx-eyebrow mx-reveal">Ainda na dúvida?</p>
         <h2 className="mx-h2 mx-reveal">Perguntas frequentes</h2>
-        <div className="mx-faq mx-reveal">
+        <div className="mx-faq mx-reveal mx-stagger">
           {FAQ.map(([q, a], i) => (
             <div className={`mx-faq-item ${faqOpen === i ? "open" : ""}`} key={q}>
               <button type="button" onClick={() => setFaqOpen(faqOpen === i ? null : i)}>
@@ -392,8 +409,8 @@ export default function NovaLanding() {
 
       <style jsx global>{`
         @import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
-        .mx { --bg:#08080a; --bg2:#0f0f12; --card:#141418; --line:#26262e; --gold:#d4a23c; --gold2:#f0c969; --txt:#f6f4ef; --muted:#a09c94; --muted2:#6c6962;
-          background:var(--bg); color:var(--txt); font-family:"Plus Jakarta Sans",sans-serif; line-height:1.5; -webkit-font-smoothing:antialiased; overflow-x:hidden; position:relative; min-height:100vh; }
+        .mx { --bg:#08080a; --bg2:#0f0f12; --card:#141418; --line:#26262e; --gold:#d4a23c; --gold2:#f0c969; --txt:#f6f4ef; --muted:#a09c94; --muted2:#8b887f;
+          background:var(--bg); color:var(--txt); font-family:"Plus Jakarta Sans",sans-serif; line-height:1.5; -webkit-font-smoothing:antialiased; overflow-x:clip; position:relative; min-height:100vh; }
         .mx *{margin:0;padding:0;box-sizing:border-box}
         .mx h1,.mx h2,.mx .mx-logo{font-family:"Bricolage Grotesque",sans-serif;letter-spacing:-0.03em;line-height:1.02}
         .mx .hl{color:var(--gold2)}
@@ -425,9 +442,9 @@ export default function NovaLanding() {
         .mx-cta.full{width:100%;justify-content:center;padding:19px;font-size:16px;margin-top:8px}
         .mx-cta-note{color:var(--muted2);font-size:12.5px;margin-top:12px}
 
-        .mx-hero-photo{position:relative}
-        .mx-hero-photo img{width:100%;border-radius:22px;display:block;border:1px solid var(--line);object-fit:cover;aspect-ratio:4/5;object-position:center 20%}
-        .mx-21{position:absolute;font-family:"Bricolage Grotesque";font-weight:800;font-size:clamp(120px,20vw,230px);color:transparent;-webkit-text-stroke:2px rgba(212,162,60,0.35);top:-12%;right:-6%;line-height:.7;z-index:-1;pointer-events:none}
+        .mx-hero-photo{position:relative;width:100%;max-width:440px;margin-left:auto}
+        .mx-hero-photo img{width:100%;display:block;border:none;object-fit:cover;aspect-ratio:4/5;object-position:center 16%;filter:drop-shadow(0 26px 54px rgba(0,0,0,.55));-webkit-mask-image:radial-gradient(76% 90% at 56% 38%,#000 44%,rgba(0,0,0,0) 86%);mask-image:radial-gradient(76% 90% at 56% 38%,#000 44%,rgba(0,0,0,0) 86%)}
+        .mx-21{position:absolute;font-family:"Bricolage Grotesque";font-weight:800;font-size:clamp(130px,21vw,250px);color:transparent;-webkit-text-stroke:2.5px rgba(240,201,105,0.7);top:-30%;right:-7%;line-height:.7;z-index:3;pointer-events:none}
         .mx-21.big{position:static;display:block;-webkit-text-stroke:2px rgba(212,162,60,0.4);margin-bottom:-30px}
         .mx-photo-tag{position:absolute;bottom:14px;left:14px;right:14px;background:rgba(8,8,10,0.7);backdrop-filter:blur(8px);border:1px solid rgba(212,162,60,0.25);color:var(--gold2);font-size:12px;font-weight:700;padding:8px 13px;border-radius:100px;text-align:center}
 
@@ -449,7 +466,7 @@ export default function NovaLanding() {
         .mx-marquee:hover .mx-marquee-track{animation-play-state:paused}
         @keyframes mxscroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
         .mx-mq-card{position:relative;width:230px;height:310px;border-radius:16px;overflow:hidden;flex-shrink:0;border:1px solid var(--line);background:#111}
-        .mx-mq-card img{width:100%;height:100%;object-fit:cover}
+        .mx-mq-card img{width:100%;height:100%;object-fit:contain;background:#0d0d10}
         .mx-mq-tag{position:absolute;bottom:10px;left:10px;background:rgba(8,8,10,0.78);backdrop-filter:blur(8px);border:1px solid rgba(212,162,60,0.3);color:var(--gold2);font-size:10.5px;font-weight:700;padding:5px 11px;border-radius:100px;letter-spacing:.03em}
 
         .mx-videos{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:22px}
@@ -476,6 +493,12 @@ export default function NovaLanding() {
         .mx-incl b{font-size:14.5px;display:block} .mx-incl span{font-size:13px;color:var(--muted)}
         .mx-scarcity{display:flex;align-items:center;gap:11px;background:rgba(212,162,60,0.07);border:1px solid rgba(212,162,60,0.22);border-radius:13px;padding:14px 16px;margin-top:14px;font-size:13px;font-weight:600}
         .mx-scarcity b{color:var(--gold2)}
+        .mx-guarantee{display:flex;align-items:flex-start;gap:11px;background:rgba(255,255,255,0.03);border:1px solid var(--line);border-radius:13px;padding:14px 16px;margin-top:12px;font-size:13px;color:var(--muted);line-height:1.5}
+        .mx-guarantee .shield{font-size:18px;line-height:1.2}
+        .mx-guarantee b{color:var(--txt)}
+        .mx-hero-price{display:block;margin-top:14px;font-size:14px;color:var(--muted);font-weight:600}
+        .mx-hero-price b{font-family:"Bricolage Grotesque",sans-serif;color:var(--gold2);font-size:20px;font-weight:800;vertical-align:-1px}
+        .mx-hero-price i{font-style:normal;color:var(--muted2)}
 
         /* === COMANDO 2: aprimoramentos premium (ui-ux-pro-max + banner + animação) === */
         /* tabular numbers — preço/stats não saltam (number-tabular) */
@@ -486,8 +509,7 @@ export default function NovaLanding() {
         @keyframes mxspin{to{transform:rotate(360deg)}}
         .mx-seal text[font-family]{animation:none}
         /* shimmer no "21" do hero */
-        .mx-21{background:linear-gradient(110deg,rgba(212,162,60,0.35) 30%,rgba(255,240,200,0.9) 50%,rgba(212,162,60,0.35) 70%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;-webkit-text-stroke:1px rgba(212,162,60,0.4);background-size:220% 100%;animation:mxshine 5s ease-in-out infinite}
-        @keyframes mxshine{0%,100%{background-position:130% 0}50%{background-position:-30% 0}}
+        .mx-21{background:none;-webkit-text-fill-color:transparent;-webkit-text-stroke:2.5px rgba(240,201,105,0.7);animation:none}
         /* borda animada no CTA primário */
         .mx-cta:not(.ghost){position:relative;isolation:isolate}
         .mx-cta:not(.ghost)::after{content:"";position:absolute;inset:-2px;border-radius:15px;padding:2px;background:linear-gradient(120deg,transparent,rgba(255,240,200,0.9),transparent);background-size:200% 100%;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:mxborder 3.5s linear infinite;z-index:-1;opacity:.7}
@@ -546,12 +568,48 @@ export default function NovaLanding() {
         .mx-reveal.mx-in{opacity:1;transform:none;filter:blur(0)}
         @media(prefers-reduced-motion:reduce){.mx-reveal{opacity:1!important;transform:none!important;filter:none!important}.mx-marquee-track{animation:none}}
 
+        /* === Coreografia ao rolar: cascata (stagger) === */
+        /* containers que são stagger não fazem o reveal de bloco (evita animação dupla) */
+        .mx-reveal.mx-stagger,.mx-reveal.mx-about-stagger{opacity:1;transform:none;filter:none;transition:none}
+        .mx-stagger > *{opacity:0;transform:translateY(24px);transition:opacity .65s cubic-bezier(.16,1,.3,1),transform .75s cubic-bezier(.16,1,.3,1)}
+        .mx-in.mx-stagger > *,.mx-in .mx-stagger > *{opacity:1;transform:none}
+        .mx-in.mx-stagger > :nth-child(1),.mx-in .mx-stagger > :nth-child(1){transition-delay:.05s}
+        .mx-in.mx-stagger > :nth-child(2),.mx-in .mx-stagger > :nth-child(2){transition-delay:.13s}
+        .mx-in.mx-stagger > :nth-child(3),.mx-in .mx-stagger > :nth-child(3){transition-delay:.21s}
+        .mx-in.mx-stagger > :nth-child(4),.mx-in .mx-stagger > :nth-child(4){transition-delay:.29s}
+        .mx-in.mx-stagger > :nth-child(5),.mx-in .mx-stagger > :nth-child(5){transition-delay:.37s}
+        .mx-in.mx-stagger > :nth-child(6),.mx-in .mx-stagger > :nth-child(6){transition-delay:.45s}
+        .mx-in.mx-stagger > :nth-child(7),.mx-in .mx-stagger > :nth-child(7){transition-delay:.53s}
+        /* "Sobre": entrada direcional (foto desliza de um lado, texto do outro) */
+        .mx-about-stagger > *{opacity:0;transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .9s cubic-bezier(.16,1,.3,1)}
+        .mx-about-stagger > :nth-child(1){transform:translateX(-38px)}
+        .mx-about-stagger > :nth-child(2){transform:translateX(30px)}
+        .mx-about-stagger.mx-in > *{opacity:1;transform:none}
+        .mx-about-stagger.mx-in > :nth-child(2){transition-delay:.12s}
+        /* Micro-interações nos cards (só desktop/ponteiro fino) */
+        @media(hover:hover) and (pointer:fine){
+          .mx-stat,.mx-video{transition:transform .4s cubic-bezier(.16,1,.3,1),border-color .4s,box-shadow .4s}
+          .mx-stat:hover,.mx-video:hover{transform:translateY(-5px);border-color:rgba(212,162,60,.42);box-shadow:0 20px 44px rgba(0,0,0,.45)}
+          .mx-mq-card{transition:transform .45s cubic-bezier(.16,1,.3,1),box-shadow .45s}
+          .mx-mq-card:hover{transform:scale(1.035);box-shadow:0 16px 40px rgba(0,0,0,.5)}
+          .mx-incl li{transition:transform .35s cubic-bezier(.16,1,.3,1)}
+          .mx-incl li:hover{transform:translateX(5px)}
+        }
+        @media(prefers-reduced-motion:reduce){
+          .mx-stagger > *,.mx-about-stagger > *{opacity:1!important;transform:none!important;transition:none!important}
+        }
+
         @media(max-width:860px){
           .mx-hero-grid{grid-template-columns:1fr;gap:24px}
           .mx-hero-photo{order:-1;max-width:380px;margin:0 auto}
           .mx-videos{grid-template-columns:1fr}
           .mx-about{grid-template-columns:1fr}
           .mx-about img{max-width:320px}
+        }
+        @media(max-width:600px){
+          .mx-seal{width:60px;height:60px;top:-16px;right:10px}
+          .mx-offer{padding-top:48px}
+          .mx-price .anchor{max-width:300px;padding-top:4px}
         }
         @media(max-width:560px){
           .mx-obj-grid{grid-template-columns:1fr}
