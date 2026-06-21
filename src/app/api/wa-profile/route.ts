@@ -43,7 +43,7 @@ export async function GET(request: Request) {
         about: ABOUT,
         description: DESCRIPTION,
         logo_url: PHOTO,
-        vertical: "HEALTH",
+        vertical: "Medical and Health",
       },
     };
     const r = await fetch(`https://messaging.twilio.com/v2/Channels/Senders/${encodeURIComponent(sid)}`, {
