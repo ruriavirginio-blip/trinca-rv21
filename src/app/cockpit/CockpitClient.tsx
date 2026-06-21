@@ -32,7 +32,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { JornadaPanel, AlertasPanel, AcessosPanel } from "./CockpitOperacao";
 
-type TabKey = "hoje" | "jornada" | "alertas" | "leads" | "vendas" | "gastos" | "conteudo" | "ia" | "mais";
+type TabKey = "hoje" | "jornada" | "alertas" | "leads" | "vendas" | "gastos" | "conteudo" | "comando" | "ia";
 type ContentStatus = "RASCUNHO" | "APROVADO" | "PUBLICADO" | "REJEITADO";
 
 type Lead = {
@@ -105,8 +105,8 @@ const tabs: Array<{ key: TabKey; label: string; icon: React.ReactNode }> = [
   { key: "vendas", label: "Vendas", icon: <CircleDollarSign size={20} /> },
   { key: "gastos", label: "Gastos", icon: <WalletCards size={20} /> },
   { key: "conteudo", label: "Conteúdo", icon: <CalendarDays size={20} /> },
+  { key: "comando", label: "Comando", icon: <LayoutGrid size={20} /> },
   { key: "ia", label: "IA", icon: <Bot size={20} /> },
-  { key: "mais", label: "Mais", icon: <LayoutGrid size={20} /> },
 ];
 
 type DeptStatus = "ok" | "run" | "wait" | "new";
@@ -1107,10 +1107,10 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
           </DashboardSection>
         ) : null}
 
-        {activeTab === "mais" ? (
+        {activeTab === "comando" ? (
           <DashboardSection
-            title="Comando & Estratégia"
-            description="Área de bastidores: cadeia de comando, inteligência e skills. Não precisa olhar todo dia."
+            title="Comando Geral"
+            description="Escolha uma área embaixo. Cada botão abre só aquela parte — sem bagunça."
             loading={false}
           >
             <ComandoHub
@@ -1122,10 +1122,6 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
                 revenue: metrics.revenueToday,
               }}
             />
-            <details className="legacy-notion">
-              <summary>🧠 Comando de Inteligência (experts + arsenal de skills)</summary>
-              <IntelligenceSection />
-            </details>
           </DashboardSection>
         ) : null}
 
@@ -1808,12 +1804,13 @@ function ContentFactoryPanel() {
 }
 
 function ComandoHub({ live }: { live?: LivePulse }) {
-  const [view, setView] = useState<"setores" | "saude" | "estrategia" | "conteudo">("setores");
+  const [view, setView] = useState<"setores" | "saude" | "estrategia" | "conteudo" | "inteligencia">("setores");
   const tabs = [
-    { key: "setores", icon: <LayoutGrid size={22} />, label: "Setores", desc: "7 departamentos por fase", tone: "gold" },
-    { key: "saude", icon: <Radio size={22} />, label: "Saúde do Sistema", desc: "Erros, monitor, prontidão", tone: "green" },
-    { key: "estrategia", icon: <BarChart3 size={22} />, label: "Estratégia", desc: "Tráfego, funil, meta 1.000", tone: "blue" },
-    { key: "conteudo", icon: <CalendarDays size={22} />, label: "Atalho Conteúdo", desc: "Ir pra Fábrica de posts", tone: "purple" },
+    { key: "setores", icon: <LayoutGrid size={22} />, label: "Setores", desc: "Os 7 times e o que falta em cada um", tone: "gold" },
+    { key: "saude", icon: <Radio size={22} />, label: "Saúde", desc: "Está tudo no ar? Erros e avisos", tone: "green" },
+    { key: "estrategia", icon: <BarChart3 size={22} />, label: "Estratégia", desc: "Tráfego, funil e a meta de 1.000", tone: "blue" },
+    { key: "conteudo", icon: <CalendarDays size={22} />, label: "Conteúdo", desc: "Ir pra Fábrica de posts", tone: "purple" },
+    { key: "inteligencia", icon: <Sparkles size={22} />, label: "Inteligência", desc: "Especialistas e skills pra acionar", tone: "gold" },
   ] as const;
   return (
     <div className="hub">
@@ -1845,6 +1842,7 @@ function ComandoHub({ live }: { live?: LivePulse }) {
         {view === "conteudo" ? (
           <p className="hub-hint">📅 A criação de posts está na aba <b>Conteúdo</b> (barra de baixo). Lá você aciona o roteiro dos 13 dias com 1 toque.</p>
         ) : null}
+        {view === "inteligencia" ? <IntelligenceSection /> : null}
       </div>
     </div>
   );

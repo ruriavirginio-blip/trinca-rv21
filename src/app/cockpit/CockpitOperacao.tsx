@@ -37,6 +37,15 @@ type DashLead = {
   payment: { confirmed?: boolean };
   dropoff: { needs_attention?: boolean; label?: string; reason?: string; detail?: string };
   operational_alert: null | { label: string; detail?: string; minutes?: number };
+  journey: Array<{
+    key: string;
+    label: string;
+    status: string;
+    status_label: string;
+    completed: boolean;
+    waiting: boolean;
+    failed: boolean;
+  }>;
   messages: {
     total: number;
     sent: number;
@@ -100,7 +109,7 @@ function useDashboard(token: string) {
   useEffect(() => {
     void load();
     if (!token) return;
-    const timer = window.setInterval(() => void load(), 60_000);
+    const timer = window.setInterval(() => void load(), 20_000);
     return () => window.clearInterval(timer);
   }, [load, token]);
 
@@ -237,17 +246,38 @@ export function JornadaPanel({ token, onToken }: { token: string; onToken: (v: s
                       {lead.operational_alert.minutes ? ` (${lead.operational_alert.minutes} min)` : ""}
                     </div>
                   ) : null}
-                  {lead.messages.timeline.length === 0 ? (
-                    <p className="op-empty">Ainda sem mensagens registradas.</p>
-                  ) : (
-                    lead.messages.timeline.map((step, i) => (
-                      <div key={i} className={`op-step st-${step.status}`}>
+
+                  {/* Origem do link por onde a lead entrou */}
+                  <div className="op-step st-origem">
+                    <span className="op-step-dot" />
+                    <span className="op-step-label">
+                      Origem: {lead.source.label}
+                      {lead.source.campaign ? ` · ${lead.source.campaign}` : ""}
+                    </span>
+                    <span className="op-step-status">entrada</span>
+                  </div>
+
+                  {/* Caminho completo: da landing ao clique no grupo oficial */}
+                  {(lead.journey ?? []).map((step) => {
+                    const cls = step.failed
+                      ? "st-erro"
+                      : step.completed
+                        ? "st-concluida"
+                        : step.waiting
+                          ? "st-aguardando-clique"
+                          : "st-nao-iniciado";
+                    const isCurrent = step.key === lead.current_stage.key;
+                    return (
+                      <div key={step.key} className={`op-step ${cls}${isCurrent ? " is-current" : ""}`}>
                         <span className="op-step-dot" />
-                        <span className="op-step-label">{step.etapa_label}</span>
-                        <span className="op-step-status">{step.status_label}</span>
+                        <span className="op-step-label">{step.label}</span>
+                        <span className="op-step-status">
+                          {isCurrent ? "▶ agora · " : ""}
+                          {step.status_label}
+                        </span>
                       </div>
-                    ))
-                  )}
+                    );
+                  })}
                 </div>
               ) : null}
             </div>
@@ -486,6 +516,12 @@ const opStyles = `
 .op-step.st-enviada .op-step-dot,.op-step.st-concluida .op-step-dot{background:#5fd08a}
 .op-step.st-pendente .op-step-dot,.op-step.st-aguardando-clique .op-step-dot{background:#e8b04a}
 .op-step.st-erro .op-step-dot{background:#f07a7a}
+.op-step.st-origem .op-step-dot{background:#d4a23c;box-shadow:0 0 0 3px rgba(212,162,60,.18)}
+.op-step.st-nao-iniciado .op-step-dot{background:#3a3a42}
+.op-step.st-nao-iniciado .op-step-label{color:#8a877f}
+.op-step.is-current{background:rgba(212,162,60,.08);border-radius:8px;padding:4px 6px;margin:0 -6px}
+.op-step.is-current .op-step-label{color:#f0c969;font-weight:700}
+.op-step.is-current .op-step-status{color:#e8b04a;font-weight:600}
 .op-step-label{flex:1;color:#d8d5cf}
 .op-step-status{color:#6f6c66;font-size:11.5px}
 .op-allgood{display:flex;align-items:center;gap:9px;background:rgba(95,208,138,.08);border:1px solid rgba(95,208,138,.25);color:#5fd08a;font-size:13.5px;font-weight:600;padding:14px;border-radius:14px}
