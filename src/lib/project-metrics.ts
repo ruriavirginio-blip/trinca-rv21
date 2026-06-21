@@ -24,8 +24,12 @@ const LANCAMENTO = "2026-06-30";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function count(supabase: SB, build: (q: any) => unknown): Promise<number> {
+  // Exclui leads de teste (origem comecando com "teste") das metricas reais.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const base: any = supabase.from("leads").select("*", { count: "exact", head: true });
+  const base: any = supabase
+    .from("leads")
+    .select("*", { count: "exact", head: true })
+    .not("origem", "ilike", "teste%");
   const q = (build(base) as typeof base) ?? base;
   const { count: c } = await q;
   return c ?? 0;

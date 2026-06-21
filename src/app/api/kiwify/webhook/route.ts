@@ -948,6 +948,8 @@ export async function POST(request: Request) {
   let payload: JsonObject;
   const url = new URL(request.url);
   const dryRun = url.searchParams.get("dry_run") === "true";
+  // Modo de teste AO VIVO: envia WhatsApp real, mas NAO dispara conversao pro Meta/CAPI.
+  const testLive = url.searchParams.get("test_live") === "true";
 
   try {
     payload = (await request.json()) as JsonObject;
@@ -1153,7 +1155,7 @@ ${cockpitUrl()}`,
       }
     | null = null;
 
-  if (status === "compra-aprovada") {
+  if (status === "compra-aprovada" && !testLive) {
     const metaEventId = createServerEventId("Purchase", orderId || email);
 
     try {
