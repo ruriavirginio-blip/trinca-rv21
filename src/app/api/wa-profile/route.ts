@@ -7,7 +7,7 @@ import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-const PHOTO = "https://protocolorv.com.br/images/whatsapp-profile-trinca-rv21-premium.png";
+const PHOTO_DEFAULT = "https://protocolorv.com.br/images/whatsapp-profile-trinca-rv21.jpg";
 const ABOUT = "TRINCA RV21 · Desafio feminino de 21 dias";
 const DESCRIPTION = "Protocolo RV · 14 anos transformando mulheres. Treino + dieta + acompanhamento.";
 
@@ -37,12 +37,13 @@ export async function GET(request: Request) {
 
     if (!sid) return NextResponse.json({ ok: false, error: "Informe ?sid=" }, { status: 400 });
 
+    const logo = (url.searchParams.get("logo") || "").trim() || PHOTO_DEFAULT;
     const body = {
       profile: {
         name: "TRINCA RV21",
         about: ABOUT,
         description: DESCRIPTION,
-        logo_url: PHOTO,
+        logo_url: logo,
         vertical: "Medical and Health",
       },
     };
