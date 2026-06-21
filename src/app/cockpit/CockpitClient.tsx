@@ -2,9 +2,9 @@
 
 import { createClient } from "@supabase/supabase-js";
 import {
+  AlertTriangle,
   BarChart3,
   Bot,
-  Brain,
   CalendarDays,
   Camera,
   ChevronRight,
@@ -30,9 +30,9 @@ import {
   Zap,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import OperacaoPage from "../operacao/page";
+import { JornadaPanel, AlertasPanel, AcessosPanel } from "./CockpitOperacao";
 
-type TabKey = "comando" | "hoje" | "leads" | "vendas" | "gastos" | "conteudo" | "ao-vivo" | "inteligencia" | "ia";
+type TabKey = "hoje" | "jornada" | "alertas" | "leads" | "vendas" | "gastos" | "conteudo" | "ia" | "mais";
 type ContentStatus = "RASCUNHO" | "APROVADO" | "PUBLICADO" | "REJEITADO";
 
 type Lead = {
@@ -98,15 +98,15 @@ const saleValue = 37.89;
 const leadGoal = 1000;
 
 const tabs: Array<{ key: TabKey; label: string; icon: React.ReactNode }> = [
-  { key: "comando", label: "Comando", icon: <LayoutGrid size={20} /> },
   { key: "hoje", label: "Hoje", icon: <Home size={20} /> },
+  { key: "jornada", label: "Jornada", icon: <Radio size={20} /> },
+  { key: "alertas", label: "Alertas", icon: <AlertTriangle size={20} /> },
   { key: "leads", label: "Leads", icon: <Users size={20} /> },
   { key: "vendas", label: "Vendas", icon: <CircleDollarSign size={20} /> },
   { key: "gastos", label: "Gastos", icon: <WalletCards size={20} /> },
   { key: "conteudo", label: "Conteúdo", icon: <CalendarDays size={20} /> },
-  { key: "ao-vivo", label: "Ao Vivo", icon: <Radio size={20} /> },
-  { key: "inteligencia", label: "Inteligência", icon: <Brain size={20} /> },
   { key: "ia", label: "IA", icon: <Bot size={20} /> },
+  { key: "mais", label: "Mais", icon: <LayoutGrid size={20} /> },
 ];
 
 type DeptStatus = "ok" | "run" | "wait" | "new";
@@ -979,24 +979,6 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
       {dataError ? <div className="notice">{dataError}</div> : null}
 
       <section className="content">
-        {activeTab === "comando" ? (
-          <DashboardSection
-            title="Comando Geral"
-            description="Cadeia de comando: cada setor reporta status e recebe ordens diretas."
-            loading={loading}
-          >
-            <ComandoHub
-              live={{
-                leads: leads.length,
-                leadGoal,
-                googleLeads: leads.filter((l) => /google/i.test(`${l.utm ?? ""} ${l.origem ?? ""}`)).length,
-                sales: metrics.salesToday.length,
-                revenue: metrics.revenueToday,
-              }}
-            />
-          </DashboardSection>
-        ) : null}
-
         {activeTab === "hoje" ? (
           <DashboardSection
             title="Hoje"
@@ -1012,6 +994,28 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
               ]}
             />
             <MiniCard title="Comentários com gatilho" value={String(metrics.commentLeadsToday.length)} />
+            <h3 className="block-title">Acessos por link (contagem exata)</h3>
+            <AcessosPanel />
+          </DashboardSection>
+        ) : null}
+
+        {activeTab === "jornada" ? (
+          <DashboardSection
+            title="Jornada da Lead"
+            description="Cada lead: origem, etapa atual, passo a passo das mensagens e onde travou. Atualiza sozinho a cada 1 min."
+            loading={false}
+          >
+            <JornadaPanel token={automationToken} onToken={saveAutomationToken} />
+          </DashboardSection>
+        ) : null}
+
+        {activeTab === "alertas" ? (
+          <DashboardSection
+            title="Alertas"
+            description="Só o que precisa de você agora: travou, desistiu ou deu erro."
+            loading={false}
+          >
+            <AlertasPanel token={automationToken} />
           </DashboardSection>
         ) : null}
 
@@ -1103,29 +1107,25 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
           </DashboardSection>
         ) : null}
 
-        {activeTab === "ao-vivo" ? (
-          <DashboardSection title="Ao Vivo" description="Painel operacional atual integrado no Cockpit." loading={false}>
-            <div className="token-card">
-              <Eye size={18} />
-              <input
-                value={automationToken}
-                onChange={(event) => saveAutomationToken(event.target.value)}
-                placeholder="Cole o AUTOMATION_API_SECRET uma vez"
-              />
-            </div>
-            <div className="live-frame">
-              <OperacaoPage />
-            </div>
-          </DashboardSection>
-        ) : null}
-
-        {activeTab === "inteligencia" ? (
+        {activeTab === "mais" ? (
           <DashboardSection
-            title="Comando de Inteligência"
-            description="Experts premium e arsenal de skills — clique para designar o comando."
+            title="Comando & Estratégia"
+            description="Área de bastidores: cadeia de comando, inteligência e skills. Não precisa olhar todo dia."
             loading={false}
           >
-            <IntelligenceSection />
+            <ComandoHub
+              live={{
+                leads: leads.length,
+                leadGoal,
+                googleLeads: leads.filter((l) => /google/i.test(`${l.utm ?? ""} ${l.origem ?? ""}`)).length,
+                sales: metrics.salesToday.length,
+                revenue: metrics.revenueToday,
+              }}
+            />
+            <details className="legacy-notion">
+              <summary>🧠 Comando de Inteligência (experts + arsenal de skills)</summary>
+              <IntelligenceSection />
+            </details>
           </DashboardSection>
         ) : null}
 
@@ -3509,6 +3509,7 @@ function CockpitStyles() {
       .legacy-notion { margin-top: 16px; background: #0f0f12; border: 1px solid #26262e; border-radius: 12px; padding: 12px 14px; }
       .legacy-notion summary { cursor: pointer; font-size: 13px; font-weight: 700; color: #a09c94; }
       .legacy-note { font-size: 12px; color: #6c6962; line-height: 1.5; margin: 10px 0; }
+      .block-title { font-size: 14px; font-weight: 700; color: #f0c969; margin: 22px 0 4px; }
 
       /* === Motor 24/7 — Fábrica de Conteúdo === */
       .cf { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }

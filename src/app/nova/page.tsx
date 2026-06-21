@@ -74,6 +74,26 @@ export default function NovaLanding() {
     trackViewContent({ content_name: "TRINCA RV21 - landing /nova" });
     gaTrackEvent("page_view_nova", { page: "/nova" });
 
+    // Contador de acessos próprio (origem exata por link) — não bloqueia a página
+    try {
+      const sp = new URLSearchParams(window.location.search);
+      let ref = "";
+      try { ref = document.referrer || ""; } catch { ref = ""; }
+      fetch("/api/track", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        keepalive: true,
+        body: JSON.stringify({
+          path: "/nova",
+          utm_source: sp.get("utm_source") || "",
+          utm_medium: sp.get("utm_medium") || "",
+          utm_campaign: sp.get("utm_campaign") || "",
+          origem: sp.get("origem") || sp.get("o") || "",
+          referrer: ref,
+        }),
+      }).catch(() => {});
+    } catch {}
+
     const els = Array.from(document.querySelectorAll<HTMLElement>(".mx-reveal"));
     const io = new IntersectionObserver(
       (entries) => entries.forEach((e) => e.isIntersecting && (e.target.classList.add("mx-in"), io.unobserve(e.target))),
