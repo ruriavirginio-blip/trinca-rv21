@@ -512,7 +512,27 @@ export async function POST(request: Request) {
       "Depois do segundo clique, o dispatch passou a liberar o video do grupo."
     );
 
-    await markSteps(supabase, email, ["grupo-oficial-final"], "enviada");
+    // Marca o video final como ENVIADO HA 2 min, para satisfazer o
+    // delay_after_previous_minutes (1 min) do link do grupo no dry-run —
+    // simulando o tempo que de fato passa em producao.
+    {
+      const past = new Date(Date.now() - 2 * 60 * 1000).toISOString();
+      const finalMsg = messages.find(
+        (m) => cleanText((m as JsonObject).etapa) === "grupo-oficial-final"
+      ) as JsonObject | undefined;
+      const finalMeta =
+        finalMsg && typeof finalMsg.metadata === "object" && !Array.isArray(finalMsg.metadata)
+          ? (finalMsg.metadata as JsonObject)
+          : {};
+      const { error: finalUpdateError } = await supabase
+        .from("automation_messages")
+        .update({ status: "enviada", metadata: { ...finalMeta, completed_at: past } })
+        .eq("email", email)
+        .eq("etapa", "grupo-oficial-final");
+      if (finalUpdateError) {
+        throw new Error(finalUpdateError.message);
+      }
+    }
 
     dryRun = await fetchJson(
       origin,
