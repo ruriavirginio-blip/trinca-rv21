@@ -28,7 +28,7 @@ export async function GET(request: Request) {
   try {
     if (!doUpdate) {
       // Lista os WhatsApp senders (Messaging v2)
-      const r = await fetch("https://messaging.twilio.com/v2/Channels/Senders?PageSize=50", {
+      const r = await fetch("https://messaging.twilio.com/v2/Channels/Senders?Channel=whatsapp&PageSize=50", {
         headers: { Authorization: a.header },
       });
       const data = await r.json().catch(() => ({}));
