@@ -116,6 +116,35 @@ function useDashboard(token: string) {
   return { data, error, loading, updatedAt, reload: load };
 }
 
+// Rótulos curtos para o quadro de etapas (caminho da landing → clique no grupo)
+const SHORT_LABELS: Record<string, string> = {
+  "lead-capturado": "Landing + form",
+  "checkout-iniciado": "Checkout",
+  "evento-kiwify": "Kiwify",
+  "compra-confirmada": "Pagamento",
+  "clique-compra-confirmada-estou-pronta": "Estou pronta",
+  "boas-vindas-video": "Boas-vindas",
+  "materiais-desafio": "Materiais",
+  "grupo-oficial-preparacao": "Msg grupo",
+  "clique-grupo-assistir-boas-vindas": "Viu vídeo",
+  "grupo-oficial-final": "Vídeo final",
+  "grupo-oficial-link": "Link grupo",
+};
+
+// Nome amigável da origem do link (de onde a lead veio)
+function originLabel(lead: DashLead): string {
+  const blob = `${lead.source.key || ""} ${lead.source.label || ""}`.toLowerCase();
+  if (blob.includes("story") || blob.includes("storie")) return "Story IG";
+  if (blob.includes("feed") || blob.includes("post")) return "Feed IG";
+  if (blob.includes("direct")) return "Direct IG";
+  if (blob.includes("bio")) return "Bio IG";
+  if (/cpc|paid|ads?|trafego|tr[aá]fego|paga/.test(blob)) return "Tráfego IG";
+  if (blob.includes("google")) return "Google";
+  if (blob.includes("instagram")) return "Instagram";
+  if (blob.includes("sem_rastreio") || blob.includes("sem rastreio")) return "Sem rastreio";
+  return lead.source.label || "Direto";
+}
+
 function stageTone(lead: DashLead): "ok" | "wait" | "err" {
   if (lead.messages.errors > 0 || lead.operational_alert) return "err";
   if (lead.dropoff?.needs_attention || lead.messages.waiting_click > 0) return "wait";
@@ -215,28 +244,47 @@ export function JornadaPanel({ token, onToken }: { token: string; onToken: (v: s
           const isOpen = open === lead.id;
           return (
             <div key={lead.id} className={`op-lead tone-${tone}`}>
-              <button className="op-lead-top" onClick={() => setOpen(isOpen ? null : lead.id)}>
+              {/* Cabeçalho: nome + origem do link em destaque */}
+              <div className="op-lead-head">
                 <div className="op-lead-id">
                   <strong>{lead.nome || lead.email || "Lead"}</strong>
                   <span className="op-lead-meta">
-                    {lead.source.label}
-                    {lead.objetivo ? ` · ${lead.objetivo}` : ""}
-                    {lead.capturado_em ? ` · ${timeAgo(lead.capturado_em)}` : ""}
+                    {lead.objetivo ? `${lead.objetivo} · ` : ""}
+                    {lead.capturado_em ? `entrou ${timeAgo(lead.capturado_em)} atrás` : ""}
                   </span>
                 </div>
-                <div className="op-lead-right">
-                  <span className={`op-stage tone-${tone}`}>
-                    {tone === "err" ? <XCircle size={13} /> : tone === "wait" ? <Clock size={13} /> : <CheckCircle2 size={13} />}
-                    {lead.current_stage.label}
-                  </span>
-                  <ChevronDown size={16} className={isOpen ? "op-rot" : ""} />
-                </div>
-              </button>
-
-              <div className="op-bar">
-                <span style={{ width: `${lead.progress.percent}%` }} />
-                <em>{lead.progress.completed}/{lead.progress.total}</em>
+                <span className="op-origin" title="De onde essa lead veio">
+                  <MousePointerClick size={12} /> {originLabel(lead)}
+                </span>
               </div>
+
+              {/* QUADRO: o caminho inteiro sempre visível (landing → clique no grupo) */}
+              <div className="op-track">
+                {(lead.journey ?? []).map((step) => {
+                  const state = step.failed
+                    ? "err"
+                    : step.completed
+                      ? "done"
+                      : step.key === lead.current_stage.key
+                        ? "now"
+                        : step.waiting
+                          ? "wait"
+                          : "todo";
+                  const ico =
+                    state === "done" ? "✓" : state === "err" ? "✕" : state === "now" ? "▶" : state === "wait" ? "•" : "·";
+                  return (
+                    <div key={step.key} className={`op-node n-${state}`} title={`${step.label}: ${step.status_label}`}>
+                      <span className="op-node-ico">{ico}</span>
+                      <span className="op-node-lbl">{SHORT_LABELS[step.key] || step.label}</span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <button className="op-more" onClick={() => setOpen(isOpen ? null : lead.id)}>
+                {isOpen ? "ocultar detalhes" : "ver mensagens e detalhes"}
+                <ChevronDown size={14} className={isOpen ? "op-rot" : ""} />
+              </button>
 
               {isOpen ? (
                 <div className="op-timeline">
@@ -246,38 +294,17 @@ export function JornadaPanel({ token, onToken }: { token: string; onToken: (v: s
                       {lead.operational_alert.minutes ? ` (${lead.operational_alert.minutes} min)` : ""}
                     </div>
                   ) : null}
-
-                  {/* Origem do link por onde a lead entrou */}
-                  <div className="op-step st-origem">
-                    <span className="op-step-dot" />
-                    <span className="op-step-label">
-                      Origem: {lead.source.label}
-                      {lead.source.campaign ? ` · ${lead.source.campaign}` : ""}
-                    </span>
-                    <span className="op-step-status">entrada</span>
-                  </div>
-
-                  {/* Caminho completo: da landing ao clique no grupo oficial */}
-                  {(lead.journey ?? []).map((step) => {
-                    const cls = step.failed
-                      ? "st-erro"
-                      : step.completed
-                        ? "st-concluida"
-                        : step.waiting
-                          ? "st-aguardando-clique"
-                          : "st-nao-iniciado";
-                    const isCurrent = step.key === lead.current_stage.key;
-                    return (
-                      <div key={step.key} className={`op-step ${cls}${isCurrent ? " is-current" : ""}`}>
+                  {lead.messages.timeline.length === 0 ? (
+                    <p className="op-empty">Ainda sem mensagens disparadas.</p>
+                  ) : (
+                    lead.messages.timeline.map((msg, i) => (
+                      <div key={i} className={`op-step st-${msg.status}`}>
                         <span className="op-step-dot" />
-                        <span className="op-step-label">{step.label}</span>
-                        <span className="op-step-status">
-                          {isCurrent ? "▶ agora · " : ""}
-                          {step.status_label}
-                        </span>
+                        <span className="op-step-label">{msg.etapa_label}</span>
+                        <span className="op-step-status">{msg.status_label}</span>
                       </div>
-                    );
-                  })}
+                    ))
+                  )}
                 </div>
               ) : null}
             </div>
@@ -497,6 +524,24 @@ const opStyles = `
 .op-lead.tone-wait{border-left-color:#e8b04a}
 .op-lead.tone-err{border-left-color:#f07a7a}
 .op-lead.tone-ok{border-left-color:#5fd08a}
+.op-lead-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.op-origin{flex-shrink:0;display:inline-flex;align-items:center;gap:5px;background:rgba(212,162,60,.12);border:1px solid rgba(212,162,60,.3);color:#f0c969;font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:100px}
+.op-track{display:flex;flex-wrap:wrap;gap:6px;margin:11px 0 4px}
+.op-node{flex:1 1 calc(25% - 6px);min-width:74px;display:flex;flex-direction:column;align-items:center;gap:5px;background:#1a1a1f;border:1px solid #26262c;border-radius:10px;padding:8px 4px;text-align:center}
+.op-node-ico{width:21px;height:21px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;background:#2a2a31;color:#6f6c66;line-height:1}
+.op-node-lbl{font-size:10px;line-height:1.15;color:#8a877f;font-weight:600}
+.op-node.n-done .op-node-ico{background:rgba(95,208,138,.16);color:#5fd08a}
+.op-node.n-done .op-node-lbl{color:#bfeccd}
+.op-node.n-now{border-color:rgba(212,162,60,.55);background:rgba(212,162,60,.1)}
+.op-node.n-now .op-node-ico{background:#d4a23c;color:#1a1206}
+.op-node.n-now .op-node-lbl{color:#f0c969}
+.op-node.n-wait .op-node-ico{background:rgba(232,176,74,.18);color:#e8b04a}
+.op-node.n-wait .op-node-lbl{color:#e8b04a}
+.op-node.n-err{border-color:rgba(240,122,122,.5)}
+.op-node.n-err .op-node-ico{background:rgba(240,122,122,.18);color:#f07a7a}
+.op-node.n-err .op-node-lbl{color:#f0a3a3}
+.op-more{width:100%;display:flex;align-items:center;justify-content:center;gap:6px;background:none;border:1px dashed #33333a;color:#8a877f;font-size:12px;padding:8px;border-radius:10px;cursor:pointer;margin-top:8px}
+.op-more:hover{color:#a3a09a;border-color:#44444c}
 .op-lead-top{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;background:none;border:none;cursor:pointer;text-align:left;padding:0}
 .op-lead-id strong{display:block;color:#f5f3ef;font-size:14px;font-weight:700}
 .op-lead-meta{color:#6f6c66;font-size:11.5px}
