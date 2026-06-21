@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { sendTelegramMessage } from "@/lib/telegram";
 import { publishByType } from "@/lib/instagram";
+import { computeProjectMetrics } from "@/lib/project-metrics";
 
 export const maxDuration = 60;
 
@@ -22,21 +23,12 @@ async function projectContext(): Promise<string> {
     const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!url || !key) return "Sem acesso ao banco agora.";
     const db = createClient(url, key, { auth: { persistSession: false } });
-    const hoje = new Date().toISOString().slice(0, 10);
-    const { count: totalLeads } = await db.from("leads").select("*", { count: "exact", head: true });
-    const { count: leadsHoje } = await db
-      .from("leads")
-      .select("*", { count: "exact", head: true })
-      .gte("capturado_em", `${hoje}T00:00:00`);
-    const { count: googleLeads } = await db
-      .from("leads")
-      .select("*", { count: "exact", head: true })
-      .eq("origem", "google");
+    const m = await computeProjectMetrics(db);
     const { data: st } = await db.from("project_status").select("*").eq("id", 1).single();
     const statusTxt = st
       ? `\nANDAMENTO ATUAL (centro operacional): Fase: ${st.fase}. Em execução agora: ${st.em_execucao}. Resumo: ${st.resumo}. Próximos passos: ${st.proximos_passos}. (atualizado ${st.atualizado_em})`
       : "";
-    return `Leads totais: ${totalLeads ?? 0}. Leads hoje: ${leadsHoje ?? 0}. Leads do Google: ${googleLeads ?? 0}. Meta: 1.000 leads. Lançamento: 30/06/2026.${statusTxt}`;
+    return `MÉTRICAS AO VIVO (agora): Leads totais: ${m.leads_total} de ${m.meta_leads} (${m.progresso_pct}% da meta). Leads hoje: ${m.leads_hoje}. Leads do Google: ${m.leads_google}. Checkouts iniciados: ${m.checkout_iniciado}. Vendas: ${m.vendas}. Faltam ${m.dias_para_lancamento} dias para o lançamento (${m.lancamento}).${statusTxt}`;
   } catch {
     return "Sem acesso ao banco agora.";
   }

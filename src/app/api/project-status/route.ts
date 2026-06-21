@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { computeProjectMetrics, persistProjectMetrics } from "@/lib/project-metrics";
 
 /* Status do projeto — fonte de verdade do "o que estamos fazendo agora".
    O bot do Telegram lê isto pra responder em sintonia com o centro operacional. */
+
+export const dynamic = "force-dynamic";
 
 function clean(v: unknown) {
   return typeof v === "string" ? v.trim() : "";
@@ -19,7 +22,18 @@ export async function GET() {
   if (!supabase) return NextResponse.json({ error: "Supabase nao configurado." }, { status: 503 });
   const { data, error } = await supabase.from("project_status").select("*").eq("id", 1).single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ ok: true, status: data });
+
+  // Métricas computadas AO VIVO a cada leitura (sempre frescas, sem depender de cron).
+  // Persiste o snapshot de forma best-effort pra quem lê a tabela direto.
+  let metricas = data?.metricas ?? null;
+  try {
+    metricas = await computeProjectMetrics(supabase);
+    await persistProjectMetrics(supabase, metricas);
+  } catch {
+    /* mantém último snapshot se o cálculo falhar */
+  }
+
+  return NextResponse.json({ ok: true, status: { ...data, metricas } });
 }
 
 export async function POST(request: NextRequest) {

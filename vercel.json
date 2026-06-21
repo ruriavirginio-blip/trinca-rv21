@@ -27,5 +27,11 @@
     "src/app/api/remotion/render/route.ts": {
       "maxDuration": 300
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/project-status/sync",
+      "schedule": "0 */6 * * *"
+    }
+  ]
 }
