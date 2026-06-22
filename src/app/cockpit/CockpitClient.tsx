@@ -594,10 +594,16 @@ function normalizeContentStatus(status: unknown): ContentStatus {
   return "RASCUNHO";
 }
 
-export default function CockpitClient({ cockpitPassword }: { cockpitPassword: string }) {
+export default function CockpitClient({
+  cockpitPassword,
+  opsToken = "",
+}: {
+  cockpitPassword: string;
+  opsToken?: string;
+}) {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [password, setPassword] = useState("");
-  const [automationToken, setAutomationToken] = useState("");
+  const [automationToken, setAutomationToken] = useState(opsToken);
   const [activeTab, setActiveTab] = useState<TabKey>("hoje");
   const [leads, setLeads] = useState<Lead[]>([]);
   const [commentLeads, setCommentLeads] = useState<CommentLead[]>([]);
@@ -629,7 +635,7 @@ export default function CockpitClient({ cockpitPassword }: { cockpitPassword: st
         setIsUnlocked(false);
       }
 
-      setAutomationToken(window.localStorage.getItem(operacaoTokenStorageKey) || "");
+      setAutomationToken(window.localStorage.getItem(operacaoTokenStorageKey) || opsToken);
 
       try {
         const defaults = Object.fromEntries(contentCalendar.map((post) => [post.id, post.status]));
