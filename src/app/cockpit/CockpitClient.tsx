@@ -1022,16 +1022,18 @@ export default function CockpitClient({
         {activeTab === "conteudo" ? (
           <DashboardSection
             title="Conteúdo"
-            description="Calendário da semana pré-lançamento com roteiro, aprovação e publicação."
+            description="Clique no dia (D1 = 23/06) e veja todos os posts daquele dia: formato, objetivo e roteiro."
             loading={contentQueueLoading}
           >
+            <h3 className="block-title">📅 Conteúdos por dia</h3>
+            <ContentByDayPanel />
+            <h3 className="block-title">🏭 Fábrica de Conteúdo (criar / aprovar / publicar)</h3>
             <ContentFactoryPanel />
             <details className="legacy-notion">
-              <summary>📚 Calendário/roteiros completos + sincronização Notion (avançado)</summary>
+              <summary>🗄️ Notion (antigo — NÃO usar)</summary>
               <p className="legacy-note">
-                A sincronização com o Notion ainda não está ligada (falta configurar as chaves NOTION_* no servidor).
-                O roteiro completo já está disponível na Fábrica acima. Esta seção é só pra quando você quiser
-                gerenciar pelo Notion.
+                Esta área era uma fila pelo Notion que <b>nunca foi ativada</b> e não vale. O que vale é
+                a <b>Fábrica de Conteúdo</b> acima (Supabase). Mantida só por histórico — pode ignorar.
               </p>
               <ContentApprovalQueue
                 error={contentQueueError}
@@ -1655,6 +1657,85 @@ const parseDia = (day: string): string => {
   const m = day.match(/(\d{2})\/(\d{2})/);
   return m ? `2026-${m[2]}-${m[1]}` : "";
 };
+
+function ContentByDayPanel() {
+  const [sel, setSel] = useState(contentCalendar[0]?.id || "");
+  const dia = contentCalendar.find((d) => d.id === sel) || contentCalendar[0];
+  const idx = Math.max(0, contentCalendar.findIndex((d) => d.id === sel));
+  const fase =
+    idx <= 2
+      ? { n: "Oportunidade", c: "#d4a23c" }
+      : idx <= 5
+        ? { n: "Transformação", c: "#5fd08a" }
+        : idx <= 8
+          ? { n: "Propriedade", c: "#6fa8ff" }
+          : { n: "Lançamento", c: "#f0c969" };
+  const posts = (dia?.format || "").split(/[+,]/).map((s) => s.trim()).filter(Boolean);
+
+  return (
+    <div className="cbd">
+      <div className="cbd-days">
+        {contentCalendar.map((d) => (
+          <button key={d.id} className={`cbd-chip ${d.id === sel ? "on" : ""}`} onClick={() => setSel(d.id)}>
+            {d.day.split(" — ")[0]}
+          </button>
+        ))}
+      </div>
+      {dia ? (
+        <div className="cbd-detail">
+          <div className="cbd-head">
+            <span className="cbd-fase" style={{ color: fase.c, borderColor: fase.c }}>{fase.n}</span>
+            <span className="cbd-time">🕒 {dia.time}</span>
+          </div>
+          <h3>{dia.title}</h3>
+          <p className="cbd-obj">{dia.objective}</p>
+          <div className="cbd-posts">
+            <strong>Posts deste dia:</strong>
+            {posts.map((p, i) => <span key={i} className="cbd-post">{p}</span>)}
+          </div>
+          {dia.script?.length ? (
+            <div className="cbd-block">
+              <strong>Roteiro (resumo)</strong>
+              <ul>{dia.script.map((s, i) => <li key={i}>{s}</li>)}</ul>
+            </div>
+          ) : null}
+          {dia.roteiro ? (
+            <details className="cbd-roteiro">
+              <summary>📝 Roteiro take-a-take completo</summary>
+              <pre>{dia.roteiro}</pre>
+            </details>
+          ) : null}
+          <p className="cbd-cta">
+            🎯 CTA do dia: comentário com a palavra-chave dispara o DM automático → lista VIP (/vip). No aquecimento NÃO se vende — captura-se.
+          </p>
+        </div>
+      ) : null}
+      <style jsx>{`
+        .cbd { margin-bottom: 18px; }
+        .cbd-days { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 12px; }
+        .cbd-chip { flex-shrink: 0; background: #16161a; border: 1px solid #26262c; color: #a3a09a; font-size: 12px; font-weight: 700; padding: 8px 12px; border-radius: 10px; cursor: pointer; }
+        .cbd-chip.on { background: rgba(212,162,60,.14); border-color: rgba(212,162,60,.4); color: #f0c969; }
+        .cbd-detail { background: #16161a; border: 1px solid #26262c; border-radius: 14px; padding: 16px; }
+        .cbd-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .cbd-fase { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 100px; border: 1px solid; text-transform: uppercase; letter-spacing: .04em; }
+        .cbd-time { font-size: 12px; color: #a3a09a; }
+        .cbd-detail h3 { font-size: 17px; font-weight: 800; color: #f5f3ef; margin: 0 0 4px; }
+        .cbd-obj { font-size: 13px; color: #a3a09a; margin-bottom: 12px; }
+        .cbd-posts { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; margin-bottom: 12px; }
+        .cbd-posts strong { font-size: 12px; color: #d8d5cf; margin-right: 4px; }
+        .cbd-post { background: #1d1d22; border: 1px solid #26262c; color: #f0c969; font-size: 12px; font-weight: 600; padding: 5px 11px; border-radius: 100px; }
+        .cbd-block { margin-bottom: 10px; }
+        .cbd-block strong { font-size: 12.5px; color: #d8d5cf; }
+        .cbd-block ul { margin: 6px 0 0 16px; }
+        .cbd-block li { font-size: 13px; color: #c9c6c0; margin-bottom: 4px; }
+        .cbd-roteiro { margin: 8px 0; }
+        .cbd-roteiro summary { cursor: pointer; font-size: 12.5px; font-weight: 700; color: #f0c969; }
+        .cbd-roteiro pre { white-space: pre-wrap; font-size: 12px; color: #c9c6c0; background: #0f0f12; border: 1px solid #26262c; border-radius: 10px; padding: 12px; margin-top: 8px; font-family: inherit; }
+        .cbd-cta { font-size: 12px; color: #6f6c66; background: rgba(212,162,60,.06); border: 1px solid rgba(212,162,60,.18); border-radius: 10px; padding: 9px 11px; margin-top: 6px; }
+      `}</style>
+    </div>
+  );
+}
 
 function ContentFactoryPanel() {
   const [items, setItems] = useState<CFItem[]>([]);
