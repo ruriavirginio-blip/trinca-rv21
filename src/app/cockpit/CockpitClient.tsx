@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { JornadaPanel, AlertasPanel, AcessosPanel } from "./CockpitOperacao";
+import { DIA_PLANS } from "./contentPlan";
 
 type TabKey = "hoje" | "jornada" | "alertas" | "leads" | "vendas" | "gastos" | "conteudo" | "comando" | "ia";
 type ContentStatus = "RASCUNHO" | "APROVADO" | "PUBLICADO" | "REJEITADO";
@@ -1671,6 +1672,7 @@ function ContentByDayPanel() {
           ? { n: "Propriedade", c: "#6fa8ff" }
           : { n: "Lançamento", c: "#f0c969" };
   const posts = (dia?.format || "").split(/[+,]/).map((s) => s.trim()).filter(Boolean);
+  const plan = dia ? DIA_PLANS[dia.id] : undefined;
 
   return (
     <div className="cbd">
@@ -1705,8 +1707,28 @@ function ContentByDayPanel() {
               <pre>{dia.roteiro}</pre>
             </details>
           ) : null}
+          {plan ? (
+            <>
+              <div className="cbd-emph"><b>🎯 Ênfase do dia:</b> {plan.enfase}</div>
+              <div className="cbd-block cbd-org">
+                <strong>📱 Stories ORGÂNICOS (selfie, a partir das 04:30)</strong>
+                <p className="cbd-bomdia"><b>Bom dia:</b> {plan.organico.bomDia}</p>
+                <ul>{plan.organico.roteiro.map((s, i) => <li key={i}>{s}</li>)}</ul>
+                <span className="cbd-qtd">{plan.organico.qtd}</span>
+              </div>
+              <div className="cbd-block">
+                <strong>🎨 Criativos (o Claude cria pra você)</strong>
+                <ul>{plan.criativos.map((s, i) => <li key={i}>{s}</li>)}</ul>
+              </div>
+              <div className="cbd-traf"><b>📣 Tráfego do dia:</b> {plan.trafego}</div>
+              <div className="cbd-block cbd-check">
+                <strong>✅ Checklist do dia (siga de cima pra baixo)</strong>
+                <ul>{plan.checklist.map((s, i) => <li key={i}>{s}</li>)}</ul>
+              </div>
+            </>
+          ) : null}
           <p className="cbd-cta">
-            🎯 CTA do dia: comentário com a palavra-chave dispara o DM automático → lista VIP (/vip). No aquecimento NÃO se vende — captura-se.
+            🎯 Todo post chama pra LISTA VIP (/vip). No aquecimento NÃO se vende — captura-se. O motor manda os 3 toques de nutrição sozinho.
           </p>
         </div>
       ) : null}
@@ -1732,6 +1754,16 @@ function ContentByDayPanel() {
         .cbd-roteiro summary { cursor: pointer; font-size: 12.5px; font-weight: 700; color: #f0c969; }
         .cbd-roteiro pre { white-space: pre-wrap; font-size: 12px; color: #c9c6c0; background: #0f0f12; border: 1px solid #26262c; border-radius: 10px; padding: 12px; margin-top: 8px; font-family: inherit; }
         .cbd-cta { font-size: 12px; color: #6f6c66; background: rgba(212,162,60,.06); border: 1px solid rgba(212,162,60,.18); border-radius: 10px; padding: 9px 11px; margin-top: 6px; }
+        .cbd-emph { font-size: 13px; color: #f0c969; background: rgba(212,162,60,.08); border: 1px solid rgba(212,162,60,.22); border-radius: 10px; padding: 10px 12px; margin: 10px 0; }
+        .cbd-emph b { color: #f5f3ef; }
+        .cbd-org { background: rgba(95,208,138,.05); border: 1px solid rgba(95,208,138,.2); border-radius: 10px; padding: 10px 12px; }
+        .cbd-bomdia { font-size: 12.5px; color: #c9c6c0; margin: 6px 0; }
+        .cbd-bomdia b { color: #5fd08a; }
+        .cbd-qtd { font-size: 12px; color: #6f6c66; font-style: italic; }
+        .cbd-traf { font-size: 12.5px; color: #d8d5cf; background: #1d1d22; border-radius: 10px; padding: 9px 11px; margin: 8px 0; }
+        .cbd-traf b { color: #6fa8ff; }
+        .cbd-check { background: rgba(240,201,105,.05); border: 1px solid rgba(240,201,105,.2); border-radius: 10px; padding: 10px 12px; }
+        .cbd-check strong { color: #f0c969; }
       `}</style>
     </div>
   );
