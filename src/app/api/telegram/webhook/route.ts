@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { sendTelegramMessage } from "@/lib/telegram";
+import {
+  sendTelegramMessage,
+  answerCallbackQuery,
+  editTelegramMessage,
+} from "@/lib/telegram";
 import { publishByType } from "@/lib/instagram";
 import { computeProjectMetrics } from "@/lib/project-metrics";
+import { REMEDIATION, isActionKey } from "@/lib/automation/remediation";
 
 export const maxDuration = 60;
 
@@ -15,6 +20,31 @@ export const maxDuration = 60;
 
 function clean(v: unknown) {
   return typeof v === "string" ? v.trim() : "";
+}
+
+// Executa o conserto no SERVIDOR (re-disparo de fila, recuperação de leads).
+// Roda mesmo com o Mac do Ruriá desligado — é tudo server-side.
+async function runServerRemediation(
+  origin: string,
+  endpoint: string,
+): Promise<{ ok: boolean; summary: string }> {
+  const secret = clean(process.env.AUTOMATION_API_SECRET) || clean(process.env.MONITOR_TOKEN);
+  if (!secret) return { ok: false, summary: "Falta AUTOMATION_API_SECRET no servidor." };
+  try {
+    const r = await fetch(`${origin}${endpoint}`, {
+      method: "POST",
+      headers: { "x-automation-secret": secret, "content-type": "application/json" },
+    });
+    const data = await r.json().catch(() => ({}) as Record<string, unknown>);
+    if (!r.ok) {
+      return { ok: false, summary: `Erro ${r.status}: ${clean((data as { error?: string })?.error) || "falhou"}` };
+    }
+    const d = data as Record<string, unknown>;
+    const count = d.enviadas ?? d.sent ?? d.dispatched ?? d.processed ?? d.recovered ?? d.recuperadas;
+    return { ok: true, summary: count !== undefined ? `${count} item(ns) processado(s).` : "Concluído." };
+  } catch (e) {
+    return { ok: false, summary: String(e) };
+  }
 }
 
 async function projectContext(): Promise<string> {
@@ -70,6 +100,44 @@ export async function POST(request: NextRequest) {
   }
 
   const update = await request.json().catch(() => ({}));
+
+  // Clique em botão inline (ex: "Resolver problema"). Funciona com o Mac do Ruriá desligado.
+  const cq = update?.callback_query;
+  if (cq?.id) {
+    const cbChatId = cq?.message?.chat?.id ? String(cq.message.chat.id) : "";
+    const cbMsgId = Number(cq?.message?.message_id) || 0;
+    const data = clean(cq?.data);
+    await answerCallbackQuery(cq.id, "Trabalhando nisso…");
+    if (data.startsWith("fix:") && cbChatId && cbMsgId) {
+      const action = data.slice(4);
+      if (isActionKey(action)) {
+        const rem = REMEDIATION[action];
+        if (rem.kind === "server" && rem.endpoint) {
+          await editTelegramMessage(
+            cbChatId,
+            cbMsgId,
+            `⏳ ${rem.agente} resolvendo agora…`,
+          );
+          const res = await runServerRemediation(request.nextUrl.origin, rem.endpoint);
+          await editTelegramMessage(
+            cbChatId,
+            cbMsgId,
+            res.ok
+              ? `✅ *Resolvido!* ${rem.agente} rodou o conserto.\n${res.summary}\n\nSigo monitorando — se voltar a falhar, te aviso de novo.`
+              : `⚠️ Tentei resolver mas deu problema: ${res.summary}\n\nIsso provavelmente precisa de código — me chama no Claude Code.`,
+          );
+        } else {
+          await editTelegramMessage(
+            cbChatId,
+            cbMsgId,
+            `🛠 *Esse erro precisa de código* (não dá pra consertar com o Mac desligado).\n\n*Agente:* ${rem.agente}\n\nQuando abrir o Claude Code, cole isto:\n\`\`\`\n${rem.cmd}\n\`\`\``,
+          );
+        }
+      }
+    }
+    return NextResponse.json({ ok: true });
+  }
+
   const message = update?.message ?? update?.edited_message;
   const text = clean(message?.text);
   const chatId = message?.chat?.id ? String(message.chat.id) : "";

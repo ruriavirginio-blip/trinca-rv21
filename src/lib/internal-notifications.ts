@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { cleanText, normalizeBrazilianWhatsapp, onlyDigits } from "@/lib/whatsapp/phone";
+import { sendTelegramMessage, type InlineButton } from "@/lib/telegram";
 
 type JsonObject = Record<string, unknown>;
 type SupabaseTable = {
@@ -23,6 +24,10 @@ type NotificationInput = {
   type: "video_ready" | "sale_confirmed" | "lead_milestone" | "critical_alert";
   dedupeKey: string;
   message: string;
+  /** Botões inline pro Telegram (ex: "Resolver problema"). Opcional. */
+  telegramButtons?: InlineButton[][];
+  /** Texto alternativo pro Telegram (Markdown). Se ausente, usa `message`. */
+  telegramMessage?: string;
 };
 
 const ruriaWhatsapp = "5584999390488";
@@ -170,6 +175,18 @@ export async function sendInternalRuriaNotification(input: NotificationInput) {
   }
 
   const id = cleanText(inserted?.id);
+
+  // Telegram — canal principal de alerta (funciona com o Mac do Ruriá desligado).
+  // Best-effort: não derruba o fluxo se falhar. Dedupe já garantido acima.
+  try {
+    await sendTelegramMessage(
+      input.telegramMessage || input.message,
+      undefined,
+      input.telegramButtons?.length ? { buttons: input.telegramButtons } : undefined,
+    );
+  } catch {
+    /* Telegram é best-effort */
+  }
 
   try {
     const providerResponse = await sendInternalTwilioMessage(input.message);

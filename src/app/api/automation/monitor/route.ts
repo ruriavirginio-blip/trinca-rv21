@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { buildAutomationReadiness } from "@/lib/automation/readiness";
 import { sendInternalRuriaNotification } from "@/lib/internal-notifications";
+import { REMEDIATION, type ActionKey } from "@/lib/automation/remediation";
 
 // MOTOR DE ERROS — Central de Comando TRINCA RV21
 // GET  -> retorna o status de saúde (somente leitura, para o painel do Cockpit)
@@ -136,9 +137,57 @@ async function buildStatus() {
   return { severity, checked_at: new Date().toISOString(), problems, warnings, counts, signature };
 }
 
-function alertMessage(status: Awaited<ReturnType<typeof buildStatus>>) {
+type Diagnosis = { tipo: string; onde: string; causa: string; action: ActionKey };
+
+// Traduz o estado do motor em diagnóstico exato + ação de conserto.
+function diagnose(status: Awaited<ReturnType<typeof buildStatus>>): Diagnosis {
+  const c = status.counts;
+  if (
+    status.signature === "supabase-missing" ||
+    status.problems.some((p) => /Falha ao checar|Supabase/i.test(p))
+  ) {
+    return {
+      tipo: "Banco/infra do motor",
+      onde: "Conexão com o Supabase / servidor",
+      causa: "O sistema não conseguiu falar com o banco — o motor pode ter parado.",
+      action: "code",
+    };
+  }
+  if ((c.automation_error_total || 0) > 0) {
+    return {
+      tipo: "Mensagens com erro no WhatsApp",
+      onde: "Fila de automação (Twilio)",
+      causa: `${c.automation_error_total} mensagem(ns) falharam no envio para as leads.`,
+      action: "dispatch",
+    };
+  }
+  if ((c.automation_due_pending || 0) >= DUE_PENDING_ALERT_THRESHOLD) {
+    return {
+      tipo: "Motor de mensagens travado",
+      onde: "Fila de automação (mensagens vencidas)",
+      causa: `${c.automation_due_pending} mensagens venceram e não foram enviadas — o despachante pode ter parado.`,
+      action: "dispatch",
+    };
+  }
+  return {
+    tipo: "Falha na operação",
+    onde: "Motor de automação",
+    causa: status.problems[0] || "Problema detectado pelo monitor.",
+    action: "code",
+  };
+}
+
+function alertMessage(status: Awaited<ReturnType<typeof buildStatus>>, dx: Diagnosis) {
   const lines = status.problems.map((p) => `• ${p}`).join("\n");
-  return `🚨 *TRINCA RV21 — FALHA DETECTADA*\n\nO motor de automacao reportou problema:\n${lines}\n\n👉 Abra o Cockpit (aba Comando) e acione o setor responsavel agora.`;
+  return (
+    `🚨 *TRINCA RV21 — PROBLEMA DETECTADO*\n\n` +
+    `*O que houve:* ${dx.tipo}\n` +
+    `*Onde:* ${dx.onde}\n` +
+    `*Causa provável:* ${dx.causa}\n` +
+    `*Quem resolve:* ${REMEDIATION[dx.action].agente}\n\n` +
+    `Detalhes:\n${lines}\n\n` +
+    `👇 Toque no botão pra eu resolver agora (funciona mesmo com seu Mac desligado).`
+  );
 }
 
 export async function GET(request: Request) {
@@ -156,16 +205,20 @@ export async function POST(request: Request) {
   let alerted = false;
   let alertResult: unknown = null;
 
+  let diagnosis: Diagnosis | null = null;
   if (status.severity === "critical") {
+    diagnosis = diagnose(status);
+    const action = diagnosis.action;
     // anti-spam: no máximo 1 alerta por hora por assinatura de problema
     const hourBucket = new Date().toISOString().slice(0, 13); // YYYY-MM-DDTHH
     alertResult = await sendInternalRuriaNotification({
       type: "critical_alert",
       dedupeKey: `monitor:${status.signature}:${hourBucket}`,
-      message: alertMessage(status),
+      message: alertMessage(status, diagnosis),
+      telegramButtons: [[{ text: REMEDIATION[action].label, callback_data: `fix:${action}` }]],
     });
     alerted = true;
   }
 
-  return NextResponse.json({ ok: true, ...status, alerted, alert_result: alertResult });
+  return NextResponse.json({ ok: true, ...status, diagnosis, alerted, alert_result: alertResult });
 }
