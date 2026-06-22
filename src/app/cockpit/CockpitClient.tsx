@@ -572,7 +572,11 @@ export default function CockpitClient({
         setIsUnlocked(false);
       }
 
-      setAutomationToken(window.localStorage.getItem(operacaoTokenStorageKey) || opsToken);
+      {
+        const tk = window.localStorage.getItem(operacaoTokenStorageKey) || opsToken;
+        setAutomationToken(tk);
+        if (tk) window.localStorage.setItem(operacaoTokenStorageKey, tk);
+      }
 
       try {
         const defaults = Object.fromEntries(contentCalendar.map((post) => [post.id, post.status]));
@@ -1296,77 +1300,106 @@ function TwilioEconomics({ balance }: { balance: TwilioCredits | null }) {
   );
 }
 
-const HEALTH_AREAS: Array<{ nome: string; pct: number; texto: string }> = [
-  { nome: "🛠️ Base técnica (site, rastreamento, deploy)", pct: 90, texto: "Quase tudo pronto: site no ar, Pixel e Google medindo, cockpit funcionando." },
-  { nome: "🤖 Robô de mensagens (WhatsApp automático)", pct: 60, texto: "Canal consertado, mas a fila travou 7 mensagens e falta o Meta aprovar 1 modelo." },
-  { nome: "⚡ Página de vendas (landing)", pct: 65, texto: "No ar, mas precisa do acabamento premium e do teste de versões." },
-  { nome: "📸 Conteúdo (posts, reels, stories)", pct: 25, texto: "Calendário rascunhado, nada publicado ainda. É o que mais precisa começar agora." },
-  { nome: "🎯 Tráfego (anúncios pagos)", pct: 10, texto: "Não iniciado. Espera o robô e o modelo de WhatsApp ficarem 100%." },
-  { nome: "💬 Vendas e atendimento", pct: 50, texto: "Scripts prontos pra ativar; falta só ligar." },
-  { nome: "💰 Financeiro (controle de gastos)", pct: 55, texto: "Painel pronto; falta colocar os valores reais e o preço do produto." },
-];
+function ProjectHealthPanel({ live }: { live?: LivePulse }) {
+  const [status, setStatus] = useState<MonitorStatus | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState("");
 
-function ProjectHealthPanel() {
-  const overall = Math.round(HEALTH_AREAS.reduce((a, x) => a + x.pct, 0) / HEALTH_AREAS.length);
-  const tone = overall >= 75 ? "green" : overall >= 45 ? "gold" : "red";
-  const frase =
-    overall >= 75
-      ? "Reta final — quase pronto pra lançar."
-      : overall >= 45
-        ? "Em construção — a base está pronta, falta ligar o conteúdo e o tráfego."
-        : "Início — muita coisa ainda por montar.";
-  const barTone = (p: number) => (p >= 70 ? "green" : p >= 40 ? "gold" : "red");
+  const load = useCallback(async () => {
+    const t = window.localStorage.getItem(operacaoTokenStorageKey) || "";
+    if (!t) {
+      setErr("Sem token da operação para checar a saúde ao vivo.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const r = await fetch(`/api/automation/monitor?token=${encodeURIComponent(t)}`, { cache: "no-store" });
+      const d = await r.json();
+      if (!r.ok) setErr(d.error || "Falha ao checar a saúde.");
+      else {
+        setStatus(d as MonitorStatus);
+        setErr("");
+      }
+    } catch {
+      setErr("Erro de rede ao checar a saúde.");
+    }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    void load();
+    const t = window.setInterval(() => void load(), 30000);
+    return () => window.clearInterval(t);
+  }, [load]);
+
+  const sev = status?.severity;
+  const verdict = !status
+    ? { tone: "gold", icon: "⏳", title: "Checando o sistema ao vivo…", sub: err || "Lendo o estado real do projeto." }
+    : sev === "ok"
+      ? { tone: "green", icon: "✅", title: "Projeto em perfeito funcionamento", sub: "Nenhuma falha detectada — motor saudável e rodando 24h." }
+      : sev === "warn"
+        ? { tone: "gold", icon: "⚠️", title: "Funcionando, com avisos", sub: "Roda normal, mas tem ponto(s) de atenção abaixo." }
+        : { tone: "red", icon: "🔴", title: "Precisa de ajuste agora", sub: "Há falha(s) ativa(s). O sistema tenta consertar sozinho e te avisa no Telegram." };
+
+  const c = status?.counts || {};
+  const motorTone =
+    (c.automation_error_total || 0) > 0
+      ? "red"
+      : (c.automation_due_pending || 0) > 0 || (c.automation_waiting_clicks || 0) > 0
+        ? "gold"
+        : "green";
+  const toneLabel: Record<string, string> = { green: "OK", gold: "Atenção", red: "Falha", none: "—" };
+  const areas: Array<{ nome: string; tone: string; texto: string }> = [
+    {
+      nome: "🤖 Motor de mensagens (WhatsApp)",
+      tone: status ? motorTone : "none",
+      texto: !status
+        ? "Aguardando leitura ao vivo."
+        : motorTone === "green"
+          ? "Fila limpa, enviando normalmente."
+          : `${c.automation_error_total || 0} erro(s) · ${c.automation_due_pending || 0} vencida(s) · ${c.automation_waiting_clicks || 0} aguardando clique.`,
+    },
+    { nome: "🎯 Captação de leads", tone: (live?.leads || 0) > 0 ? "green" : "gold", texto: `${live?.leads || 0} leads captados (meta ${live?.leadGoal || 1000}).` },
+    { nome: "💰 Vendas", tone: (live?.sales || 0) > 0 ? "green" : "none", texto: `${live?.sales || 0} venda(s) hoje · ${(live?.revenue || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}.` },
+    { nome: "🌐 Site & rastreamento", tone: "green", texto: "Landing no ar · Pixel + GA + tracker próprio medindo a origem das leads." },
+    { nome: "📸 Conteúdo (posts/reels)", tone: "gold", texto: "Roteiros dos 10 dias prontos; criativos em produção." },
+    { nome: "📣 Tráfego pago", tone: "none", texto: "Não ligado — aquecimento é orgânico por enquanto." },
+  ];
+
   return (
     <div className="health-card">
-      <div className="health-top">
-        <div className={`health-score ${tone}`}>
-          <strong>{overall}%</strong>
-          <span>pronto</span>
+      <div className={`verdict ${verdict.tone}`}>
+        <span className="verdict-icon">{verdict.icon}</span>
+        <div className="verdict-body">
+          <strong>{verdict.title}</strong>
+          <p>{verdict.sub}</p>
         </div>
-        <div className="health-intro">
-          <strong>Saúde do Projeto TRINCA RV</strong>
-          <p>{frase}</p>
-        </div>
+        <button className="mon-refresh" onClick={() => void load()} disabled={loading} aria-label="Atualizar">
+          {loading ? <Loader2 className="spin" size={16} /> : <RefreshCw size={16} />}
+        </button>
       </div>
 
+      {status && status.problems.length > 0 ? (
+        <ul className="mon-list crit">{status.problems.map((p, i) => <li key={i}>🚨 {p}</li>)}</ul>
+      ) : null}
+      {status && status.warnings.length > 0 ? (
+        <ul className="mon-list warn">{status.warnings.map((w, i) => <li key={i}>⚠️ {w}</li>)}</ul>
+      ) : null}
+
       <div className="health-bars">
-        {HEALTH_AREAS.map((a) => (
+        {areas.map((a) => (
           <div className="hrow" key={a.nome}>
             <div className="hrow-top">
               <span className="hname">{a.nome}</span>
-              <b className={`hpct ${barTone(a.pct)}`}>{a.pct}%</b>
-            </div>
-            <div className="hbar">
-              <span className={barTone(a.pct)} style={{ width: `${a.pct}%` }} />
+              <b className={`hpct ${a.tone === "none" ? "" : a.tone}`}>{toneLabel[a.tone]}</b>
             </div>
             <p className="hdesc">{a.texto}</p>
           </div>
         ))}
       </div>
 
-      <div className="health-two">
-        <div className="health-col ok">
-          <strong>✅ O que já está pronto</strong>
-          <ul>
-            <li>Site (landing) no ar e medindo visitantes</li>
-            <li>Central de Comando (este cockpit) funcionando</li>
-            <li>Motor de Erros vigiando o sistema 24h por dia</li>
-            <li>Canal de WhatsApp consertado</li>
-          </ul>
-        </div>
-        <div className="health-col todo">
-          <strong>🔧 O que precisamos trabalhar (em ordem)</strong>
-          <ol>
-            <li>Destravar o robô de mensagens (fila parada)</li>
-            <li>Meta aprovar o modelo de aviso no WhatsApp</li>
-            <li>Começar a produzir conteúdo (reels, stories)</li>
-            <li>Dar o acabamento premium na página de vendas</li>
-            <li>Só depois: ligar os anúncios (tráfego)</li>
-          </ol>
-        </div>
-      </div>
       <p className="health-foot">
-        Atualizado automaticamente pelo Comando. Quanto mais perto de <b>100%</b>, mais pronto pra lançar.
+        Veredito <b>ao vivo</b> (atualiza a cada 30s). Quando dá problema, o sistema tenta consertar sozinho e te avisa no Telegram.
       </p>
     </div>
   );
@@ -1780,7 +1813,7 @@ function ComandoHub({ live }: { live?: LivePulse }) {
       </div>
       <div className="hub-view">
         {view === "setores" ? <CommandSection live={live} hidePulse /> : null}
-        {view === "saude" ? (<><ProjectHealthPanel /><MonitorPanel /></>) : null}
+        {view === "saude" ? (<><ProjectHealthPanel live={live} /><MonitorPanel /></>) : null}
         {view === "estrategia" ? <StrategyPanel /> : null}
         {view === "conteudo" ? (
           <p className="hub-hint">📅 A criação de posts está na aba <b>Conteúdo</b> (barra de baixo). Lá você aciona o roteiro dos 13 dias com 1 toque.</p>
@@ -3451,6 +3484,14 @@ function CockpitStyles() {
       .legacy-notion summary { cursor: pointer; font-size: 13px; font-weight: 700; color: #a09c94; }
       .legacy-note { font-size: 12px; color: #6c6962; line-height: 1.5; margin: 10px 0; }
       .block-title { font-size: 14px; font-weight: 700; color: #f0c969; margin: 22px 0 4px; }
+      .verdict { display: flex; align-items: center; gap: 14px; padding: 16px 18px; border-radius: 16px; border: 1px solid #26262c; background: #16161a; margin-bottom: 14px; }
+      .verdict.green { border-color: rgba(95,208,138,.4); background: rgba(95,208,138,.08); }
+      .verdict.gold { border-color: rgba(232,176,74,.4); background: rgba(232,176,74,.08); }
+      .verdict.red { border-color: rgba(240,122,122,.45); background: rgba(240,122,122,.1); }
+      .verdict-icon { font-size: 30px; line-height: 1; flex-shrink: 0; }
+      .verdict-body { flex: 1; }
+      .verdict-body strong { display: block; font-size: 17px; font-weight: 800; color: #f5f3ef; }
+      .verdict-body p { font-size: 13px; color: #a3a09a; margin-top: 3px; }
 
       /* === Motor 24/7 — Fábrica de Conteúdo === */
       .cf { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
