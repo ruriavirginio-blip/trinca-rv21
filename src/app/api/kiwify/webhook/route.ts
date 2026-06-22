@@ -475,13 +475,13 @@ function buildMessageQueue(normalizedEvent: NormalizedEvent, leadObjective?: unk
       {
         ...base,
         etapa: "materiais-desafio",
-        delay_minutos: 1,
+        delay_minutos: 0,
         metadata: {
           ...base.metadata,
           sequence: "pos-compra",
           sequence_order: 3,
           required_previous_steps: ["boas-vindas-video"],
-          delay_after_previous_minutes: 1,
+          delay_after_previous_minutes: 0,
           body_variable_order: [],
           asset_url: dietUrl || null,
           asset_urls: [dietUrl, ebookRvUrlValue, ebookNutritionUrlValue].filter(Boolean),
@@ -499,13 +499,13 @@ function buildMessageQueue(normalizedEvent: NormalizedEvent, leadObjective?: unk
       {
         ...base,
         etapa: "grupo-oficial-preparacao",
-        delay_minutos: 2,
+        delay_minutos: 0,
         metadata: {
           ...base.metadata,
           sequence: "pos-compra",
           sequence_order: 4,
           required_previous_steps: ["materiais-desafio"],
-          delay_after_previous_minutes: 1,
+          delay_after_previous_minutes: 0,
           body_variable_order: [],
           button_payload: "assistir_boas_vindas_grupo",
           button_text: "Assistir boas-vindas",
@@ -548,13 +548,13 @@ function buildMessageQueue(normalizedEvent: NormalizedEvent, leadObjective?: unk
       {
         ...base,
         etapa: "grupo-oficial-link",
-        delay_minutos: 1,
+        delay_minutos: 0,
         metadata: {
           ...base.metadata,
           sequence: "pos-compra",
           sequence_order: 6,
           required_previous_steps: ["grupo-oficial-final"],
-          delay_after_previous_minutes: 1,
+          delay_after_previous_minutes: 0,
           body_variable_order: [],
         },
         mensagem:

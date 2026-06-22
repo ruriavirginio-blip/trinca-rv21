@@ -437,126 +437,127 @@ async function dispatchDueMessagesAfterClick(
 ) {
   const orderId = cleanText(gateMessage.order_id);
   const email = cleanText(gateMessage.email);
-  const now = new Date().toISOString();
-
-  let query = supabase
-    .from("automation_messages")
-    .select(
-      "id,email,whatsapp,nome,order_id,payment_method,trigger_event,etapa,canal,mensagem,enviar_em,status,metadata"
-    )
-    .eq("status", "pendente")
-    .lte("enviar_em", now)
-    .order("enviar_em", { ascending: true })
-    .limit(6);
-
-  if (orderId) {
-    query = query.eq("order_id", orderId);
-  } else if (email) {
-    query = query.eq("email", email);
-  } else {
-    return { sent: [], skipped: [], failed: [] };
-  }
-
-  const { data, error } = await query;
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
   const sent: JsonObject[] = [];
   const skipped: JsonObject[] = [];
   const failed: JsonObject[] = [];
-  for (const message of (data || []) as JsonObject[]) {
-    const messageId = cleanText(message.id);
 
-    try {
-      const previousStepsCompleted = await hasCompletedPreviousSteps(supabase, message);
+  if (!orderId && !email) {
+    return { sent, skipped, failed };
+  }
 
-      if (!previousStepsCompleted) {
-        skipped.push({
-          id: messageId,
-          etapa: message.etapa,
-          reason: "required_previous_steps_pending",
-        });
-        continue;
-      }
+  // Cascata: re-consulta a cada passada e envia TODAS as etapas que ficaram
+  // elegiveis (respeitando gates/pre-requisitos), ate nao haver mais nada.
+  // Assim, ao clicar um botao, a sequencia avanca em segundos (sem esperar o cron).
+  for (let pass = 0; pass < 8; pass++) {
+    const now = new Date().toISOString();
+    let query = supabase
+      .from("automation_messages")
+      .select(
+        "id,email,whatsapp,nome,order_id,payment_method,trigger_event,etapa,canal,mensagem,enviar_em,status,metadata"
+      )
+      .eq("status", "pendente")
+      .lte("enviar_em", now)
+      .order("enviar_em", { ascending: true })
+      .limit(6);
+    query = orderId ? query.eq("order_id", orderId) : query.eq("email", email);
 
-      if (!(await claimPendingMessage(supabase, message))) {
-        skipped.push({
-          id: messageId,
-          etapa: message.etapa,
-          reason: "message_already_claimed",
-        });
-        continue;
-      }
-
-      const result = await sendTwilioMessage({
-        id: messageId,
-        whatsapp: message.whatsapp,
-        mensagem: message.mensagem,
-        etapa: message.etapa,
-        metadata: message.metadata,
-      });
-      const metadata = asObject(message.metadata);
-
-      const { error: updateError } = await supabase
-        .from("automation_messages")
-        .update({
-          status: "enviada",
-          metadata: {
-            ...metadata,
-            whatsapp_provider: {
-              provider: result.provider,
-              mode: result.mode,
-              message_ids: result.messageIds,
-              sent_at: new Date().toISOString(),
-              responses: result.responses,
-              triggered_by: "twilio_click_immediate_dispatch",
-            },
-          },
-        })
-        .eq("id", messageId);
-
-      if (updateError) {
-        throw new Error(updateError.message);
-      }
-
-      sent.push({
-        id: messageId,
-        etapa: message.etapa,
-        message_ids: result.messageIds,
-      });
-
-      break;
-    } catch (sendError) {
-      const errorMessage =
-        sendError instanceof Error ? sendError.message : "Erro desconhecido no envio.";
-      const metadata = asObject(message.metadata);
-
-      await supabase
-        .from("automation_messages")
-        .update({
-          status: "erro",
-          metadata: {
-            ...metadata,
-            whatsapp_provider_error: {
-              provider: "twilio",
-              failed_at: new Date().toISOString(),
-              message: errorMessage,
-              triggered_by: "twilio_click_immediate_dispatch",
-            },
-          },
-        })
-        .eq("id", messageId);
-
-      failed.push({
-        id: messageId,
-        etapa: message.etapa,
-        error: errorMessage,
-      });
+    const { data, error } = await query;
+    if (error) {
+      throw new Error(error.message);
     }
 
-    if (sent.length >= 1) break;
+    let sentThisPass = 0;
+    for (const message of (data || []) as JsonObject[]) {
+      const messageId = cleanText(message.id);
+
+      try {
+        const previousStepsCompleted = await hasCompletedPreviousSteps(supabase, message);
+
+        if (!previousStepsCompleted) {
+          skipped.push({
+            id: messageId,
+            etapa: message.etapa,
+            reason: "required_previous_steps_pending",
+          });
+          continue;
+        }
+
+        if (!(await claimPendingMessage(supabase, message))) {
+          skipped.push({
+            id: messageId,
+            etapa: message.etapa,
+            reason: "message_already_claimed",
+          });
+          continue;
+        }
+
+        const result = await sendTwilioMessage({
+          id: messageId,
+          whatsapp: message.whatsapp,
+          mensagem: message.mensagem,
+          etapa: message.etapa,
+          metadata: message.metadata,
+        });
+        const metadata = asObject(message.metadata);
+
+        const { error: updateError } = await supabase
+          .from("automation_messages")
+          .update({
+            status: "enviada",
+            metadata: {
+              ...metadata,
+              whatsapp_provider: {
+                provider: result.provider,
+                mode: result.mode,
+                message_ids: result.messageIds,
+                sent_at: new Date().toISOString(),
+                responses: result.responses,
+                triggered_by: "twilio_click_immediate_dispatch",
+              },
+            },
+          })
+          .eq("id", messageId);
+
+        if (updateError) {
+          throw new Error(updateError.message);
+        }
+
+        sent.push({
+          id: messageId,
+          etapa: message.etapa,
+          message_ids: result.messageIds,
+        });
+        sentThisPass++;
+      } catch (sendError) {
+        const errorMessage =
+          sendError instanceof Error ? sendError.message : "Erro desconhecido no envio.";
+        const metadata = asObject(message.metadata);
+
+        await supabase
+          .from("automation_messages")
+          .update({
+            status: "erro",
+            metadata: {
+              ...metadata,
+              whatsapp_provider_error: {
+                provider: "twilio",
+                failed_at: new Date().toISOString(),
+                message: errorMessage,
+                triggered_by: "twilio_click_immediate_dispatch",
+              },
+            },
+          })
+          .eq("id", messageId);
+
+        failed.push({
+          id: messageId,
+          etapa: message.etapa,
+          error: errorMessage,
+        });
+      }
+    }
+
+    if (sentThisPass === 0) break;
   }
 
   return { sent, skipped, failed };

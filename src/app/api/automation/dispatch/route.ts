@@ -234,14 +234,9 @@ export async function POST(request: Request) {
     const flowKey =
       cleanText(message.order_id) || cleanText(message.email) || cleanText(message.whatsapp);
 
-    if (flowKey && processedFlows.has(flowKey)) {
-      skipped.push({
-        id: message.id,
-        etapa: message.etapa,
-        reason: "flow_already_processed_this_cycle",
-      });
-      continue;
-    }
+    // (Removido o limite de 1 mensagem por lead por ciclo: agora todas as etapas
+    //  elegiveis do lead saem na mesma rodada, respeitando gates e pre-requisitos.)
+    void flowKey;
 
     try {
       const previousStepsCompleted = await hasCompletedPreviousSteps(supabase, message);
