@@ -470,8 +470,7 @@ function buildMessageQueue(normalizedEvent: NormalizedEvent, leadObjective?: unk
         },
         mensagem:
           `${nome}, seja bem-vinda ao ${productName}.\n\n` +
-          "Assista primeiro ao video de boas-vindas do criador e idealizador do TRINCA RV21, Ruria Virginio." +
-          (welcomeVideoUrl ? `\n\nVideo: ${welcomeVideoUrl}` : ""),
+          "Assista ao video de boas-vindas do criador e idealizador do TRINCA RV21, Ruria Virginio, aqui embaixo. 👇",
       },
       {
         ...base,
@@ -545,8 +544,7 @@ function buildMessageQueue(normalizedEvent: NormalizedEvent, leadObjective?: unk
           asset_url: groupWelcomeVideoUrl || null,
         },
         mensagem:
-          `${nome}, assista ao video oficial de boas-vindas ao Grupo Oficial TRINCA RV21.` +
-          (groupWelcomeVideoUrl ? `\n\nVideo: ${groupWelcomeVideoUrl}` : ""),
+          `${nome}, assista ao video oficial de boas-vindas ao Grupo Oficial TRINCA RV21, aqui embaixo. 👇`,
       },
       {
         ...base,
