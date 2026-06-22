@@ -82,18 +82,25 @@ function readAutomationToken(request: Request) {
 }
 
 function authorize(request: Request) {
-  const secret = cleanText(
-    process.env.AUTOMATION_API_SECRET || process.env.KIWIFY_WEBHOOK_SECRET
-  );
+  // Aceita o secret geral OU o MONITOR_TOKEN dedicado (mesmo token usado no monitor/dispatch),
+  // pra o Cockpit usar UM único código em Jornada, Alertas e Saúde.
+  const secrets = [
+    process.env.AUTOMATION_API_SECRET,
+    process.env.KIWIFY_WEBHOOK_SECRET,
+    process.env.MONITOR_TOKEN,
+  ]
+    .map(cleanText)
+    .filter(Boolean);
 
-  if (!secret) {
+  if (!secrets.length) {
     return NextResponse.json(
       { error: "AUTOMATION_API_SECRET ainda nao configurado." },
       { status: 503 }
     );
   }
 
-  if (!readAutomationToken(request).includes(secret)) {
+  const provided = readAutomationToken(request);
+  if (!provided.some((token) => secrets.includes(token))) {
     return NextResponse.json({ error: "Token invalido." }, { status: 401 });
   }
 
