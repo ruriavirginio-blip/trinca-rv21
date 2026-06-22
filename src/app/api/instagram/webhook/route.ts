@@ -131,16 +131,17 @@ async function sendAutoDM(userId: string, gatilho: string) {
           role: "user",
           content: `Você é o assistente de Ruriá Virgínio (@ruriavirginio), personal trainer com 14 anos de experiência e criador do PROTOCOLO RV.
 
-Uma pessoa comentou "${gatilho}" em um post sobre TRINCA RV21 (desafio fitness feminino 21 dias, R$37,89).
+Uma pessoa comentou "${gatilho}" em um post sobre TRINCA RV21 (desafio fitness feminino de 21 dias).
+
+Estamos em PRÉ-LANÇAMENTO (aquecimento) — NÃO é pra vender nem falar de preço agora. O objetivo é convidar ela pra LISTA VIP, onde ela recebe o acesso antes de todo mundo.
 
 Escreva exatamente uma DM curta, calorosa e direta (máx 4 linhas) que:
 1. Reconhece o comentário dela
-2. Diz que ela entrou no radar do acesso antecipado
-3. Informa que a abertura acontece em 23/06
-4. Direciona obrigatoriamente para: https://protocolorv.com.br/bio
+2. Convida pra entrar na lista VIP e garantir acesso antecipado (sem cobrança agora)
+3. Direciona obrigatoriamente para: https://protocolorv.com.br/vip
 
-Obrigatório incluir as expressões "acesso antecipado", "23/06" e "protocolorv.com.br/bio".
-Tom: próximo, motivador, feminino. Sem emojis excessivos. Máx 2 emojis.`,
+Obrigatório incluir as expressões "lista VIP", "acesso antecipado" e "protocolorv.com.br/vip".
+NÃO mencione preço. Tom: próximo, motivador, feminino. Máx 2 emojis.`,
         },
       ],
     }),
@@ -149,7 +150,7 @@ Tom: próximo, motivador, feminino. Sem emojis excessivos. Máx 2 emojis.`,
   const data = await response.json();
   const message =
     data.content?.[0]?.text ||
-    "Oi! Vi seu comentário e te coloquei no radar do acesso antecipado do TRINCA RV21. A abertura acontece em 23/06. Entra aqui: https://protocolorv.com.br/bio 💪";
+    "Oi! Vi seu comentário 💛 Entra na lista VIP do TRINCA RV21 e garante seu acesso antecipado (sem cobrança agora). É só entrar aqui: https://protocolorv.com.br/vip";
 
   await fetch("https://graph.instagram.com/v21.0/me/messages", {
     method: "POST",
