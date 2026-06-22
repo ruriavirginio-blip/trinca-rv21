@@ -589,6 +589,20 @@ export async function POST(request: Request) {
     );
   }
 
+  // Dedupe: o Twilio pode REENVIAR o mesmo webhook (retry). Se ja registramos este
+  // MessageSid, ignoramos para nao reprocessar o clique nem reenviar mensagens (= gasto).
+  const incomingSid = firstText(payload.MessageSid, payload.SmsMessageSid, payload.SmsSid);
+  if (!dryRun && incomingSid) {
+    const { data: jaVisto } = await supabase
+      .from("twilio_interactions")
+      .select("id")
+      .eq("message_sid", incomingSid)
+      .limit(1);
+    if (jaVisto && jaVisto.length) {
+      return NextResponse.json({ ok: true, deduped: true, message_sid: incomingSid });
+    }
+  }
+
   const whatsappDigits = senderWhatsapp(payload);
   const receivedButtonPayload = buttonPayload(payload);
   const gate = BUTTON_GATE_BY_PAYLOAD[receivedButtonPayload];
