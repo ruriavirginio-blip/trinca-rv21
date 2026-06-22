@@ -45,6 +45,21 @@ const BUTTON_GATE_BY_PAYLOAD: Record<
     etapaFunil: "grupo",
     description: "Clique em Assistir boas-vindas antes do video do grupo.",
   },
+  ja_assisti_boas_vindas: {
+    etapa: "clique-boas-vindas-assistido",
+    etapaFunil: "materiais",
+    description: "Clique em Ja assisti apos o video de boas-vindas (libera materiais).",
+  },
+  recebi_materiais: {
+    etapa: "clique-materiais-recebido",
+    etapaFunil: "grupo",
+    description: "Clique em Recebi apos os materiais (libera grupo).",
+  },
+  quero_link_grupo: {
+    etapa: "clique-grupo-quero-link",
+    etapaFunil: "grupo",
+    description: "Clique em Quero o link apos o video do grupo (libera link).",
+  },
 };
 
 const BUTTON_PAYLOAD_ALIASES: Record<string, string> = {
@@ -54,6 +69,14 @@ const BUTTON_PAYLOAD_ALIASES: Record<string, string> = {
   "assistir boas vindas": "assistir_boas_vindas_grupo",
   "assistir boas-vindas": "assistir_boas_vindas_grupo",
   "assistir_boas_vindas_grupo": "assistir_boas_vindas_grupo",
+  "ja assisti": "ja_assisti_boas_vindas",
+  "já assisti": "ja_assisti_boas_vindas",
+  "ja_assisti_boas_vindas": "ja_assisti_boas_vindas",
+  "recebi": "recebi_materiais",
+  "recebi, continuar": "recebi_materiais",
+  "recebi_materiais": "recebi_materiais",
+  "quero o link": "quero_link_grupo",
+  "quero_link_grupo": "quero_link_grupo",
 };
 
 function asObject(value: unknown): JsonObject {
