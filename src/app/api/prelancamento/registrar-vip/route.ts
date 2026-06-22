@@ -83,5 +83,50 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  // Motor de nutrição VIP: ao ENTRAR na lista (lead nova), agenda os 3 toques.
+  // Enviados via template aprovado pela Meta (etapa -> TWILIO_CONTENT_SID_VIP_NUTRICAO_*).
+  // So semeia se for lead nova (evita re-semear em re-cadastro).
+  if (!existingLead) {
+    const firstName = nome.split(/\s+/)[0] || "amiga";
+    const nowMs = Date.now();
+    const orderId = `VIP-${whatsapp || instagramUser || nowMs}`;
+    const mk = (etapa: string, enviarEm: string, fallback: string) => ({
+      email: lead.email,
+      whatsapp,
+      nome,
+      order_id: orderId,
+      etapa,
+      canal: "whatsapp",
+      mensagem: fallback,
+      enviar_em: enviarEm,
+      status: "pendente",
+      metadata: {
+        sequence: "vip-nutricao",
+        whatsapp_api: { body_variables: { "1": firstName } },
+      },
+    });
+    try {
+      await supabase.from("automation_messages").insert([
+        mk(
+          "vip-nutricao-boas-vindas",
+          new Date(nowMs).toISOString(),
+          `${firstName}, você entrou na Lista VIP do TRINCA RV21! Vai receber o acesso antes de todo mundo.`,
+        ),
+        mk(
+          "vip-nutricao-valor",
+          new Date(nowMs + 2 * 24 * 60 * 60 * 1000).toISOString(),
+          `${firstName}, falta pouco pro TRINCA RV21. Resultado vem de direção, não de sacrifício.`,
+        ),
+        mk(
+          "vip-nutricao-vespera",
+          new Date("2026-07-01T13:00:00.000Z").toISOString(),
+          `${firstName}, é amanhã! Você recebe o link de acesso antes de todo mundo.`,
+        ),
+      ]);
+    } catch {
+      /* nutrição é best-effort; não derruba o cadastro VIP */
+    }
+  }
+
   return NextResponse.json({ ok: true });
 }
