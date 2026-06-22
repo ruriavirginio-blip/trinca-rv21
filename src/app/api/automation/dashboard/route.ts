@@ -168,6 +168,13 @@ function trackingFromLead(lead: JsonObject) {
 }
 
 function trafficSource(lead: JsonObject) {
+  // Leads da lista VIP do pré-lançamento têm rótulo próprio, claro pro Ruriá.
+  const origemLead = cleanText(lead.origem).toLowerCase();
+  const statusLead = cleanText(lead.status).toLowerCase();
+  if (statusLead === "lista-vip" || origemLead.includes("lista-vip") || origemLead.includes("vip")) {
+    return { key: "lista_vip", label: "Lista VIP", campaign: "" };
+  }
+
   const tracking = trackingFromLead(lead);
   const utm = tracking.utm;
   const source = cleanText(utm.utm_source || utm.source || utm.src || utm.ref);

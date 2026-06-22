@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 export default function VipPage() {
   const [nome, setNome] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
+  const [email, setEmail] = useState("");
   const [instagram, setInstagram] = useState("");
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
@@ -53,6 +54,7 @@ export default function VipPage() {
         body: JSON.stringify({
           nome: nome.trim(),
           whatsapp: digits,
+          email: email.trim(),
           instagram_user: instagram.trim().replace(/^@+/, ""),
         }),
       });
@@ -89,6 +91,9 @@ export default function VipPage() {
               </label>
               <label>Seu WhatsApp
                 <input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="(84) 99999-9999" inputMode="tel" required />
+              </label>
+              <label>Seu e-mail
+                <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="voce@email.com" type="email" inputMode="email" />
               </label>
               <label>Seu @ no Instagram <i>(opcional)</i>
                 <input value={instagram} onChange={(e) => setInstagram(e.target.value)} placeholder="@seuusuario" />

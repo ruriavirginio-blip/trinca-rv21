@@ -5,7 +5,12 @@ type VipPayload = {
   instagram_user?: unknown;
   nome?: unknown;
   whatsapp?: unknown;
+  email?: unknown;
 };
+
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
 
 function cleanText(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
@@ -22,6 +27,7 @@ export async function POST(request: Request) {
   const instagramUser = cleanText(payload.instagram_user).replace(/^@+/, "");
   const nome = cleanText(payload.nome) || instagramUser || "Lead VIP Instagram";
   const whatsapp = cleanText(payload.whatsapp);
+  const emailInformado = cleanText(payload.email).toLowerCase();
 
   if (!instagramUser && !whatsapp) {
     return NextResponse.json(
@@ -45,7 +51,7 @@ export async function POST(request: Request) {
   });
   const lead = {
     nome,
-    email: vipEmail(instagramUser, whatsapp),
+    email: emailInformado && isValidEmail(emailInformado) ? emailInformado : vipEmail(instagramUser, whatsapp),
     whatsapp,
     objetivo: "lista-vip-pre-lancamento",
     origem: "instagram-lista-vip",
