@@ -253,16 +253,20 @@ export async function sendTwilioMessage(message: TwilioMessage): Promise<TwilioS
 
   const responses: unknown[] = [];
   const messageIds: string[] = [];
+  // Etapas marcadas send_as_text saem como TEXTO LIVRE (a mensagem certa de cada
+  // etapa), evitando cair no template generico e repetir o mesmo texto. So funciona
+  // dentro da janela de 24h (apos a lead interagir) — usado nas etapas pos-clique.
+  const effectiveMode = metadata.send_as_text === true ? "text" : config.sendMode;
   const params =
-    config.sendMode === "content"
+    effectiveMode === "content"
       ? contentParams(config, to, message)
-      : textParams(config, to, text, shouldSendMedia ? mediaUrls[0] : "");
+      : textParams(config, to, text);
   const primary = await postTwilio(config, params);
 
   responses.push(primary.body);
   messageIds.push(...primary.messageIds);
 
-  if (config.sendMode === "content" && shouldSendMedia) {
+  if (shouldSendMedia) {
     for (const [index, mediaUrl] of mediaUrls.entries()) {
       const caption = cleanText(message.etapa).includes("video")
         ? "Video oficial do TRINCA RV21"
