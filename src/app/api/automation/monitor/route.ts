@@ -177,6 +177,30 @@ function diagnose(status: Awaited<ReturnType<typeof buildStatus>>): Diagnosis {
   };
 }
 
+// AUTO-CONSERTO: roda a remediação no servidor NA HORA (sem esperar o Ruriá tocar).
+// Funciona com o Mac do Ruriá desligado.
+async function autoHeal(
+  origin: string,
+  action: ActionKey,
+): Promise<{ tried: boolean; ok: boolean; summary: string }> {
+  const rem = REMEDIATION[action];
+  if (rem.kind !== "server" || !rem.endpoint) return { tried: false, ok: false, summary: "" };
+  const secret = cleanText(process.env.AUTOMATION_API_SECRET) || cleanText(process.env.MONITOR_TOKEN);
+  if (!secret) return { tried: true, ok: false, summary: "sem secret no servidor" };
+  try {
+    const r = await fetch(`${origin}${rem.endpoint}`, {
+      method: "POST",
+      headers: { "x-automation-secret": secret, "content-type": "application/json" },
+    });
+    const d = (await r.json().catch(() => ({}))) as Record<string, unknown>;
+    if (!r.ok) return { tried: true, ok: false, summary: `erro ${r.status}` };
+    const c = d.enviadas ?? d.sent ?? d.dispatched ?? d.processed ?? d.recovered ?? d.recuperadas;
+    return { tried: true, ok: true, summary: c !== undefined ? `${c} item(ns) processado(s)` : "concluído" };
+  } catch (e) {
+    return { tried: true, ok: false, summary: String(e) };
+  }
+}
+
 function alertMessage(status: Awaited<ReturnType<typeof buildStatus>>, dx: Diagnosis) {
   const lines = status.problems.map((p) => `• ${p}`).join("\n");
   return (
@@ -206,19 +230,38 @@ export async function POST(request: Request) {
   let alertResult: unknown = null;
 
   let diagnosis: Diagnosis | null = null;
+  let heal: { tried: boolean; ok: boolean; summary: string } | null = null;
   if (status.severity === "critical") {
     diagnosis = diagnose(status);
     const action = diagnosis.action;
+
+    // 1) AUTO-CONSERTO imediato (não espera o Ruriá tocar; roda com Mac desligado)
+    const origin = new URL(request.url).origin;
+    heal = await autoHeal(origin, action);
+
+    // 2) mensagem: se já resolveu sozinho, avisa que resolveu; senão, manda botão de backup
+    let extra = "";
+    let buttons: { text: string; callback_data: string }[][] | undefined;
+    if (heal.tried && heal.ok) {
+      extra = `\n\n✅ *Já resolvi automaticamente:* ${heal.summary}. Se voltar a falhar, te aviso de novo.`;
+    } else if (heal.tried && !heal.ok) {
+      extra = `\n\n⚠️ Tentei resolver sozinho mas não consegui (${heal.summary}). Toque no botão abaixo.`;
+      buttons = [[{ text: REMEDIATION[action].label, callback_data: `fix:${action}` }]];
+    } else {
+      // ação de código: não dá pra auto-consertar com Mac desligado
+      buttons = [[{ text: REMEDIATION[action].label, callback_data: `fix:${action}` }]];
+    }
+
     // anti-spam: no máximo 1 alerta por hora por assinatura de problema
     const hourBucket = new Date().toISOString().slice(0, 13); // YYYY-MM-DDTHH
     alertResult = await sendInternalRuriaNotification({
       type: "critical_alert",
-      dedupeKey: `monitor:${status.signature}:${hourBucket}`,
-      message: alertMessage(status, diagnosis),
-      telegramButtons: [[{ text: REMEDIATION[action].label, callback_data: `fix:${action}` }]],
+      dedupeKey: `monitor:${status.signature}:${heal.ok ? "healed" : "open"}:${hourBucket}`,
+      message: alertMessage(status, diagnosis) + extra,
+      telegramButtons: buttons,
     });
     alerted = true;
   }
 
-  return NextResponse.json({ ok: true, ...status, diagnosis, alerted, alert_result: alertResult });
+  return NextResponse.json({ ok: true, ...status, diagnosis, heal, alerted, alert_result: alertResult });
 }
