@@ -29,7 +29,7 @@ export const DIA_PLANS: Record<string, DiaPlan> = {
         "Story 1 (selfie): bom dia + 'hoje eu vou revelar uma novidade'. Curiosidade, sem dizer o que é.",
         "Story 2 (selfie): conta a dor — 'cansei de ver mulher se culpando por não ter força de vontade. O problema nunca foi você, foi o método.'",
         "Story 3 (selfie): adianta que é um desafio de 21 dias e que tem LISTA VIP com acesso antecipado. Sticker de link → /vip.",
-        "Story 4 (selfie/CTA): 'quem quer entrar antes de todo mundo, entra na lista VIP no link. Vagas da 1a turma limitadas.'",
+        "Story 4 (selfie/CTA): 'quem quer entrar antes de todo mundo, entra na lista VIP no link. Vagas da 1a turma limitadas.' 🔗 LINK NO STICKER do story: protocolorv.com.br/vip?o=story-d1",
       ],
       qtd: "4–5 stories orgânicos pela manhã + 3–4 ao longo do dia reforçando a VIP.",
     },
@@ -57,7 +57,7 @@ export const DIA_PLANS: Record<string, DiaPlan> = {
       roteiro: [
         "Story 1 (selfie): bom dia + a pergunta-espelho (começou segunda, parou quarta).",
         "Story 2 (selfie): 'isso não é fraqueza. É plano que depende de motivação. Método bom diminui decisão.'",
-        "Story 3 (selfie): liga ao TRINCA + chama pra lista VIP (link).",
+        "Story 3 (selfie): liga ao TRINCA + chama pra lista VIP. 🔗 LINK NO STICKER do story: protocolorv.com.br/vip?o=story-d2",
       ],
       qtd: "3–4 orgânicos de manhã + enquete ('já desistiu de dieta na 1a semana?').",
     },
@@ -83,7 +83,7 @@ export const DIA_PLANS: Record<string, DiaPlan> = {
       roteiro: [
         "Story 1 (selfie): bom dia + introduz a história da Jessica.",
         "Story 2: print/depoimento da Jessica (card) + 'o corpo não desistiu, o método é que estava errado'.",
-        "Story 3 (selfie): CTA — 'quer ser a próxima história? entra na lista VIP'.",
+        "Story 3 (selfie): CTA — 'quer ser a próxima história? entra na lista VIP'. 🔗 LINK NO STICKER do story: protocolorv.com.br/vip?o=story-d3",
       ],
       qtd: "3–4 orgânicos + repost do depoimento.",
     },
@@ -108,7 +108,7 @@ export const DIA_PLANS: Record<string, DiaPlan> = {
       roteiro: [
         "Story 1 (selfie): bom dia + 'vou te mostrar o que tem dentro'.",
         "Story 2–3: bastidor real (treino/dieta/grupo) em selfie/vídeo curto.",
-        "Story 4 (selfie): CTA VIP — 'quem entra na lista recebe antes e mais barato'.",
+        "Story 4 (selfie): CTA VIP — 'quem entra na lista recebe antes e mais barato'. 🔗 LINK NO STICKER do story: protocolorv.com.br/vip?o=story-d4",
       ],
       qtd: "4–5 orgânicos (bastidor) + carrossel do dia.",
     },
@@ -133,7 +133,7 @@ export const DIA_PLANS: Record<string, DiaPlan> = {
       roteiro: [
         "Story 1 (selfie): bom dia + 'a maior desculpa: não tenho tempo'.",
         "Story 2: caixa de perguntas ('qual sua maior dúvida pra começar?').",
-        "Story 3 (selfie): responde 1–2 objeções + CTA VIP.",
+        "Story 3 (selfie): responde 1–2 objeções + CTA VIP. 🔗 LINK NO STICKER do story: protocolorv.com.br/vip?o=story-d5",
       ],
       qtd: "3–4 orgânicos + caixa de perguntas (responder nos stories).",
     },
@@ -158,7 +158,7 @@ export const DIA_PLANS: Record<string, DiaPlan> = {
       roteiro: [
         "Story 1 (selfie): bom dia + contagem ('falta pouco').",
         "Story 2: recap rápido do que é o TRINCA (1 frase).",
-        "Story 3 (selfie): CTA VIP forte + link.",
+        "Story 3 (selfie): CTA VIP forte + link. 🔗 LINK NO STICKER do story: protocolorv.com.br/vip?o=story-d6",
       ],
       qtd: "3–4 orgânicos + sticker de contagem regressiva.",
     },
@@ -180,7 +180,7 @@ export const DIA_PLANS: Record<string, DiaPlan> = {
       roteiro: [
         "Story 1 (selfie): bom dia + abre a história/propósito.",
         "Story 2 (selfie): a dor que te motivou (mulher real desistindo de si).",
-        "Story 3 (selfie): CTA VIP — 'falta 3 dias, entra na lista'.",
+        "Story 3 (selfie): CTA VIP — 'falta 3 dias, entra na lista'. 🔗 LINK NO STICKER do story: protocolorv.com.br/vip?o=story-d7",
       ],
       qtd: "3–4 orgânicos (storytelling) + CTA VIP.",
     },
@@ -201,7 +201,7 @@ export const DIA_PLANS: Record<string, DiaPlan> = {
       roteiro: [
         "Story 1 (selfie): bom dia + 'não é pra todo mundo'.",
         "Story 2: card de qualificação (pra quem é / pra quem não é).",
-        "Story 3 (selfie): CTA VIP — 'se você é essa mulher, entra na lista'.",
+        "Story 3 (selfie): CTA VIP — 'se você é essa mulher, entra na lista'. 🔗 LINK NO STICKER do story: protocolorv.com.br/vip?o=story-d8",
       ],
       qtd: "3–4 orgânicos + carrossel de qualificação.",
     },
@@ -222,7 +222,7 @@ export const DIA_PLANS: Record<string, DiaPlan> = {
       roteiro: [
         "Story 1 (selfie): bom dia + 'AMANHÃ abre'.",
         "Story 2: enquete 'você vai entrar?' + print de depoimento.",
-        "Story 3 (selfie): 'lista VIP recebe o link 1h antes. Última chance de entrar na lista.'",
+        "Story 3 (selfie): 'lista VIP recebe o link 1h antes. Última chance de entrar na lista.' 🔗 LINK NO STICKER do story: protocolorv.com.br/vip?o=story-d9",
       ],
       qtd: "5–6 orgânicos (véspera) + contagem regressiva.",
     },
