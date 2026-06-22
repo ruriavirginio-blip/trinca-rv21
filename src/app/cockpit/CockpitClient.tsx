@@ -1636,10 +1636,10 @@ type CFItem = {
   skills?: string[] | null;
 };
 const CF_SKILLS_BY_TYPE: Record<string, string[]> = {
-  story: ["ckm-banner-design", "trinca-marketing-psychology", "content-instagram-rv"],
-  feed: ["ckm-design", "trinca-high-end-visual-design", "trinca-marketing-psychology", "trinca-copywriting"],
-  carrossel: ["ckm-design", "frontend-design", "trinca-marketing-psychology", "trinca-copywriting"],
-  reel: ["content-instagram-rv", "trinca-copywriting", "trinca-marketing-psychology"],
+  story: ["ckm-banner-design", "ckm-design", "trinca-high-end-visual-design", "ui-ux-pro-max", "frontend-design", "trinca-marketing-psychology", "content-instagram-rv", "trinca-copywriting"],
+  feed: ["ckm-design", "ckm-design-system", "trinca-high-end-visual-design", "ui-ux-pro-max", "frontend-design", "trinca-marketing-psychology", "trinca-copywriting", "brand-positioning-rv"],
+  carrossel: ["ckm-design", "ckm-design-system", "ui-ux-pro-max", "frontend-design", "trinca-high-end-visual-design", "trinca-marketing-psychology", "objection-handling-rv", "trinca-copywriting"],
+  reel: ["content-instagram-rv", "trinca-copywriting", "trinca-marketing-psychology", "trinca-high-end-visual-design", "ui-ux-pro-max", "audience-segmentation-rv"],
 };
 const CF_STATUS_LABEL: Record<string, string> = {
   solicitado: "Solicitado", criando: "Criando", em_aprovacao: "Aguardando aprovação",
@@ -1661,6 +1661,7 @@ const parseDia = (day: string): string => {
 
 function ContentByDayPanel() {
   const [sel, setSel] = useState(contentCalendar[0]?.id || "");
+  const [cbdMsg, setCbdMsg] = useState("");
   const dia = contentCalendar.find((d) => d.id === sel) || contentCalendar[0];
   const idx = Math.max(0, contentCalendar.findIndex((d) => d.id === sel));
   const fase =
@@ -1673,6 +1674,49 @@ function ContentByDayPanel() {
           : { n: "Lançamento", c: "#f0c969" };
   const posts = (dia?.format || "").split(/[+,]/).map((s) => s.trim()).filter(Boolean);
   const plan = dia ? DIA_PLANS[dia.id] : undefined;
+
+  const acionarCriacao = async () => {
+    if (!dia) return;
+    const tipo = fmtToTipo(dia.format);
+    const skills = CF_SKILLS_BY_TYPE[tipo] || CF_SKILLS_BY_TYPE.feed;
+    const cmd = [
+      `CRIAR CONTEÚDO PREMIUM — TRINCA RV21 · ${dia.day} (${dia.format})`,
+      `Use a análise estratégica do projeto como base obrigatória: docs/estrategia-v2.md (audiência hoje é maioria homem → conteúdo CIRÚRGICO p/ mulher 25-44, gerar SAVE/COMPARTILHAMENTO pra reclassificar o algoritmo).`,
+      `PROPÓSITO (pré-lançamento): aquecer + qualificar + ENCHER a lista VIP (/vip). NÃO vender ainda.`,
+      `OBJETIVO DO DIA: ${dia.objective}`,
+      `ÊNFASE: ${plan?.enfase || ""}`,
+      ``,
+      `CRIATIVOS A PRODUZIR (nível agência, preto+ouro, tipografia editorial, thumbnails com design gráfico/3D quando fizer sentido):`,
+      ...(plan?.criativos || []).map((s) => `- ${s}`),
+      ``,
+      `STORIES DO DIA (5-10): produzir os cards criativos que acompanham os stories orgânicos do roteiro abaixo:`,
+      ...(plan?.organico.roteiro || []).map((s) => `- ${s}`),
+      ``,
+      dia.roteiro ? `ROTEIRO DO REEL (take-a-take):\n${dia.roteiro}` : "",
+      tipo === "reel" ? `REEL gravado em SELFIE pelo Ruriá → preparar direção de EDIÇÃO PROFISSIONAL pro Remotion (cortes, legendas dinâmicas sincronizadas, ganchos visuais, b-roll/texto na tela, trilha).` : "",
+      ``,
+      `SKILLS PREMIUM + ARSENAL A USAR: ${skills.join(", ")}. Pode usar Canva API e Adobe (ckm-design/banner) pros criativos.`,
+      `AO TERMINAR: suba os materiais e marque o pedido como "em_aprovacao" no cockpit (fila abaixo) pra eu aprovar e agendar.`,
+    ].filter(Boolean).join("\n");
+    try {
+      await navigator.clipboard?.writeText(cmd);
+    } catch {}
+    try {
+      await fetch("/api/content-factory", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          tipo,
+          tema: `${dia.title} — ${dia.objective}`,
+          roteiro_ref: dia.day,
+          data_post: parseDia(dia.day),
+          hora_post: dia.time,
+          skills,
+        }),
+      });
+    } catch {}
+    setCbdMsg(`📋 ${dia.day}: comando PREMIUM copiado + pedido criado na fila. Cole no Claude Code pra gerar os criativos.`);
+  };
 
   return (
     <div className="cbd">
@@ -1730,6 +1774,12 @@ function ContentByDayPanel() {
           <p className="cbd-cta">
             🎯 Todo post chama pra LISTA VIP (/vip). No aquecimento NÃO se vende — captura-se. O motor manda os 3 toques de nutrição sozinho.
           </p>
+          <div className="cbd-actions">
+            <button className="cbd-act primary" onClick={() => void acionarCriacao()}>🎨 Acionar criação (skills premium)</button>
+            <button className="cbd-act" onClick={() => window.open("/upload", "_blank")}>📤 Enviar vídeo bruto (Reels → Remotion)</button>
+            <button className="cbd-act" onClick={() => document.querySelector(".cf")?.scrollIntoView({ behavior: "smooth" })}>👀 Ver materiais criados</button>
+          </div>
+          {cbdMsg ? <p className="cbd-done">{cbdMsg}</p> : null}
         </div>
       ) : null}
       <style jsx>{`
@@ -1764,6 +1814,10 @@ function ContentByDayPanel() {
         .cbd-traf b { color: #6fa8ff; }
         .cbd-check { background: rgba(240,201,105,.05); border: 1px solid rgba(240,201,105,.2); border-radius: 10px; padding: 10px 12px; }
         .cbd-check strong { color: #f0c969; }
+        .cbd-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+        .cbd-act { background: #1d1d22; border: 1px solid #26262c; color: #d8d5cf; font-size: 12.5px; font-weight: 700; padding: 11px 14px; border-radius: 10px; cursor: pointer; }
+        .cbd-act.primary { background: linear-gradient(135deg,#d4a23c,#e8b04a); color: #1a1206; border: none; }
+        .cbd-done { font-size: 12.5px; color: #5fd08a; background: rgba(95,208,138,.08); border: 1px solid rgba(95,208,138,.25); border-radius: 10px; padding: 9px 11px; margin-top: 8px; }
       `}</style>
     </div>
   );
@@ -1833,33 +1887,9 @@ function ContentFactoryPanel() {
 
   return (
     <div className="cf">
-      <div className="cf-intro">
-        <strong>🏭 Fábrica de Conteúdo — Roteiro do Pré-lançamento</strong>
-        <span>Cada dia já vem com o <b>propósito travado</b> (aquecer leads · qualificar · coletar métricas) pra criação nunca fugir do contexto. Aperte <b>⚡ Acionar criação</b> → o Claude cria com as skills certas → você aprova → o motor agenda/publica. (Publicação automática liga com as chaves do Instagram — docs/credenciais-pendentes.md.)</span>
-      </div>
       {msg ? <p className="cf-msg">{msg}</p> : null}
 
-      <div className="cf-list">
-        {contentCalendar.map((c) => {
-          const tipo = fmtToTipo(c.format);
-          return (
-            <div className="cf-item" key={c.id}>
-              <div className="cf-item-top">
-                <span className="cf-tipo">{tipo}</span>
-                <strong>{c.day} · {c.title}</strong>
-                <span className="cf-when">{c.time}</span>
-              </div>
-              <div className="cf-objective">🎯 {c.objective}</div>
-              <div className="cf-item-meta">Skills: {(CF_SKILLS_BY_TYPE[tipo] || []).join(" · ")}</div>
-              <div className="cf-item-btns one">
-                <button onClick={() => void acionarDia(c)}>⚡ Acionar criação deste dia</button>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="cf-intro" style={{ marginTop: 14 }}>
+      <div className="cf-intro">
         <strong>📥 Fila de produção</strong>
         <span>Pedidos já acionados — aprove ou rejeite o material que o Claude subir.</span>
       </div>
