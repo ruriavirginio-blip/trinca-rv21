@@ -126,7 +126,7 @@ type Department = {
 
 const DEPARTMENTS: Department[] = [
   {
-    icon: <Wrench size={18} />, name: "TECH OPS", agent: "Agente 4 · Infraestrutura", status: "run",
+    icon: <Wrench size={18} />, name: "TECNOLOGIA", agent: "Agente 4 · Infraestrutura", status: "run",
     domain: "Pixel, CAPI, GA4, webhooks, WhatsApp, Supabase, deploy.",
     report: "Base sólida: Pixel, GA4 e token CAPI ativos em produção. Falta plugar o token no Cenário 2 do Make e validar o fluxo ponta a ponta. Caminho crítico.",
     skills: ["conversion-funnel-rv", "performance-metrics-rv"],
@@ -142,7 +142,7 @@ const DEPARTMENTS: Department[] = [
     cmd: "COMANDO TECH OPS: assuma a infraestrutura. Prioridade: (1) corrigir o Cenário 2 do Make.com (Compra→CAPI) com o token já gerado, (2) criar a função SQL get_daily_report no Supabase, (3) rodar teste ponta-a-ponta completo. Use conversion-funnel-rv e performance-metrics-rv. Reporte item por item.",
   },
   {
-    icon: <Zap size={18} />, name: "CONVERSION ENGINE", agent: "Agente 2 · Funil & Automação", status: "run",
+    icon: <Zap size={18} />, name: "MOTOR DE CONVERSÃO", agent: "Agente 2 · Funil & Automação", status: "run",
     domain: "Landing page, funil Kiwify→Supabase→Twilio, recuperação.",
     report: "Landing no ar, mas ainda fora do padrão alto exigido — falta auditoria de conversão (CRO), polish final e A/B de headline. Carrinho abandonado não existe ainda.",
     skills: ["conversion-funnel-rv", "trinca-page-cro", "objection-handling-rv"],
@@ -156,7 +156,7 @@ const DEPARTMENTS: Department[] = [
     cmd: "COMANDO CONVERSION ENGINE: assuma o funil. Prioridade: (1) finalizar a landing no padrão premium com trinca-page-cro e trinca-final-polish, (2) A/B de headline e CTA, (3) fluxo de recuperação de carrinho. Use conversion-funnel-rv e objection-handling-rv.",
   },
   {
-    icon: <Target size={18} />, name: "TRAFFIC HUNTER", agent: "Agente 1 · Aquisição", status: "wait",
+    icon: <Target size={18} />, name: "TRÁFEGO & ALCANCE", agent: "Agente 1 · Aquisição", status: "wait",
     domain: "Meta Ads pago, orgânico, audiences, CPL, escala.",
     report: "Não iniciado. Nenhum anúncio rodando, gasto R$0. Aguarda o CAPI 100%. Frente mais atrasada e mais decisiva para a meta de 1.000 leads.",
     skills: ["audience-segmentation-rv", "performance-metrics-rv", "content-instagram-rv"],
@@ -170,7 +170,7 @@ const DEPARTMENTS: Department[] = [
     cmd: "COMANDO TRAFFIC HUNTER: assuma a aquisição. Pré-requisito: CAPI funcionando. Prioridade: (1) 3 audiences de teste com audience-segmentation-rv, (2) 3 anúncios de teste (R$10/dia) com copy e criativo, (3) plano de escala dias 8-21. Puxe dados via Motion e Windsor.",
   },
   {
-    icon: <Camera size={18} />, name: "CONTENT CREATOR", agent: "Agente 3 · Conteúdo IG", status: "wait",
+    icon: <Camera size={18} />, name: "CONTEÚDO", agent: "Agente 3 · Conteúdo IG", status: "wait",
     domain: "Posts, reels, stories, carrosséis, bio, calendário 21 dias.",
     report: "Bio não atualizada e criativos pendentes. O calendário e os roteiros vivem na aba Conteúdo. Conteúdo orgânico aquece a audiência antes do tráfego pago.",
     skills: ["content-instagram-rv", "brand-positioning-rv", "trinca-copywriting"],
@@ -184,7 +184,7 @@ const DEPARTMENTS: Department[] = [
     cmd: "COMANDO CONTENT CREATOR: assuma o conteúdo. Prioridade: (1) revisar o calendário e roteiros da aba Conteúdo, (2) reescrever a bio com trinca-copywriting, (3) gerar os 3 primeiros criativos com Canva/Adobe. Foco em captação de leads.",
   },
   {
-    icon: <MessageCircle size={18} />, name: "SALES CLOSER", agent: "Agente 5 · Vendas & DMs", status: "ok",
+    icon: <MessageCircle size={18} />, name: "VENDAS", agent: "Agente 5 · Vendas & DMs", status: "ok",
     domain: "DMs, objeções, WhatsApp, emails de venda, fechamento.",
     report: "Pronto para ativar. Skills de objeção e copy prontas — basta o comando para gerar templates de WhatsApp e a sequência de email.",
     skills: ["objection-handling-rv", "brand-positioning-rv", "audience-segmentation-rv"],
@@ -198,7 +198,7 @@ const DEPARTMENTS: Department[] = [
     cmd: "COMANDO SALES CLOSER: assuma vendas. Prioridade: (1) templates de WhatsApp para as objeções comuns com objection-handling-rv, (2) sequência de email de venda, (3) script de upsell pós-desafio. Entregue pronto para colar.",
   },
   {
-    icon: <BarChart3 size={18} />, name: "DATA ANALYST", agent: "Agente 6 · Métricas", status: "run",
+    icon: <BarChart3 size={18} />, name: "DADOS & MÉTRICAS", agent: "Agente 6 · Métricas", status: "run",
     domain: "Relatório diário 07h, CPL/CAC/LTV/ROAS, gargalos, projeções.",
     report: "Depende da função SQL get_daily_report (Tech Ops). Conectores prontos. Quando os ads ligarem, manda relatório automático às 07h.",
     skills: ["performance-metrics-rv", "audience-segmentation-rv", "competitor-intelligence-rv"],
@@ -212,7 +212,7 @@ const DEPARTMENTS: Department[] = [
     cmd: "COMANDO DATA ANALYST: assuma métricas. Prioridade: (1) especificar get_daily_report e o relatório 07h, (2) projeção de cenários até 1.000 leads, (3) varredura de concorrentes via Perplexity + Semrush. Use performance-metrics-rv.",
   },
   {
-    icon: <Wallet size={18} />, name: "FINANCE · CFO", agent: "Controle financeiro", status: "new",
+    icon: <Wallet size={18} />, name: "FINANCEIRO", agent: "Controle financeiro", status: "new",
     domain: "Assinaturas, gasto de tráfego, fluxo de caixa, ROI, alertas.",
     report: "Os números reais vivem na aba Gastos (Make, Twilio, Railway, Vercel...). Falta conectar gasto de Meta Ads ao vivo e definir o break-even pelo ticket de R$37,89.",
     skills: ["performance-metrics-rv", "launch-action-plan-rv"],

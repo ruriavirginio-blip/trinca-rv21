@@ -45,6 +45,10 @@ export default function VipPage() {
       setErr("Coloca seu WhatsApp com DDD, tá? Ex: (84) 99999-9999");
       return;
     }
+    if (!instagram.trim()) {
+      setErr("Coloca seu @ do Instagram também 🙂");
+      return;
+    }
     setLoading(true);
     setErr("");
     try {
@@ -95,8 +99,8 @@ export default function VipPage() {
               <label>Seu e-mail
                 <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="voce@email.com" type="email" inputMode="email" />
               </label>
-              <label>Seu @ no Instagram <i>(opcional)</i>
-                <input value={instagram} onChange={(e) => setInstagram(e.target.value)} placeholder="@seuusuario" />
+              <label>Seu @ no Instagram
+                <input value={instagram} onChange={(e) => setInstagram(e.target.value)} placeholder="@seuusuario" required />
               </label>
               {err ? <p className="err">{err}</p> : null}
               <button type="submit" disabled={loading}>
