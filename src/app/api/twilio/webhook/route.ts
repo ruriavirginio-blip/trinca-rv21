@@ -285,6 +285,22 @@ async function markGateAsCompleted(
   if (error) {
     throw new Error(error.message);
   }
+
+  // Conserto de latência/ordem: ao concluir o gate, a etapa que ele libera
+  // passa a estar VENCIDA agora (enviar_em = agora) — assim dispara logo após
+  // o clique, em ordem, em vez de esperar o atraso absoluto contado da compra.
+  const unlocksStep = cleanText(metadata.unlocks_step);
+  if (unlocksStep) {
+    const orderId = cleanText(gateMessage.order_id);
+    const email = cleanText(gateMessage.email);
+    let q = supabase
+      .from("automation_messages")
+      .update({ enviar_em: new Date().toISOString() })
+      .eq("etapa", unlocksStep)
+      .eq("status", "pendente");
+    q = orderId ? q.eq("order_id", orderId) : q.eq("email", email);
+    await q;
+  }
 }
 
 async function updateLeadStage(
