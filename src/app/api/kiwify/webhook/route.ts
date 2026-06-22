@@ -481,7 +481,7 @@ function buildMessageQueue(normalizedEvent: NormalizedEvent, leadObjective?: unk
           sequence: "pos-compra",
           sequence_order: 3,
           required_previous_steps: ["boas-vindas-video"],
-          delay_after_previous_minutes: 0,
+          delay_after_previous_minutes: 0.75,
           body_variable_order: [],
           asset_url: dietUrl || null,
           asset_urls: [dietUrl, ebookRvUrlValue, ebookNutritionUrlValue].filter(Boolean),
