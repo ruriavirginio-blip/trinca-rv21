@@ -607,9 +607,9 @@ function buildMessageQueue(normalizedEvent: NormalizedEvent, leadObjective?: unk
           body_variable_order: [],
         },
         mensagem:
-          `${nome}, entre agora no Grupo Oficial TRINCA RV21 pelo link abaixo.\n\n` +
+          `${nome}, entre agora no Grupo Oficial TRINCA RV21 pelo link abaixo:\n\n` +
           `${whatsappGroupUrl || "[link_grupo]"}\n\n` +
-          "De verdade, agora comeca a nossa jornada do TRINCA RV21.",
+          "De verdade: agora começa a nossa jornada do TRINCA RV21! 🚀",
       },
     ].map((message) =>
       withTemplateMetadata(message, normalizedEvent, {
