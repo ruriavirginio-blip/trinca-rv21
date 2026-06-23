@@ -28,6 +28,7 @@ type DmResponseInput = {
   buttonText?: unknown;
   etapa?: unknown;
   rawPayload?: unknown;
+  historico?: Array<{ role: "user" | "assistant"; content: string }>;
 };
 
 const DEFAULT_MODEL = "claude-3-5-haiku-20241022";
@@ -73,7 +74,13 @@ function textFromClaude(content: Anthropic.Messages.Message["content"]) {
     .trim();
 }
 
-async function askClaude(system: string, user: string): Promise<ClaudeResult> {
+type ChatTurn = { role: "user" | "assistant"; content: string };
+
+async function askClaude(
+  system: string,
+  user: string,
+  history: ChatTurn[] = [],
+): Promise<ClaudeResult> {
   const client = anthropicClient();
 
   if (!client) {
@@ -88,11 +95,12 @@ async function askClaude(system: string, user: string): Promise<ClaudeResult> {
     const response = await client.messages.create({
       model: modelName(),
       max_tokens: 900,
-      temperature: 0.2,
+      temperature: 0.4,
       system,
       messages: [
+        ...history.map((h) => ({ role: h.role, content: h.content })),
         {
-          role: "user",
+          role: "user" as const,
           content: user,
         },
       ],
@@ -167,31 +175,31 @@ export async function responderDM(input: DmResponseInput): Promise<ClaudeResult>
     };
   }
 
+  const historico = Array.isArray(input.historico)
+    ? input.historico
+        .filter((h) => h && (h.role === "user" || h.role === "assistant") && cleanText(h.content))
+        .slice(-16)
+    : [];
+
   const system =
-    "Voce e um assistente de atendimento do TRINCA RV21. " +
-    "Crie uma resposta curta, humana, premium e objetiva para WhatsApp/Instagram DM. " +
-    "Nao prometa resultado garantido, nao de aconselhamento medico e nao envie link do grupo oficial. " +
-    "Se a pessoa quiser entrar, direcione para a landing/checkout. Responda somente JSON valido.";
+    "Você é o atendimento do Ruriá Virgínio (@ruriavirginio) no WhatsApp — personal há 14 anos, criador do PROTOCOLO RV. " +
+    "Estamos em PRÉ-LANÇAMENTO do TRINCA RV21: desafio fitness FEMININO de 21 dias (treino direcionado + dieta de nutricionista + acompanhamento diário no grupo). " +
+    "SEU OBJETIVO: conversar de forma calorosa e humana na VOZ DO RURIÁ (próximo, motivador, direto, sem firula), acolher a mulher, ENTENDER o objetivo real dela (emagrecer, glúteos, autoestima, recomeçar, tonificar, saúde...) e LEVAR ela pra LISTA VIP (acesso antecipado, sem cobrança agora). " +
+    "REGRAS: NÃO fale preço, NÃO prometa resultado garantido, NÃO dê conselho médico, NÃO invente. Mensagens curtas (máx 4 linhas), no máximo 2 emojis, tom feminino e acolhedor. " +
+    "Quando ela demonstrar interesse, confirme com carinho que vai colocar ela na LISTA VIP e mande o link https://protocolorv.com.br/vip. " +
+    "Use o histórico da conversa pra não repetir pergunta e dar continuidade natural. Responda SOMENTE JSON válido.";
+
   const user = JSON.stringify({
-    tarefa: "responder_dm_trinca_rv21",
-    contexto:
-      "TRINCA RV21 e um desafio feminino de 21 dias com treino, dieta por objetivo, materiais, WhatsApp e grupo oficial liberado no final da sequencia pos-compra.",
-    inbound: {
-      whatsapp: cleanText(input.whatsapp),
-      mensagem,
-      button_payload: cleanText(input.buttonPayload),
-      button_text: cleanText(input.buttonText),
-      etapa: cleanText(input.etapa),
-      raw_payload: input.rawPayload || null,
-    },
+    tarefa: "conversa_captacao_vip_pre_lancamento",
+    inbound: { whatsapp: cleanText(input.whatsapp), mensagem },
     formato_resposta: {
-      responder: "boolean",
-      categoria: "duvida|objecao|interesse|suporte|fora_de_contexto",
+      resposta: "string curta e humana pra mandar AGORA no WhatsApp (voz do Ruriá)",
+      objetivo_detectado: "emagrecer|gluteos|autoestima|recomecar|tonificar|saude|outro|desconhecido",
+      nome_detectado: "primeiro nome dela se ela disse, senão string vazia",
+      pronta_para_vip: "boolean — true quando ela demonstrou interesse claro em entrar/saber mais",
       sentimento: "positivo|neutro|negativo",
-      resposta: "string curta para enviar a lead",
-      acao_recomendada: "string curta",
     },
   });
 
-  return askClaude(system, user);
+  return askClaude(system, user, historico);
 }

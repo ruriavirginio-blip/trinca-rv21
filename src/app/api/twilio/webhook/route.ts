@@ -257,6 +257,29 @@ async function insertInteraction(
   }
 }
 
+// Reconstrói o histórico da conversa (inbound da lead + respostas do Claude) pra dar memória.
+async function loadConversationHistory(
+  supabase: AppSupabaseClient,
+  whatsapp: string,
+): Promise<Array<{ role: "user" | "assistant"; content: string }>> {
+  if (!whatsapp) return [];
+  const { data } = await supabase
+    .from("twilio_interactions")
+    .select("raw_payload, received_at")
+    .eq("from_whatsapp", whatsapp)
+    .order("received_at", { ascending: true })
+    .limit(24);
+  const hist: Array<{ role: "user" | "assistant"; content: string }> = [];
+  for (const row of (data as JsonObject[] | null) || []) {
+    const rp = asObject(row.raw_payload);
+    const inbound = cleanText(rp.Body) || cleanText(asObject(rp.source_payload).Body);
+    const assistant = cleanText(asObject(asObject(rp.claude_response).data).resposta);
+    if (inbound) hist.push({ role: "user", content: inbound });
+    if (assistant) hist.push({ role: "assistant", content: assistant });
+  }
+  return hist.slice(-16);
+}
+
 async function findGateMessage(
   supabase: AppSupabaseClient,
   etapa: string,
@@ -652,56 +675,78 @@ export async function POST(request: Request) {
     const messageText = inboundText(payload);
 
     if (messageText) {
-      after(() => {
-        void responderDM({
+      after(async () => {
+        // Memória da conversa → Claude responde como o Ruriá e CAPTA pra VIP.
+        const historico = await loadConversationHistory(supabase, whatsappDigits);
+        const dmResponse = await responderDM({
           whatsapp: whatsappDigits,
           mensagem: messageText,
           buttonPayload: receivedButtonPayload,
           buttonText: buttonText(payload),
           rawPayload: payload,
-        }).then(async (dmResponse) => {
-          if (dmResponse.skipped) {
-            return;
-          }
+          historico,
+        });
+        if (dmResponse.skipped) {
+          return;
+        }
 
-          const resposta = claudeReplyText(dmResponse);
+        const resposta = claudeReplyText(dmResponse as JsonObject);
 
-          if (resposta) {
-            try {
-              await sendTwilioMessage({
-                id: firstText(payload.MessageSid, payload.SmsMessageSid, payload.SmsSid),
-                whatsapp: whatsappDigits,
-                mensagem: resposta,
-                etapa: "claude-dm-resposta",
-                metadata: {
-                  source: "claude_dm",
-                  whatsapp_api: {
-                    template_name: "trinca_aviso_oficial",
-                    template_category: "UTILITY",
-                    language: "pt_BR",
-                    body_variables: {},
-                    body_variable_order: [],
-                  },
+        if (resposta) {
+          try {
+            await sendTwilioMessage({
+              id: firstText(payload.MessageSid, payload.SmsMessageSid, payload.SmsSid),
+              whatsapp: whatsappDigits,
+              mensagem: resposta,
+              etapa: "claude-dm-resposta",
+              metadata: {
+                source: "claude_dm",
+                whatsapp_api: {
+                  template_name: "trinca_aviso_oficial",
+                  template_category: "UTILITY",
+                  language: "pt_BR",
+                  body_variables: {},
+                  body_variable_order: [],
                 },
-              });
-            } catch (replyError) {
-              console.error("Erro ao enviar resposta Claude pelo Twilio", replyError);
-            }
+              },
+            });
+          } catch (replyError) {
+            console.error("Erro ao enviar resposta Claude pelo Twilio", replyError);
           }
+        }
 
-          await insertInteraction(supabase, {
-            provider: "claude",
-            from_whatsapp: whatsappDigits,
-            message_sid:
-              firstText(payload.MessageSid, payload.SmsMessageSid, payload.SmsSid) || null,
-            button_payload: receivedButtonPayload || null,
-            button_text: buttonText(payload) || null,
-            raw_payload: {
-              claude_response: dmResponse,
-              source_payload: payload,
-            },
-            received_at: new Date().toISOString(),
-          });
+        // Captação automática: quando a lead esquenta, entra na LISTA VIP + nutrição.
+        const dmData = asObject((dmResponse as JsonObject).data);
+        const prontaVip = dmData.pronta_para_vip === true || cleanText(dmData.pronta_para_vip) === "true";
+        if (prontaVip) {
+          try {
+            await fetch(`${url.origin}/api/prelancamento/registrar-vip`, {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({
+                whatsapp: whatsappDigits,
+                nome: cleanText(dmData.nome_detectado) || undefined,
+                objetivo: cleanText(dmData.objetivo_detectado) || undefined,
+                origem_captura: "whatsapp-claude",
+              }),
+            });
+          } catch (vipErr) {
+            console.error("Erro ao registrar VIP via conversa Claude", vipErr);
+          }
+        }
+
+        await insertInteraction(supabase, {
+          provider: "claude",
+          from_whatsapp: whatsappDigits,
+          message_sid:
+            firstText(payload.MessageSid, payload.SmsMessageSid, payload.SmsSid) || null,
+          button_payload: receivedButtonPayload || null,
+          button_text: buttonText(payload) || null,
+          raw_payload: {
+            claude_response: dmResponse,
+            source_payload: payload,
+          },
+          received_at: new Date().toISOString(),
         });
       });
     }

@@ -8,6 +8,8 @@ type VipPayload = {
   whatsapp?: unknown;
   email?: unknown;
   event_id?: unknown;
+  objetivo?: unknown; // persona detectada na conversa (emagrecer, gluteos, etc.)
+  origem_captura?: unknown; // ex.: "whatsapp-claude"
 };
 
 function isValidEmail(value: string) {
@@ -52,12 +54,14 @@ export async function POST(request: Request) {
   const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
     auth: { persistSession: false },
   });
+  const objetivoDetectado = cleanText(payload.objetivo);
+  const origemCaptura = cleanText(payload.origem_captura);
   const lead = {
     nome,
     email: emailInformado && isValidEmail(emailInformado) ? emailInformado : vipEmail(instagramUser, whatsapp),
     whatsapp,
-    objetivo: "lista-vip-pre-lancamento",
-    origem: "instagram-lista-vip",
+    objetivo: objetivoDetectado || "lista-vip-pre-lancamento",
+    origem: origemCaptura || "instagram-lista-vip",
     status: "lista-vip",
     etapa_funil: "pre-lancamento",
     utm: JSON.stringify({
