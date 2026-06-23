@@ -16,6 +16,8 @@ type Item = {
 // Fallback no cloud name evita "falha de rede" caso o env não esteja em produção.
 const CLOUD = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "drfs4s18a";
 const UPLOAD_PRESET = "trinca_raw_unsigned"; // preset unsigned criado no Cloudinary
+// Worker do Remotion no Railway — o navegador chama DIRETO (render ~80-90s > limite da Vercel).
+const WORKER = process.env.NEXT_PUBLIC_REMOTION_WORKER_URL || "https://trinca-remotion-worker-production.up.railway.app";
 
 export default function UploadVideoBruto() {
   const [itens, setItens] = useState<Item[]>([]);
@@ -24,6 +26,8 @@ export default function UploadVideoBruto() {
   const [msg, setMsg] = useState<string>("");
   const [busy, setBusy] = useState(false);
   const [pct, setPct] = useState(0);
+  const [gancho, setGancho] = useState("Você não falhou. O método é que falhou.");
+  const [gatilho, setGatilho] = useState("Entra na lista VIP");
 
   async function load() {
     const r = await fetch("/api/content/upload-video");
@@ -77,8 +81,40 @@ export default function UploadVideoBruto() {
       const c = await conf.json();
       if (!c.ok) throw new Error(c.error || "falha ao salvar");
 
+      // 3) Edição no Remotion — navegador chama o worker DIRETO e espera (~1-2 min).
+      setPct(98);
+      setMsg("✂️ Editando no Remotion (premium)… leva ~1-2 min. NÃO feche a página.");
+      let editedUrl = "";
+      try {
+        const rr = await fetch(`${WORKER}/render`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            videoUrl: secureUrl,
+            gancho: gancho.trim() || "Você não falhou",
+            gatilho: gatilho.trim() || "Entra na lista VIP",
+          }),
+        });
+        const rj = await rr.json();
+        if (rj?.success && rj.cloudinaryUrl) editedUrl = String(rj.cloudinaryUrl);
+        else throw new Error(rj?.error || rj?.details || "render falhou");
+      } catch (err) {
+        setPct(100);
+        setMsg("⚠️ Vídeo bruto salvo, mas a edição no Remotion falhou: " + String(err) + ". Tente enviar de novo.");
+        setBusy(false);
+        load();
+        return;
+      }
+
+      // 4) Salva o reel EDITADO na fila pra aprovação (aparece em Conteúdo › Materiais do dia).
+      await fetch("/api/content-factory", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: sel, asset_url: editedUrl, status: "em_aprovacao" }),
+      });
+
       setPct(100);
-      setMsg("✅ Vídeo enviado e vinculado ao roteiro! Pronto pra edição no Remotion.");
+      setMsg("✅ Reel editado pelo Remotion e na fila pra aprovar! Veja em Conteúdo › Materiais do dia.");
       setFile(null);
       setSel("");
       load();
@@ -125,8 +161,12 @@ export default function UploadVideoBruto() {
           style={S.file}
         />
 
+        <label style={S.label}>3 · Textos do reel (aparecem na edição premium)</label>
+        <input value={gancho} onChange={(e) => setGancho(e.target.value)} placeholder="Gancho — frase de abertura" style={S.file} />
+        <input value={gatilho} onChange={(e) => setGatilho(e.target.value)} placeholder="Gatilho — CTA final (ex: Entra na lista VIP)" style={{ ...S.file, marginTop: 8 }} />
+
         <button onClick={handleUpload} disabled={busy || !sel || !file} style={{ ...S.cta, opacity: busy || !sel || !file ? 0.5 : 1 }}>
-          {busy ? `Enviando... ${pct}%` : "ENVIAR VÍDEO →"}
+          {busy ? `Processando... ${pct}%` : "ENVIAR + EDITAR NO REMOTION →"}
         </button>
 
         {msg && <p style={S.msg}>{msg}</p>}
