@@ -1647,7 +1647,24 @@ type CFItem = {
   hora_post?: string | null;
   skills?: string[] | null;
   asset_url?: string | null;
+  legenda?: string | null;
 };
+
+// legenda guarda a CAPTION do post + (opcional) a galeria de slides do carrossel,
+// separada por uma linha "---SLIDES---". Aqui a gente separa os dois.
+function parseLegenda(legenda?: string | null): { caption: string; slides: string[] } {
+  if (!legenda) return { caption: "", slides: [] };
+  const [cap, gal] = legenda.split("---SLIDES---");
+  const slides = (gal || "")
+    .split(/\s+/)
+    .map((s) => s.trim())
+    .filter((s) => /^https?:\/\//.test(s));
+  return { caption: (cap || "").trim(), slides };
+}
+// Força download no Cloudinary (fl_attachment) em vez de abrir no navegador.
+function toDownload(url: string): string {
+  return url.includes("/upload/") ? url.replace("/upload/", "/upload/fl_attachment/") : url;
+}
 const CF_SKILLS_BY_TYPE: Record<string, string[]> = {
   story: ["ckm-banner-design", "ckm-design", "trinca-high-end-visual-design", "ui-ux-pro-max", "frontend-design", "trinca-marketing-psychology", "content-instagram-rv", "trinca-copywriting"],
   feed: ["ckm-design", "ckm-design-system", "trinca-high-end-visual-design", "ui-ux-pro-max", "frontend-design", "trinca-marketing-psychology", "trinca-copywriting", "brand-positioning-rv"],
@@ -2039,12 +2056,37 @@ function ContentFactoryPanel({ filterDate, dayShort }: { filterDate?: string; da
               </div>
               <div className="cf-item-meta">{it.data_post || "sem data"} {it.hora_post || ""}</div>
               {it.asset_url ? (
-                <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "8px 0" }}>
-                  <a href={it.asset_url} target="_blank" rel="noopener noreferrer">
-                    <img src={it.asset_url} alt={it.tema || "material"} style={{ width: 78, height: 138, objectFit: "cover", borderRadius: 8, border: "1px solid #2a2a30", display: "block" }} />
-                  </a>
-                  <a href={it.asset_url} target="_blank" rel="noopener noreferrer" style={{ color: "#1a1206", background: "linear-gradient(135deg,#d4a23c,#f0c969)", fontWeight: 800, fontSize: 12.5, padding: "9px 14px", borderRadius: 10, textDecoration: "none" }}>👁️ Ver material</a>
-                </div>
+                (() => {
+                  const { caption, slides } = parseLegenda(it.legenda);
+                  const gallery = slides.length ? slides : [it.asset_url as string];
+                  const isCarrossel = it.tipo === "carrossel" && slides.length > 1;
+                  return (
+                    <div style={{ margin: "8px 0" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <a href={it.asset_url} target="_blank" rel="noopener noreferrer">
+                          <img src={it.asset_url} alt={it.tema || "material"} style={{ width: 78, height: 138, objectFit: "cover", borderRadius: 8, border: "1px solid #2a2a30", display: "block" }} />
+                        </a>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                          <a href={it.asset_url} target="_blank" rel="noopener noreferrer" style={{ color: "#1a1206", background: "linear-gradient(135deg,#d4a23c,#f0c969)", fontWeight: 800, fontSize: 12.5, padding: "9px 14px", borderRadius: 10, textDecoration: "none", textAlign: "center" }}>👁️ Ver material</a>
+                          <a href={toDownload(it.asset_url as string)} download style={{ color: "#f0c969", background: "rgba(212,162,60,.12)", border: "1px solid rgba(212,162,60,.4)", fontWeight: 800, fontSize: 12.5, padding: "9px 14px", borderRadius: 10, textDecoration: "none", textAlign: "center" }}>⬇️ Baixar {isCarrossel ? "capa" : "criativo"}</a>
+                        </div>
+                      </div>
+                      {isCarrossel ? (
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginTop: 10 }}>
+                          {gallery.map((u, i) => (
+                            <a key={i} href={toDownload(u)} download style={{ color: "#d8d5cf", background: "#1a1a1f", border: "1px solid #2a2a30", fontSize: 12, fontWeight: 700, padding: "7px 11px", borderRadius: 9, textDecoration: "none" }}>⬇️ Slide {i + 1}</a>
+                          ))}
+                        </div>
+                      ) : null}
+                      {caption ? (
+                        <details style={{ marginTop: 10 }}>
+                          <summary style={{ cursor: "pointer", color: "#8a867e", fontSize: 12.5, fontWeight: 700 }}>📋 Ver legenda do post</summary>
+                          <textarea readOnly value={caption} style={{ width: "100%", minHeight: 120, marginTop: 8, background: "#0a0a0f", color: "#d8d5cf", border: "1px solid #2a2a30", borderRadius: 10, padding: 12, fontSize: 13, lineHeight: 1.5, fontFamily: "inherit", resize: "vertical" }} />
+                        </details>
+                      ) : null}
+                    </div>
+                  );
+                })()
               ) : (
                 <div style={{ fontSize: 12, color: "#8a867e", margin: "6px 0" }}>Sem material ainda — aparece aqui quando o Claude produz.</div>
               )}
