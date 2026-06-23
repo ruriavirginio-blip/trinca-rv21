@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@supabase/supabase-js";
 
 type Item = {
   id: string;
@@ -13,7 +12,9 @@ type Item = {
   asset_url: string | null;
 };
 
-const BUCKET = "cockpit-assets";
+// Upload direto pro Cloudinary (unsigned) — sem o teto de 50 MB do Supabase free.
+const CLOUD = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME as string;
+const UPLOAD_PRESET = "trinca_raw_unsigned"; // preset unsigned criado no Cloudinary
 
 export default function UploadVideoBruto() {
   const [itens, setItens] = useState<Item[]>([]);
@@ -38,34 +39,39 @@ export default function UploadVideoBruto() {
       return;
     }
     setBusy(true);
-    setMsg("Gerando link seguro...");
+    setMsg("Enviando vídeo...");
     setPct(5);
     try {
-      const signRes = await fetch("/api/content/upload-video", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "sign", contentId: sel, filename: file.name }),
+      // 1) Upload direto pro Cloudinary (unsigned), com progresso real — sem teto de 50 MB.
+      const secureUrl = await new Promise<string>((resolve, reject) => {
+        const fd = new FormData();
+        fd.append("upload_preset", UPLOAD_PRESET);
+        fd.append("file", file);
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUD}/auto/upload`);
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) setPct(Math.max(5, Math.round((e.loaded / e.total) * 90)));
+        };
+        xhr.onload = () => {
+          try {
+            const res = JSON.parse(xhr.responseText);
+            if (xhr.status >= 200 && xhr.status < 300 && res.secure_url) resolve(res.secure_url as string);
+            else reject(new Error(res?.error?.message || `Cloudinary HTTP ${xhr.status}`));
+          } catch {
+            reject(new Error("Resposta inválida do Cloudinary"));
+          }
+        };
+        xhr.onerror = () => reject(new Error("Falha de rede no upload"));
+        xhr.send(fd);
       });
-      const sign = await signRes.json();
-      if (!sign.ok) throw new Error(sign.error || "falha ao assinar");
 
-      setMsg("Enviando vídeo...");
-      setPct(35);
-      const supa = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
-      );
-      const up = await supa.storage.from(BUCKET).uploadToSignedUrl(sign.path, sign.token, file, {
-        contentType: file.type || "video/mp4",
-      });
-      if (up.error) throw new Error(up.error.message);
-
+      // 2) Grava a URL do Cloudinary no roteiro (alimenta o Remotion).
       setMsg("Salvando...");
-      setPct(80);
+      setPct(95);
       const conf = await fetch("/api/content/upload-video", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "confirm", contentId: sel, publicUrl: sign.publicUrl }),
+        body: JSON.stringify({ action: "confirm", contentId: sel, publicUrl: secureUrl }),
       });
       const c = await conf.json();
       if (!c.ok) throw new Error(c.error || "falha ao salvar");
