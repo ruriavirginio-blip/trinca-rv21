@@ -639,13 +639,15 @@ export default function CockpitClient({
       }
 
       const supabase = createClient(supabaseUrl, supabaseAnonKey);
-      const [{ data: leadsData, error: leadsError }, { data: commentsData, error: commentsError }, creditsResponse] =
+      // Leads são lidos pelo SERVIDOR (service role) via /api/leads — o read
+      // client-side com anon key é bloqueado por RLS (retornava vazio e sumia
+      // com a Janile/meta 1.000). comment_leads segue no client (degradação ok).
+      const leadsHeaders: HeadersInit = automationToken
+        ? { authorization: `Bearer ${automationToken}` }
+        : {};
+      const [leadsResponse, { data: commentsData, error: commentsError }, creditsResponse] =
         await Promise.all([
-          supabase
-            .from("leads")
-            .select("id,nome,email,whatsapp,objetivo,origem,status,utm,capturado_em,created_at")
-            .order("created_at", { ascending: false })
-            .limit(250),
+          fetch("/api/leads", { headers: leadsHeaders, cache: "no-store" }),
           supabase
             .from("comment_leads")
             .select("id,instagram_user_id,gatilho_ativado,dm_enviada,created_at")
@@ -654,10 +656,16 @@ export default function CockpitClient({
           fetch("/api/twilio-credits"),
         ]);
 
-      if (leadsError) throw new Error(leadsError.message);
       if (commentsError) throw new Error(commentsError.message);
 
-      setLeads((leadsData || []) as Lead[]);
+      const leadsJson = leadsResponse.ok
+        ? ((await leadsResponse.json()) as { leads?: Lead[] })
+        : { leads: [] };
+      if (!leadsResponse.ok) {
+        setDataError("Não foi possível ler os leads (token da operação ausente ou inválido).");
+      }
+
+      setLeads((leadsJson.leads || []) as Lead[]);
       setCommentLeads((commentsData || []) as CommentLead[]);
 
       if (creditsResponse.ok) {
@@ -668,7 +676,7 @@ export default function CockpitClient({
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [automationToken]);
 
   useEffect(() => {
     if (isUnlocked) {

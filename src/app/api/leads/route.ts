@@ -20,6 +20,53 @@ function cleanText(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+// GET — alimenta o Cockpit (Hoje, Leads, meta 1.000) via SERVICE ROLE.
+// O read client-side com anon key e bloqueado por RLS (retorna vazio), o que
+// fazia Janile/leads sumirem da meta. Aqui usamos a service role no servidor.
+export async function GET(request: Request) {
+  const url = new URL(request.url);
+  const authorization = request.headers.get("authorization") || "";
+  const bearer = authorization.replace(/^Bearer\s+/i, "").trim();
+  const provided = [
+    url.searchParams.get("token"),
+    request.headers.get("x-automation-secret"),
+    bearer,
+  ]
+    .map((v) => (typeof v === "string" ? v.trim() : ""))
+    .filter(Boolean);
+  const validSecrets = [
+    process.env.AUTOMATION_API_SECRET,
+    process.env.MONITOR_TOKEN,
+    process.env.KIWIFY_WEBHOOK_SECRET,
+  ].filter(Boolean) as string[];
+
+  if (!validSecrets.length || !provided.some((p) => validSecrets.includes(p))) {
+    return NextResponse.json({ ok: false, error: "Token invalido." }, { status: 401 });
+  }
+
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !supabaseServiceRoleKey) {
+    return NextResponse.json({ ok: false, error: "Supabase nao configurado." }, { status: 503 });
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
+    auth: { persistSession: false },
+  });
+
+  const { data, error } = await supabase
+    .from("leads")
+    .select("id,nome,email,whatsapp,objetivo,origem,status,utm,capturado_em,created_at")
+    .order("created_at", { ascending: false })
+    .limit(250);
+
+  if (error) {
+    return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ ok: true, leads: data || [] });
+}
+
 export async function POST(request: Request) {
   const payload = (await request.json()) as LeadPayload;
   const rawUtm = cleanText(payload.utm);

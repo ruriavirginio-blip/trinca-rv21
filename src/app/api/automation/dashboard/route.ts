@@ -527,7 +527,18 @@ async function fetchDashboardData(supabase: AppSupabaseClient, limit: number) {
     throw new Error(leadsError.message);
   }
 
-  const leads = (leadsData || []) as JsonObject[];
+  // AQUECIMENTO (pré-lançamento): leads de Lista VIP NÃO entram no funil operacional
+  // de compra (eles têm a aba própria "Lista VIP"). Sem isso, o dashboard os trata
+  // como compradores e o Alertas acusa falso "Ainda não confirmou pagamento".
+  // O funil operacional (Jornada/Alertas) mostra apenas quem entrou no fluxo de venda.
+  const leads = ((leadsData || []) as JsonObject[]).filter((lead) => {
+    const statusLead = cleanText(lead.status).toLowerCase();
+    if (statusLead === "lista-vip") return false;
+    if (cleanText((lead as { is_test?: unknown }).is_test) === "true" || (lead as { is_test?: unknown }).is_test === true) {
+      return false;
+    }
+    return true;
+  });
   const emails = leads.map((lead) => cleanText(lead.email).toLowerCase()).filter(Boolean);
   const phones = Array.from(
     new Set(
