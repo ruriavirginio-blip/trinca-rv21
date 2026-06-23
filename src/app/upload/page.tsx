@@ -19,6 +19,60 @@ const UPLOAD_PRESET = "trinca_raw_unsigned"; // preset unsigned criado no Cloudi
 // Worker do Remotion no Railway — o navegador chama DIRETO (render ~80-90s > limite da Vercel).
 const WORKER = process.env.NEXT_PUBLIC_REMOTION_WORKER_URL || "https://trinca-remotion-worker-production.up.railway.app";
 
+// Upload em PEDAÇOS (chunked) pro Cloudinary — remove o teto de ~100 MB do upload
+// unsigned em request único. Reel bruto de iPhone (centenas de MB) sobe sem "falha de rede".
+async function uploadChunked(
+  file: File,
+  cloud: string,
+  preset: string,
+  onPct: (n: number) => void,
+): Promise<string> {
+  const CHUNK = 20 * 1024 * 1024; // 20 MB por pedaço (Cloudinary exige >= 5 MB, menos o último)
+  const total = file.size;
+  const uniqueId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  let start = 0;
+  let secureUrl = "";
+
+  while (start < total) {
+    const end = Math.min(start + CHUNK, total);
+    const blob = file.slice(start, end);
+    const fd = new FormData();
+    fd.append("upload_preset", preset);
+    fd.append("file", blob);
+
+    // eslint-disable-next-line no-await-in-loop
+    const res = await new Promise<{ secure_url?: string; error?: { message?: string } }>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", `https://api.cloudinary.com/v1_1/${cloud}/auto/upload`);
+      xhr.setRequestHeader("X-Unique-Upload-Id", uniqueId);
+      xhr.setRequestHeader("Content-Range", `bytes ${start}-${end - 1}/${total}`);
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+          const done = start + e.loaded;
+          onPct(Math.max(5, Math.min(90, Math.round((done / total) * 90))));
+        }
+      };
+      xhr.onload = () => {
+        try {
+          const r = JSON.parse(xhr.responseText);
+          if (xhr.status >= 200 && xhr.status < 300) resolve(r);
+          else reject(new Error(r?.error?.message || `Cloudinary HTTP ${xhr.status}`));
+        } catch {
+          reject(new Error("Resposta inválida do Cloudinary"));
+        }
+      };
+      xhr.onerror = () => reject(new Error("Falha de rede no upload"));
+      xhr.send(fd);
+    });
+
+    if (res.secure_url) secureUrl = res.secure_url;
+    start = end;
+  }
+
+  if (!secureUrl) throw new Error("Upload incompleto (sem secure_url do Cloudinary)");
+  return secureUrl;
+}
+
 export default function UploadVideoBruto() {
   const [itens, setItens] = useState<Item[]>([]);
   const [sel, setSel] = useState<string>("");
@@ -47,28 +101,8 @@ export default function UploadVideoBruto() {
     setMsg("Enviando vídeo...");
     setPct(5);
     try {
-      // 1) Upload direto pro Cloudinary (unsigned), com progresso real — sem teto de 50 MB.
-      const secureUrl = await new Promise<string>((resolve, reject) => {
-        const fd = new FormData();
-        fd.append("upload_preset", UPLOAD_PRESET);
-        fd.append("file", file);
-        const xhr = new XMLHttpRequest();
-        xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUD}/auto/upload`);
-        xhr.upload.onprogress = (e) => {
-          if (e.lengthComputable) setPct(Math.max(5, Math.round((e.loaded / e.total) * 90)));
-        };
-        xhr.onload = () => {
-          try {
-            const res = JSON.parse(xhr.responseText);
-            if (xhr.status >= 200 && xhr.status < 300 && res.secure_url) resolve(res.secure_url as string);
-            else reject(new Error(res?.error?.message || `Cloudinary HTTP ${xhr.status}`));
-          } catch {
-            reject(new Error("Resposta inválida do Cloudinary"));
-          }
-        };
-        xhr.onerror = () => reject(new Error("Falha de rede no upload"));
-        xhr.send(fd);
-      });
+      // 1) Upload em PEDAÇOS pro Cloudinary (unsigned) — sem teto de tamanho, com progresso real.
+      const secureUrl = await uploadChunked(file, CLOUD, UPLOAD_PRESET, setPct);
 
       // 2) Grava a URL do Cloudinary no roteiro (alimenta o Remotion).
       setMsg("Salvando...");
