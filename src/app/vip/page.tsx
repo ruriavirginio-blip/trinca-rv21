@@ -15,12 +15,14 @@ export default function VipPage() {
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [err, setErr] = useState("");
+  const [origem, setOrigem] = useState(""); // link de origem (o=story-d1, trafego-d1, ig-dm...)
 
   useEffect(() => {
     try {
       const sp = new URLSearchParams(window.location.search);
       const ig = sp.get("ig") || sp.get("u") || "";
       if (ig) setInstagram(ig);
+      setOrigem(sp.get("origem") || sp.get("o") || "");
       let ref = "";
       try { ref = document.referrer || ""; } catch { ref = ""; }
       fetch("/api/track", {
@@ -64,6 +66,7 @@ export default function VipPage() {
           email: email.trim(),
           instagram_user: instagram.trim().replace(/^@+/, ""),
           event_id: eventId,
+          origem_captura: origem || undefined,
         }),
       });
       const d = await r.json().catch(() => ({}));

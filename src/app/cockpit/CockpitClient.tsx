@@ -33,7 +33,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { JornadaPanel, AlertasPanel, AcessosPanel } from "./CockpitOperacao";
 import { DIA_PLANS } from "./contentPlan";
 
-type TabKey = "hoje" | "jornada" | "alertas" | "leads" | "vendas" | "gastos" | "conteudo" | "comando" | "ia";
+type TabKey = "hoje" | "jornada" | "alertas" | "leads" | "vip" | "vendas" | "gastos" | "conteudo" | "comando" | "ia";
 type ContentStatus = "RASCUNHO" | "APROVADO" | "PUBLICADO" | "REJEITADO";
 
 type Lead = {
@@ -103,6 +103,7 @@ const tabs: Array<{ key: TabKey; label: string; icon: React.ReactNode }> = [
   { key: "jornada", label: "Jornada", icon: <Radio size={20} /> },
   { key: "alertas", label: "Alertas", icon: <AlertTriangle size={20} /> },
   { key: "leads", label: "Leads", icon: <Users size={20} /> },
+  { key: "vip", label: "Lista VIP", icon: <Sparkles size={20} /> },
   { key: "vendas", label: "Vendas", icon: <CircleDollarSign size={20} /> },
   { key: "gastos", label: "Gastos", icon: <WalletCards size={20} /> },
   { key: "conteudo", label: "Conteúdo", icon: <CalendarDays size={20} /> },
@@ -982,6 +983,12 @@ export default function CockpitClient({
           </DashboardSection>
         ) : null}
 
+        {activeTab === "vip" ? (
+          <DashboardSection title="Lista VIP" description="Quem entrou pelo formulário /vip, por qual link chegou, e os dados de cada lead." loading={false}>
+            <VipPanel />
+          </DashboardSection>
+        ) : null}
+
         {activeTab === "vendas" ? (
           <DashboardSection title="Vendas" description="Conversão, receita e projeção do dia." loading={loading}>
             <MetricGrid
@@ -1656,6 +1663,100 @@ const parseDia = (day: string): string => {
   const m = day.match(/(\d{2})\/(\d{2})/);
   return m ? `2026-${m[2]}-${m[1]}` : "";
 };
+
+type VipLead = { nome: string; whatsapp: string; email: string; instagram: string; objetivo: string; origem_label: string; capturado_em: string | null };
+type VipData = { ok?: boolean; total?: number; novas24h?: number; porOrigem?: Array<{ origem: string; origem_label: string; count: number }>; leads?: VipLead[] };
+
+function VipPanel() {
+  const [data, setData] = useState<VipData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const r = await fetch("/api/vip-leads");
+      setData((await r.json()) as VipData);
+    } catch {
+      setData(null);
+    }
+    setLoading(false);
+  }, []);
+  useEffect(() => { void load(); }, [load]);
+
+  const total = data?.total ?? 0;
+  const novas = data?.novas24h ?? 0;
+  const porOrigem = data?.porOrigem ?? [];
+  const leads = data?.leads ?? [];
+  const fmt = (s: string | null) => {
+    if (!s) return "—";
+    try { return new Date(s).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }); } catch { return "—"; }
+  };
+  const card: React.CSSProperties = { background: "#16161a", border: "1px solid #26262c", borderRadius: 14, padding: 16 };
+
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 16 }}>
+        <div style={{ ...card, flex: 1, minWidth: 150 }}>
+          <div style={{ fontSize: 30, fontWeight: 800, color: "#f0c969" }}>{total}</div>
+          <div style={{ fontSize: 13, color: "#a3a09a" }}>leads na Lista VIP</div>
+        </div>
+        <div style={{ ...card, flex: 1, minWidth: 150 }}>
+          <div style={{ fontSize: 30, fontWeight: 800, color: "#5fd08a" }}>{novas}</div>
+          <div style={{ fontSize: 13, color: "#a3a09a" }}>novos nas últimas 24h</div>
+        </div>
+        <button onClick={() => void load()} style={{ ...card, cursor: "pointer", color: "#f0c969", fontWeight: 700, fontSize: 13 }}>
+          {loading ? "Atualizando…" : "🔄 Atualizar"}
+        </button>
+      </div>
+
+      <div style={{ ...card, marginBottom: 16 }}>
+        <strong style={{ fontSize: 14, color: "#f5f3ef" }}>📍 Por qual link chegaram</strong>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
+          {porOrigem.length === 0 ? (
+            <span style={{ color: "#8a867e", fontSize: 13 }}>Nenhum lead ainda.</span>
+          ) : porOrigem.map((o) => (
+            <span key={o.origem} style={{ background: "rgba(212,162,60,0.12)", border: "1px solid rgba(212,162,60,0.3)", borderRadius: 100, padding: "7px 13px", fontSize: 12.5, color: "#f0c969", fontWeight: 600 }}>
+              {o.origem_label} <b style={{ color: "#f5f3ef" }}>· {o.count}</b>{o.origem ? <span style={{ color: "#7a766e" }}> ({o.origem})</span> : null}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ ...card, overflowX: "auto" }}>
+        <strong style={{ fontSize: 14, color: "#f5f3ef" }}>👥 Leads ({leads.length})</strong>
+        {leads.length === 0 ? (
+          <p style={{ color: "#8a867e", fontSize: 13, marginTop: 10 }}>Assim que alguém entrar pelo /vip, aparece aqui com nome e dados.</p>
+        ) : (
+          <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 10, fontSize: 13 }}>
+            <thead>
+              <tr style={{ color: "#8a867e", textAlign: "left" }}>
+                <th style={{ padding: "8px 10px" }}>Nome</th>
+                <th style={{ padding: "8px 10px" }}>WhatsApp</th>
+                <th style={{ padding: "8px 10px" }}>@Instagram</th>
+                <th style={{ padding: "8px 10px" }}>Email</th>
+                <th style={{ padding: "8px 10px" }}>Objetivo</th>
+                <th style={{ padding: "8px 10px" }}>Origem</th>
+                <th style={{ padding: "8px 10px" }}>Quando</th>
+              </tr>
+            </thead>
+            <tbody>
+              {leads.map((l, i) => (
+                <tr key={i} style={{ borderTop: "1px solid #26262c", color: "#e9e7e2" }}>
+                  <td style={{ padding: "8px 10px", fontWeight: 600 }}>{l.nome}</td>
+                  <td style={{ padding: "8px 10px" }}>{l.whatsapp ? <a href={`https://wa.me/${l.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" style={{ color: "#5fd08a", textDecoration: "none" }}>{l.whatsapp}</a> : "—"}</td>
+                  <td style={{ padding: "8px 10px", color: "#f0c969" }}>{l.instagram || "—"}</td>
+                  <td style={{ padding: "8px 10px", color: "#a3a09a" }}>{l.email || "—"}</td>
+                  <td style={{ padding: "8px 10px" }}>{l.objetivo || "—"}</td>
+                  <td style={{ padding: "8px 10px", color: "#a3a09a" }}>{l.origem_label}</td>
+                  <td style={{ padding: "8px 10px", color: "#7a766e" }}>{fmt(l.capturado_em)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  );
+}
 
 // Seção Conteúdo: o dia selecionado é compartilhado entre o painel do dia e a fila.
 // A "Fábrica de Conteúdo" abaixo passa a mostrar SÓ os materiais daquele dia (filtra por data).
