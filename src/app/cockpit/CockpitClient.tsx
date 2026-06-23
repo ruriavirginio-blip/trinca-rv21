@@ -1026,10 +1026,7 @@ export default function CockpitClient({
             description="Clique no dia (D1 = 23/06) e veja todos os posts daquele dia: formato, objetivo e roteiro."
             loading={contentQueueLoading}
           >
-            <h3 className="block-title">📅 Conteúdos por dia</h3>
-            <ContentByDayPanel />
-            <h3 className="block-title">🏭 Fábrica de Conteúdo (criar / aprovar / publicar)</h3>
-            <ContentFactoryPanel />
+            <ContentDaySection />
             <details className="legacy-notion">
               <summary>🗄️ Notion (antigo — NÃO usar)</summary>
               <p className="legacy-note">
@@ -1634,6 +1631,7 @@ type CFItem = {
   data_post?: string | null;
   hora_post?: string | null;
   skills?: string[] | null;
+  asset_url?: string | null;
 };
 const CF_SKILLS_BY_TYPE: Record<string, string[]> = {
   story: ["ckm-banner-design", "ckm-design", "trinca-high-end-visual-design", "ui-ux-pro-max", "frontend-design", "trinca-marketing-psychology", "content-instagram-rv", "trinca-copywriting"],
@@ -1659,8 +1657,27 @@ const parseDia = (day: string): string => {
   return m ? `2026-${m[2]}-${m[1]}` : "";
 };
 
-function ContentByDayPanel() {
+// Seção Conteúdo: o dia selecionado é compartilhado entre o painel do dia e a fila.
+// A "Fábrica de Conteúdo" abaixo passa a mostrar SÓ os materiais daquele dia (filtra por data).
+function ContentDaySection() {
   const [sel, setSel] = useState(contentCalendar[0]?.id || "");
+  const dia = contentCalendar.find((d) => d.id === sel) || contentCalendar[0];
+  const filterDate = dia ? parseDia(dia.day) : "";
+  const dayShort = dia?.day?.split(" · ")[0] || "—";
+  return (
+    <>
+      <h3 className="block-title">📅 Conteúdos por dia</h3>
+      <ContentByDayPanel sel={sel} onSel={setSel} />
+      <h3 className="block-title">🏭 Materiais de {dayShort} (criar / aprovar / publicar)</h3>
+      <ContentFactoryPanel filterDate={filterDate} dayShort={dayShort} />
+    </>
+  );
+}
+
+function ContentByDayPanel({ sel: selProp, onSel }: { sel?: string; onSel?: (id: string) => void } = {}) {
+  const [selInternal, setSelInternal] = useState(contentCalendar[0]?.id || "");
+  const sel = selProp ?? selInternal;
+  const setSel = onSel ?? setSelInternal;
   const [cbdMsg, setCbdMsg] = useState("");
   const dia = contentCalendar.find((d) => d.id === sel) || contentCalendar[0];
   const idx = Math.max(0, contentCalendar.findIndex((d) => d.id === sel));
@@ -1823,7 +1840,7 @@ function ContentByDayPanel() {
   );
 }
 
-function ContentFactoryPanel() {
+function ContentFactoryPanel({ filterDate, dayShort }: { filterDate?: string; dayShort?: string } = {}) {
   const [items, setItems] = useState<CFItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
@@ -1885,21 +1902,24 @@ function ContentFactoryPanel() {
     void load();
   };
 
+  // Mostra SÓ os materiais do dia selecionado (filtra por data). Sem filtro = mostra todos.
+  const shown = filterDate ? items.filter((it) => (it.data_post || "") === filterDate) : items;
+
   return (
     <div className="cf">
       {msg ? <p className="cf-msg">{msg}</p> : null}
 
       <div className="cf-intro">
-        <strong>📥 Fila de produção</strong>
-        <span>Pedidos já acionados — aprove ou rejeite o material que o Claude subir.</span>
+        <strong>📥 Materiais{dayShort ? ` de ${dayShort}` : ""}</strong>
+        <span>Clique em “Ver material” pra visualizar o card pronto. Depois aprove, deixe em aprovação ou rejeite.</span>
       </div>
       <div className="cf-list">
         {loading ? (
           <p className="cf-empty">Carregando…</p>
-        ) : items.length === 0 ? (
-          <p className="cf-empty">Nenhum pedido na fila ainda. Acione um dia do roteiro acima.</p>
+        ) : shown.length === 0 ? (
+          <p className="cf-empty">Nenhum material{dayShort ? ` em ${dayShort}` : ""} ainda. Use “Acionar criação” no dia acima.</p>
         ) : (
-          items.map((it) => (
+          shown.map((it) => (
             <div className="cf-item" key={it.id}>
               <div className="cf-item-top">
                 <span className="cf-tipo">{it.tipo}</span>
@@ -1909,6 +1929,16 @@ function ContentFactoryPanel() {
                 </span>
               </div>
               <div className="cf-item-meta">{it.data_post || "sem data"} {it.hora_post || ""}</div>
+              {it.asset_url ? (
+                <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "8px 0" }}>
+                  <a href={it.asset_url} target="_blank" rel="noopener noreferrer">
+                    <img src={it.asset_url} alt={it.tema || "material"} style={{ width: 78, height: 138, objectFit: "cover", borderRadius: 8, border: "1px solid #2a2a30", display: "block" }} />
+                  </a>
+                  <a href={it.asset_url} target="_blank" rel="noopener noreferrer" style={{ color: "#1a1206", background: "linear-gradient(135deg,#d4a23c,#f0c969)", fontWeight: 800, fontSize: 12.5, padding: "9px 14px", borderRadius: 10, textDecoration: "none" }}>👁️ Ver material</a>
+                </div>
+              ) : (
+                <div style={{ fontSize: 12, color: "#8a867e", margin: "6px 0" }}>Sem material ainda — aparece aqui quando o Claude produz.</div>
+              )}
               <div className="cf-item-btns">
                 <button onClick={() => void patch(it.id, "aprovado")}>✅ Aprovar</button>
                 <button onClick={() => void patch(it.id, "em_aprovacao")}>👀 Em aprovação</button>

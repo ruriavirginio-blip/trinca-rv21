@@ -13,7 +13,8 @@ type Item = {
 };
 
 // Upload direto pro Cloudinary (unsigned) — sem o teto de 50 MB do Supabase free.
-const CLOUD = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME as string;
+// Fallback no cloud name evita "falha de rede" caso o env não esteja em produção.
+const CLOUD = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "drfs4s18a";
 const UPLOAD_PRESET = "trinca_raw_unsigned"; // preset unsigned criado no Cloudinary
 
 export default function UploadVideoBruto() {
