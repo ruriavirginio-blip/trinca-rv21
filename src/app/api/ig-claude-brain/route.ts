@@ -74,8 +74,11 @@ export async function POST(request: Request) {
 
   const mensagem = await gerarMensagem(name, comment);
 
-  // Formato que o ManyChat External Request renderiza (Dynamic Block v2).
+  // `reply` no topo = mapeamento fácil no External Request do ManyChat ($.reply).
+  // `content` (v2) = caso use o modo Dynamic Block.
   return NextResponse.json({
+    reply: mensagem,
+    vip_url: `${VIP_URL}?o=ig-dm`,
     version: "v2",
     content: {
       messages: [
