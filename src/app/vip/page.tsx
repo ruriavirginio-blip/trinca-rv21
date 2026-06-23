@@ -5,6 +5,7 @@
    POST /api/prelancamento/registrar-vip (status lista-vip). Registra acesso em /api/track. */
 
 import { useEffect, useState } from "react";
+import { trackLead, createMetaEventId } from "@/lib/meta-pixel";
 
 export default function VipPage() {
   const [nome, setNome] = useState("");
@@ -51,6 +52,8 @@ export default function VipPage() {
     }
     setLoading(true);
     setErr("");
+    // event_id compartilhado entre Pixel (browser) e CAPI (server) p/ deduplicar o Lead.
+    const eventId = createMetaEventId("Lead");
     try {
       const r = await fetch("/api/prelancamento/registrar-vip", {
         method: "POST",
@@ -60,11 +63,16 @@ export default function VipPage() {
           whatsapp: digits,
           email: email.trim(),
           instagram_user: instagram.trim().replace(/^@+/, ""),
+          event_id: eventId,
         }),
       });
       const d = await r.json().catch(() => ({}));
       if (!r.ok || d.error) setErr(d.error || "Deu um erro aqui. Tenta de novo em instantes.");
-      else setDone(true);
+      else {
+        // Conversão de Lead (otimização de tráfego pago p/ a Lista VIP).
+        trackLead({ event_id: eventId, content_name: "Lista VIP TRINCA RV21" });
+        setDone(true);
+      }
     } catch {
       setErr("Sem conexão agora. Tenta de novo.");
     }

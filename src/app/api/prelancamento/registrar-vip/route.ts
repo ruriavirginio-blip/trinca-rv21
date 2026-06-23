@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { sendServerEvent, createServerEventId } from "@/lib/meta-capi";
 
 type VipPayload = {
   instagram_user?: unknown;
   nome?: unknown;
   whatsapp?: unknown;
   email?: unknown;
+  event_id?: unknown;
 };
 
 function isValidEmail(value: string) {
@@ -28,6 +30,7 @@ export async function POST(request: Request) {
   const nome = cleanText(payload.nome) || instagramUser || "Lead VIP Instagram";
   const whatsapp = cleanText(payload.whatsapp);
   const emailInformado = cleanText(payload.email).toLowerCase();
+  const eventId = cleanText(payload.event_id) || createServerEventId("Lead", whatsapp || instagramUser);
 
   if (!instagramUser && !whatsapp) {
     return NextResponse.json(
@@ -81,6 +84,18 @@ export async function POST(request: Request) {
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  // CAPI: evento Lead server-side (otimização de tráfego pago p/ a Lista VIP).
+  // Mesmo event_id do Pixel no browser → Meta deduplica. Best-effort, não derruba o cadastro.
+  try {
+    await sendServerEvent(
+      "Lead",
+      { email: lead.email, phone: whatsapp },
+      { event_id: eventId, content_name: "Lista VIP TRINCA RV21" },
+    );
+  } catch {
+    /* CAPI best-effort */
   }
 
   // Motor de nutrição VIP: ao ENTRAR na lista (lead nova), agenda os 3 toques.
