@@ -16,6 +16,14 @@ export type DiaPlan = {
   checklist: string[]; // checklist do dia (ordem cronológica a partir das 04:30)
 };
 
+/* REGRA DE OURO do story de bom dia (04:30): SEMPRE feche pedindo uma INTERAÇÃO
+   que vira mensagem no Direct — é o que ALIMENTA a automação do ManyChat.
+   ✅ Dispara DM automática: resposta de TEXTO ao story + REAÇÃO com emoji.
+   ❌ NÃO dispara: enquete, quiz, slider, caixa de pergunta (só engajam/pesquisam).
+   Palavra-chave do projeto: SEGUNDA (além de QUERO/EU QUERO/BORA/CUIDA). */
+export const CTA_AUTOMACAO_STORY =
+  "🔑 Feche o story pedindo interação que dispara o Direct: \"Responde SEGUNDA aqui (ou manda um 🔥) que eu te chamo no Direct com o acesso da Lista VIP.\" Resposta/reação ACIONAM o ManyChat → DM automática. Enquete NÃO dispara — use só pra engajar.";
+
 export const DIA_PLANS: Record<string, DiaPlan> = {
   d1: {
     id: "d1",

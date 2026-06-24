@@ -31,7 +31,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { JornadaPanel, AlertasPanel, AcessosPanel } from "./CockpitOperacao";
-import { DIA_PLANS } from "./contentPlan";
+import { DIA_PLANS, CTA_AUTOMACAO_STORY } from "./contentPlan";
 
 type TabKey = "hoje" | "jornada" | "alertas" | "leads" | "vip" | "vendas" | "gastos" | "conteudo" | "comando" | "ia";
 type ContentStatus = "RASCUNHO" | "APROVADO" | "PUBLICADO" | "REJEITADO";
@@ -1900,6 +1900,7 @@ function ContentByDayPanel({ sel: selProp, onSel }: { sel?: string; onSel?: (id:
               <div className="cbd-block cbd-org">
                 <strong>📱 Stories ORGÂNICOS (selfie, a partir das 04:30)</strong>
                 <p className="cbd-bomdia"><b>Bom dia:</b> {plan.organico.bomDia}</p>
+                <p className="cbd-bomdia" style={{ color: "#f0c969", borderLeft: "2px solid #d4a23c", paddingLeft: 10, marginTop: 6 }}>{CTA_AUTOMACAO_STORY}</p>
                 <ul>{plan.organico.roteiro.map((s, i) => <li key={i}>{s}</li>)}</ul>
                 <span className="cbd-qtd">{plan.organico.qtd}</span>
               </div>

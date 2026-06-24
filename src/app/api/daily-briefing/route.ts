@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { sendTelegramMessage } from "@/lib/telegram";
-import { planByDate } from "@/app/cockpit/contentPlan";
+import { planByDate, CTA_AUTOMACAO_STORY } from "@/app/cockpit/contentPlan";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -66,6 +66,7 @@ async function run(request: Request) {
   linhas.push("");
   linhas.push("*📱 Stories orgânicos (selfie, comece 04:30):*");
   linhas.push(`_Bom dia:_ ${plan.organico.bomDia}`);
+  linhas.push(CTA_AUTOMACAO_STORY);
   plan.organico.roteiro.forEach((s) => linhas.push(`• ${s}`));
   linhas.push(`_(${plan.organico.qtd})_`);
   linhas.push("");
