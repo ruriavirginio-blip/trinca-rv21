@@ -1993,6 +1993,16 @@ function ContentFactoryPanel({ filterDate, dayShort }: { filterDate?: string; da
     void load();
   };
 
+  // Define o horário agendado (HH:MM, Brasília). Ao Aprovar, o motor posta nesse horário.
+  const setHora = async (id: string, hora_post: string) => {
+    await fetch("/api/content-factory", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ id, hora_post }),
+    });
+    void load();
+  };
+
   // 1.1 — Aciona a criação de um DIA do roteiro fixo, travando o contexto do pré-lançamento
   const acionarDia = async (c: (typeof contentCalendar)[number]) => {
     const tipo = fmtToTipo(c.format);
@@ -2090,8 +2100,28 @@ function ContentFactoryPanel({ filterDate, dayShort }: { filterDate?: string; da
               ) : (
                 <div style={{ fontSize: 12, color: "#8a867e", margin: "6px 0" }}>Sem material ainda — aparece aqui quando o Claude produz.</div>
               )}
+              {it.tipo !== "story" ? (
+                <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "10px 0 4px", flexWrap: "wrap" }}>
+                  <span style={{ fontSize: 12, color: "#8a867e", fontWeight: 700 }}>⏰ Agendado p/</span>
+                  <input
+                    type="time"
+                    defaultValue={(it.hora_post || "").slice(0, 5)}
+                    onChange={(e) => void setHora(it.id, e.target.value)}
+                    style={{ background: "#0a0a0f", color: "#f0c969", border: "1px solid #2a2a30", borderRadius: 8, padding: "6px 10px", fontWeight: 700, fontSize: 13 }}
+                  />
+                  <span style={{ fontSize: 11.5, color: it.status === "aprovado" && it.hora_post ? "#5fd08a" : "#8a867e" }}>
+                    {it.status === "aprovado" && it.hora_post
+                      ? "✅ aprovado — o motor posta no horário (Brasília)"
+                      : it.tipo === "reel"
+                        ? "reel: sobe o vídeo gravado antes de aprovar"
+                        : "defina o horário e clique Aprovar p/ agendar"}
+                  </span>
+                </div>
+              ) : (
+                <div style={{ fontSize: 11.5, color: "#8a867e", margin: "8px 0 4px" }}>📲 Story é postado manual (a Meta não permite auto-post de stories).</div>
+              )}
               <div className="cf-item-btns">
-                <button onClick={() => void patch(it.id, "aprovado")}>✅ Aprovar</button>
+                <button onClick={() => void patch(it.id, "aprovado")}>✅ Aprovar {it.tipo !== "story" && it.hora_post ? `(posta ${(it.hora_post || "").slice(0, 5)})` : ""}</button>
                 <button onClick={() => void patch(it.id, "em_aprovacao")}>👀 Em aprovação</button>
                 <button onClick={() => void patch(it.id, "rejeitado")}>❌ Rejeitar</button>
               </div>
