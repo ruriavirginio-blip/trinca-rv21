@@ -1786,7 +1786,14 @@ function VipPanel() {
 // Seção Conteúdo: o dia selecionado é compartilhado entre o painel do dia e a fila.
 // A "Fábrica de Conteúdo" abaixo passa a mostrar SÓ os materiais daquele dia (filtra por data).
 function ContentDaySection() {
-  const [sel, setSel] = useState(contentCalendar[0]?.id || "");
+  // Abre no dia de HOJE (Brasília) por padrão — não no D1. Senão o Ruriá via
+  // os materiais de ontem e achava que os de hoje não tinham sido criados.
+  const hojeBRT = new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric", month: "2-digit", day: "2-digit",
+  }).format(new Date());
+  const hojeId = contentCalendar.find((d) => parseDia(d.day) === hojeBRT)?.id;
+  const [sel, setSel] = useState(hojeId || contentCalendar[0]?.id || "");
   const dia = contentCalendar.find((d) => d.id === sel) || contentCalendar[0];
   const filterDate = dia ? parseDia(dia.day) : "";
   const dayShort = dia?.day?.split(" · ")[0] || "—";
