@@ -36,7 +36,29 @@ function bonito(origem: string): string {
   return origem || "Sem origem";
 }
 
-export async function GET() {
+function autorizado(request: Request): boolean {
+  const url = new URL(request.url);
+  const bearer = (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "").trim();
+  const provided = [
+    url.searchParams.get("token"),
+    request.headers.get("x-automation-secret"),
+    bearer,
+  ]
+    .map((v) => (typeof v === "string" ? v.trim() : ""))
+    .filter(Boolean);
+  const validSecrets = [
+    process.env.AUTOMATION_API_SECRET,
+    process.env.MONITOR_TOKEN,
+    process.env.KIWIFY_WEBHOOK_SECRET,
+  ].filter(Boolean) as string[];
+  return validSecrets.length > 0 && provided.some((p) => validSecrets.includes(p));
+}
+
+export async function GET(request: Request) {
+  // SEGURANCA: Lista VIP e PII. Sem token valido = 401 (antes esta rota era publica).
+  if (!autorizado(request)) {
+    return NextResponse.json({ ok: false, error: "Token invalido." }, { status: 401 });
+  }
   const db = supa();
   if (!db) return NextResponse.json({ ok: false, reason: "supabase-off", total: 0, porOrigem: [], leads: [] });
 

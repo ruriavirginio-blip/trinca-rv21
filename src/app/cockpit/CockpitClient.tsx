@@ -1714,7 +1714,8 @@ function VipPanel() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const r = await fetch("/api/vip-leads");
+      const t = (typeof window !== "undefined" && window.localStorage.getItem(operacaoTokenStorageKey)) || "";
+      const r = await fetch("/api/vip-leads", t ? { headers: { authorization: `Bearer ${t}` } } : undefined);
       setData((await r.json()) as VipData);
     } catch {
       setData(null);
