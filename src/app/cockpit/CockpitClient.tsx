@@ -31,7 +31,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { JornadaPanel, AlertasPanel, AcessosPanel } from "./CockpitOperacao";
-import { DIA_PLANS, CTA_AUTOMACAO_STORY } from "./contentPlan";
+import { DIA_PLANS, FASES, CTA_AUTOMACAO_STORY } from "./contentPlan";
 
 type TabKey = "hoje" | "jornada" | "alertas" | "leads" | "vip" | "vendas" | "gastos" | "conteudo" | "comando" | "ia";
 type ContentStatus = "RASCUNHO" | "APROVADO" | "PUBLICADO" | "REJEITADO";
@@ -306,212 +306,72 @@ const contentCalendar: Array<{
   script: string[];
   roteiro?: string;
 }> = [
-  {
-    id: "d1",
-    day: "D1 · 23/06",
-    title: "A promessa simples do desafio",
-    time: "07:30",
-    format: "Reels + 3 Stories",
-    objective: "Abrir curiosidade e posicionar o TRINCA RV21 como método possível para recomeçar.",
-    channel: "Reels + Stories",
-    status: "RASCUNHO",
-    script: [
-      "Gancho: Voce nao precisa virar outra pessoa para voltar a cuidar do corpo.",
-      "Contexto: A maioria para porque tenta compensar tudo em uma semana.",
-      "Virada: O RV21 nasceu para organizar treino, dieta e constancia em passos pequenos.",
-      "CTA: Comenta SEGUNDA se voce quer entrar na lista de prioridade.",
-    ],
-    roteiro: `[00:00-00:03] CLOSE | "Se você já tentou emagrecer e desistiu... você não falhou."
-[00:03-00:06] CLOSE | "O método falhou por você." [PAUSA 1s]
-[00:07-00:18] MEIO CORPO | "A maioria das mulheres começa na segunda animada. Na quarta já sumiu. Não é fraqueza. É falta de direção."
-[00:18-00:27] CLOSE | "14 anos transformando mulheres que já tinham desistido de si mesmas. O Protocolo RV funciona porque é feito pra você — não pra todo mundo igual."
-[00:27-00:32] CLOSE + APONTA | "Começa segunda. Comenta SEGUNDA aqui embaixo que eu te mando o acesso antes de abrir pra todo mundo."
-TEXTO NA TELA: [00:00] "Você não falhou" | [00:03] "O método falhou" | [00:27] "Comenta SEGUNDA 👇"`,
-  },
-  {
-    id: "d2",
-    day: "D2 · 24/06",
-    title: "Quebra da culpa",
-    time: "12:15",
-    format: "Reels curto",
-    objective: "Tirar peso emocional e mostrar que o problema e falta de metodo, nao falta de vontade.",
-    channel: "Reels",
-    status: "RASCUNHO",
-    script: [
-      "Gancho: Voce ja comecou segunda e parou na quarta?",
-      "Contexto: Isso acontece quando o plano depende de motivacao.",
-      "Virada: Metodo bom diminui decisao, encaixa rotina e mostra o proximo passo.",
-      "CTA: Comenta MENTIRA se voce cansou de se culpar.",
-    ],
-    roteiro: `[00:00-00:03] CLOSE | "3 mentiras que te fizeram desistir de emagrecer."
-[00:03-00:10] 1 DEDO | "Você precisa de academia pra ter resultado. MENTIRA." [SOM DE ERRO]
-[00:10-00:18] 2 DEDOS | "Você tem que cortar tudo que gosta pra emagrecer. MENTIRA." [SOM DE ERRO]
-[00:18-00:27] 3 DEDOS | "Seu metabolismo parou com a idade e seu corpo não responde mais." [PAUSA DRAMÁTICA] "TAMBÉM É MENTIRA." [SOM DE ERRO]
-[00:27-00:38] MEIO CORPO | "O que funciona de verdade? Comenta MENTIRA aqui embaixo que eu te mando no direct."`,
-  },
-  {
-    id: "d3",
-    day: "D3 · 25/06",
-    title: "Prova social Jessica",
-    time: "19:00",
-    format: "Depoimento + bastidor",
-    objective: "Usar depoimento para mostrar transformacao real sem promessa exagerada.",
-    channel: "Depoimento + Stories",
-    status: "APROVADO",
-    script: [
-      "Gancho: A Jessica nao precisou de perfeicao. Ela precisou de direcao.",
-      "Contexto: Mostrar trecho curto do depoimento com legenda forte.",
-      "Virada: O que muda primeiro e a postura diante da rotina.",
-      "CTA: Responde JESSICA se voce quer receber os detalhes.",
-    ],
-    roteiro: `[00:00-00:05] CLOSE SUAVE | "A Jessica me disse assim: 'Ruriá, meu corpo desistiu de mim.'" [PAUSA]
-[00:05-00:15] MEIO CORPO | "38 anos. 2 filhos. Já tinha feito 4 dietas diferentes. Ela não acreditava mais em nada."
-[00:15-00:30] CÂMERA | "21 dias depois do Protocolo RV: menos 6 quilos. 8 centímetros de barriga. Mas o que ela me mandou que mais me tocou foi isso:" [PAUSA] "'Voltei a gostar de me olhar no espelho.'"
-[00:30-00:42] CLOSE | "O corpo dela não tinha desistido. Ela só estava no método errado." [PAUSA] "Comenta JESSICA se você quer ser a próxima história assim."
-TEXTO NA TELA: [00:15] "-6kg • -8cm de barriga" (verde) | [00:30] "'Voltei a gostar de mim'" (itálico)`,
-  },
-  {
-    id: "d4",
-    day: "D4 · 26/06",
-    title: "O que tem dentro",
-    time: "08:00",
-    format: "Carrossel + Stories",
-    objective: "Explicar oferta, materiais, acompanhamento e fluxo sem parecer aula longa.",
-    channel: "Carrossel + Stories",
-    status: "RASCUNHO",
-    script: [
-      "Slide 1: O que voce recebe no TRINCA RV21.",
-      "Slide 2: Treinos guiados para 21 dias.",
-      "Slide 3: Dietas por objetivo e materiais de apoio.",
-      "Slide 4: WhatsApp com etapas liberadas no momento certo.",
-      "CTA: Comenta PROTOCOLO para entrar no radar.",
-    ],
-  },
-  {
-    id: "d5",
-    day: "D5 · 27/06",
-    title: "Objeções comuns",
-    time: "12:30",
-    format: "Reels + perguntas",
-    objective: "Responder falta de tempo, medo de nao conseguir e preco.",
-    channel: "Reels + Caixa de perguntas",
-    status: "RASCUNHO",
-    script: [
-      "Gancho: Se voce acha que nao tem tempo, esse video e para voce.",
-      "Contexto: O plano nao pede rotina perfeita, pede execucao minima consistente.",
-      "Virada: 21 dias e um recorte curto para recuperar controle.",
-      "CTA: Manda EU QUERO se voce quer ver se encaixa na sua rotina.",
-    ],
-    roteiro: `[00:00-00:04] CLOSE | "O motivo científico pelo qual você não emagrece fazendo tudo certo."
-[00:04-00:18] MEIO CORPO | "Quando você corta calorias demais, seu corpo entra em modo de sobrevivência e para de queimar gordura. É fisiologia — não fraqueza. Seu corpo está te protegendo."
-[00:18-00:28] CLOSE FIRME | "O Protocolo RV não luta contra seu metabolismo. Trabalha a favor dele. Por isso funciona quando o resto falhou."
-[00:28-00:35] CLOSE | "Comenta CIÊNCIA que eu te explico como funciona na prática."`,
-  },
-  {
-    id: "d6",
-    day: "D6 · 28/06",
-    title: "Urgência honesta",
-    time: "18:30",
-    format: "Sequência de Stories",
-    objective: "Avisar proximidade da abertura com clareza e sem pressão falsa.",
-    channel: "Stories sequenciais",
-    status: "RASCUNHO",
-    script: [
-      "Story 1: Falta pouco para abrir o TRINCA RV21.",
-      "Story 2: Quem estiver na lista recebe o caminho primeiro.",
-      "Story 3: Recapitular para quem e: recomeço, rotina e constancia.",
-      "CTA: Responde ABRIU para receber quando liberar.",
-    ],
-  },
-  {
-    id: "d7",
-    day: "D7 · 29/06",
-    title: "Abertura oficial",
-    time: "07:00",
-    format: "Reels + Stories + Bio",
-    objective: "Direcionar tráfego para a landing e transformar intenção em compra.",
-    channel: "Reels + Stories + Bio",
-    status: "RASCUNHO",
-    script: [
-      "Gancho: O TRINCA RV21 abriu.",
-      "Contexto: 21 dias para voltar a treinar com direcao, dieta e acompanhamento.",
-      "Oferta: Acesso por R$37,89 com materiais e fluxo completo no WhatsApp.",
-      "CTA: Vai na bio ou comenta QUERO para receber o link.",
-    ],
-    roteiro: `[00:00-00:04] CLOSE SÉRIO | "Amanhã abre pra todo mundo. Mas eu preciso que você veja isso."
-[00:04-00:20] MEIO CORPO | "Durante essa semana, dezenas de mulheres já garantiram o acesso antecipado ao TRINCA RV21. Hoje à noite eu estou disparando o link de compra pra lista inteira."
-[00:20-00:32] CLOSE | "Quem está na lista paga preço de lançamento e entra primeiro. Quem não está... paga mais caro quando abrir amanhã."
-[00:32-00:40] CLOSE + APONTA | "Comenta ÚLTIMA CHANCE agora. Sua vaga ainda está aqui."
-TEXTO NA TELA: [00:04] "Lista VIP → acesso 24h antes" | [00:35] "ÚLTIMA CHANCE 👇" (pulsando)`,
-  },
-  {
-    id: "d8",
-    day: "D8 · 30/06",
-    title: "Carrossel — As 3 mulheres que NÃO devem entrar",
-    time: "08:10",
-    format: "Carrossel (6 slides) + Stories",
-    objective: "Qualificação reversa: filtrar lead frio e fazer a mulher certa se identificar e desejar entrar (90-100% de fit).",
-    channel: "Feed (carrossel) + Stories",
-    status: "RASCUNHO",
-    script: [
-      "Slide 1 (capa): 'O TRINCA RV21 NÃO é pra você se...' (fundo gold, tipografia forte)",
-      "Slide 2: '...você quer resultado sem mudar NADA na rotina.'",
-      "Slide 3: '...você desiste no primeiro dia que sai do plano.'",
-      "Slide 4: '...você acha que 21 dias é pouco. (Spoiler: muda tudo.)'",
-      "Slide 5: 'Mas se você é mulher real, ocupada, e SÓ precisa de direção — é exatamente pra você.'",
-      "Slide 6 (CTA): 'Comenta EU SOU que eu te coloco na lista VIP.'",
-      "Palavras-chave (algoritmo): emagrecer depois dos 30, protocolo feminino, rotina real, recomeçar",
-      "Hashtags: #protocolorv #emagrecimentofeminino #desafio21dias #mulheresreais #vidasaudavel",
-    ],
-    roteiro: `[CARROSSEL — copy de cada slide acima. Direção visual: tons gold/preto da bio, fotos reais, tipografia editorial. Legenda do post abaixo:]
-LEGENDA: "A maioria das mulheres NÃO deveria entrar no TRINCA RV21. 👇 Eu explico sem medo no carrossel. Se você se identificar com o último slide, comenta EU SOU — eu te mando o acesso da lista VIP antes de abrir pra todo mundo. Vagas da primeira turma são limitadas."`,
-  },
-  {
-    id: "d9",
-    day: "D9 · 01/07",
-    title: "Reels — Prova social acumulada (+5.000)",
-    time: "19:10",
-    format: "Reels (depoimentos em sequência)",
-    objective: "Empilhar prova social para quebrar a objeção 'será que funciona pra mim?' na reta do lançamento.",
-    channel: "Reels + Stories",
-    status: "RASCUNHO",
-    script: [
-      "Gancho: '5.000 mulheres. A mesma frase.'",
-      "Corpo: cortes rápidos de prints/depoimentos com a frase 'achei que era tarde demais'.",
-      "Virada: 'Não era tarde. Era método errado.'",
-      "CTA: 'Comenta PRÓXIMA pra ser a história do mês que vem.'",
-      "Melhor horário 19h (pico de mulher 25-44 no feed à noite). Palavras-chave: antes e depois, transformação real, autoestima",
-    ],
-    roteiro: `[00:00-00:03] CLOSE | "5.000 mulheres treinaram comigo em 14 anos. E quase todas me disseram a MESMA frase no começo."
-[00:03-00:12] CORTES RÁPIDOS (prints/vídeos) | "'Ruriá, acho que é tarde demais pra mim.'" [repetir a frase em sobreposição]
-[00:12-00:22] MEIO CORPO | "Não era tarde. Nunca foi. Era método feito pra todo mundo igual — e você não é todo mundo."
-[00:22-00:30] CLOSE | "Semana que vem abre a primeira turma do TRINCA RV21. Comenta PRÓXIMA que eu te mando o acesso."
-TEXTO NA TELA: [00:03] "+5.000 mulheres" | [00:14] "Não era tarde" | [00:25] "PRÓXIMA 👇"`,
-  },
-  {
-    id: "d13",
-    day: "D10 · 02/07 — 🚀 LANÇAMENTO",
-    title: "ABERTURA OFICIAL — Reels + Stories + Bio + Link",
-    time: "07:00",
-    format: "Reels + Stories (dia todo) + Bio + Link",
-    objective: "Converter toda a audiência aquecida em VENDA. Tráfego máximo pra landing. Foco total em vendas.",
-    channel: "Reels + Stories + Bio + DM",
-    status: "RASCUNHO",
-    script: [
-      "07h Reels de abertura: 'ABRIU. A primeira turma do TRINCA RV21 está no ar.'",
-      "07h05 Stories: link na bio + caixinha + senso de urgência (vagas da turma).",
-      "Ao longo do dia: 3-4 ondas de Stories com depoimento + contador de vagas + CTA.",
-      "DM automática pra quem comentou QUERO/EU SOU nos dias anteriores (lista quente).",
-      "20h Stories de fechamento: 'Últimas vagas da primeira turma.'",
-      "CTA principal: 'Link na bio. Sua vaga te espera.'",
-      "Palavras-chave: vagas limitadas, primeira turma, abriu, última chance",
-    ],
-    roteiro: `[00:00-00:04] CLOSE ENERGIA | "ABRIU. A primeira turma do TRINCA RV21 está oficialmente no ar."
-[00:04-00:14] MEIO CORPO | "21 dias de treino, dieta e acompanhamento no seu WhatsApp pra você voltar a se reconhecer no espelho. Feito pra mulher real."
-[00:14-00:24] CLOSE | "As vagas da primeira turma são limitadas — eu quero acompanhar de perto. Quem entrar hoje entra no preço de lançamento: R$37,89."
-[00:24-00:32] CLOSE + APONTA | "Link na bio AGORA. Sua vaga te espera. Bora?"
-TEXTO NA TELA: [00:00] "ABRIU 🚀" | [00:16] "vagas limitadas" | [00:26] "Link na bio 👇" (pulsando gold)`,
-  },
+  { id: "d1", day: "D1 · 26/06", title: "Você esquece de você", time: "07:30", format: "Reel + Stories", objective: "Pattern interrupt com a vida real dela + puxar pro QUIZ. Captar VIP.", channel: "Reels + Stories", status: "RASCUNHO",
+    script: ["Gancho (cena real): você lembra do remédio do filho, da reunião, do aniversário de todo mundo — menos de você.", "Virada (pain-agitate): não é falta de vontade; sempre te deram o plano de outra pessoa.", "Solução/quiz: teste de 40s que monta um protocolo de 21 dias pro SEU corpo/tempo.", "CTA: comenta QUERO que eu mando o teste no direct."],
+    roteiro: `[00:00-00:04] CLOSE | "Você lembra do remédio do seu filho, da reunião do trabalho, do aniversário de todo mundo... mas esquece de VOCÊ, né?"
+[00:04-00:12] MEIO CORPO | "E ainda se cobra por isso. Mas não é falta de vontade. É que sempre te deram o plano de outra pessoa — nunca um que coubesse na SUA vida."
+[00:12-00:22] CLOSE | "Então eu fiz diferente: montei um teste de 40 segundos que cria um protocolo de 21 dias pro seu corpo, seu tempo, sua rotina. Sem dieta de sofrimento."
+[00:22-00:30] CLOSE + APONTA | "Comenta QUERO que eu te mando o teste no direct. Dessa vez é diferente — bora cuidar de você?"
+TEXTO NA TELA: [00:00] "você esquece de VOCÊ" | [00:06] "te deram o plano errado" | [00:14] "faça o teste de 40s" | [00:24] "Comenta QUERO"` },
+  { id: "d2", day: "D2 · 27/06", title: "A culpa não é sua", time: "12:15", format: "Reel + Stories", objective: "Tirar o peso da culpa. Gerar confiança.", channel: "Reels", status: "RASCUNHO",
+    script: ["Gancho: começou na segunda e parou na quarta?", "Virada: plano que depende de motivação quebra; método diminui decisão.", "CTA: comenta QUERO se cansou de se culpar."],
+    roteiro: `[00:00-00:04] CLOSE | "Você começa toda animada na segunda... e na quarta já largou. Adivinha de quem NÃO é a culpa?"
+[00:04-00:15] MEIO CORPO | "Sua. Plano que depende só de motivação quebra. Método bom diminui decisão e encaixa na sua rotina."
+[00:15-00:24] CLOSE | "Não é sobre força de vontade. É sobre direção. E isso eu te dou."
+[00:24-00:30] APONTA | "Comenta QUERO que eu te explico no Direct."
+TEXTO NA TELA: "A culpa não é sua" | "É falta de método" | "Comenta QUERO"` },
+  { id: "d3", day: "D3 · 28/06", title: "15 minutos cabem no seu dia", time: "07:30", format: "Reel + Stories", objective: "Quebrar a objeção de tempo.", channel: "Reels", status: "RASCUNHO",
+    script: ["Gancho: 'não tenho tempo' é a desculpa que mais ouço.", "Virada: você não tem 1h, mas tem 15 min.", "CTA: comenta QUERO."],
+    roteiro: `[00:00-00:04] CLOSE | "A desculpa que eu mais ouço em 14 anos: 'Ruriá, não tenho tempo'."
+[00:04-00:16] MEIO CORPO | "E você tem razão. Não tem 1h de academia. Mas 15 minutos por dia você tem. E é só disso que eu preciso."
+[00:16-00:24] CLOSE | "21 dias, 15 min por dia, guiado. Cabe até no dia mais corrido."
+[00:24-00:30] APONTA | "Comenta QUERO."
+TEXTO NA TELA: "15 min/dia" | "Cabe no seu dia" | "Comenta QUERO"` },
+  { id: "d4", day: "D4 · 29/06", title: "Energia pra você", time: "12:15", format: "Reel + Stories", objective: "Atacar a dor de energia (raiz).", channel: "Reels", status: "RASCUNHO",
+    script: ["Gancho: acorda já cansada? não é preguiça, é sobrecarga.", "Virada: micro-hábitos que devolvem energia.", "CTA: comenta QUERO."],
+    roteiro: `[00:00-00:04] CLOSE | "Você acorda já cansada e ainda se cobra por isso?"
+[00:04-00:15] MEIO CORPO | "A raiz não é preguiça. É sobrecarga. Você gasta sua energia toda nos outros e não sobra nada pra você."
+[00:15-00:24] CLOSE | "O TRINCA começa devolvendo a SUA energia. Pra você, não só pros outros."
+[00:24-00:30] APONTA | "Comenta QUERO."
+TEXTO NA TELA: "Não é preguiça" | "É sobrecarga" | "Comenta QUERO"` },
+  { id: "d5", day: "D5 · 30/06", title: "A turma está se formando", time: "07:30", format: "Reel + Stories", objective: "Pertencimento + prova social.", channel: "Reels + Stories", status: "RASCUNHO",
+    script: ["Gancho: tá chegando muita mulher boa.", "Virada: bora se conhecer.", "CTA: comenta QUERO."],
+    roteiro: `[00:00-00:05] CLOSE | "Olha quanta mulher boa chegou essa semana."
+[00:05-00:16] MEIO CORPO | "E todas com a mesma treta: tempo, energia, culpa. Você não tá sozinha nisso."
+[00:16-00:24] CLOSE | "A 1ª turma tá se formando. Bora junto?"
+[00:24-00:30] APONTA | "Comenta QUERO."` },
+  { id: "d6", day: "D6 · 01/07", title: "Constância no fim de semana", time: "10:00", format: "Stories + Recap", objective: "Reforço leve + prova.", channel: "Stories", status: "RASCUNHO",
+    script: ["Fim de semana é treino de constância, não desculpa.", "Prova social.", "CTA: responde SEGUNDA."] },
+  { id: "d7", day: "D7 · 02/07", title: "Balanço da Semana 1", time: "10:00", format: "Stories + Card", objective: "Fechar Fase 1 + teaser Fase 2.", channel: "Stories", status: "RASCUNHO",
+    script: ["Retrospecto leve.", "Teaser da próxima fase.", "CTA: responde SEGUNDA."] },
+  { id: "d8", day: "D8 · 03/07", title: "Voltar a ser você", time: "12:15", format: "Reel + Stories", objective: "Virada de identidade.", channel: "Reels", status: "RASCUNHO",
+    script: ["Não é sobre corpo perfeito, é sobre se reconhecer.", "Identidade > vaidade.", "CTA: comenta QUERO."] },
+  { id: "d9", day: "D9 · 04/07", title: "Mulheres iguais a você", time: "12:15", format: "Reel + Stories", objective: "Prova social pesada.", channel: "Reels", status: "RASCUNHO",
+    script: ["Gente real, virada real.", "Espelho, não inveja.", "CTA: manda 🔥."] },
+  { id: "d10", day: "D10 · 05/07", title: "Uma vitória hoje", time: "10:00", format: "Reel + Stories", objective: "Micro-vitória + reciprocidade.", channel: "Reels", status: "RASCUNHO",
+    script: ["Dica que funciona já hoje.", "Faça e me conte.", "CTA: responde no Direct."] },
+  { id: "d11", day: "D11 · 06/07", title: "O que tem dentro", time: "12:15", format: "Reel + Stories", objective: "Ancoragem de valor (sem preço).", channel: "Reels", status: "RASCUNHO",
+    script: ["Não é 'mais um PDF'.", "Treino + dieta + acompanhamento juntos.", "CTA: responde SEGUNDA."] },
+  { id: "d12", day: "D12 · 07/07", title: "Funciona pra mim?", time: "12:15", format: "Reel + Stories", objective: "Quebrar objeção racional.", channel: "Reels", status: "RASCUNHO",
+    script: ["A pergunta que mais aparece.", "Caso parecido respondido.", "CTA: manda 🔥."] },
+  { id: "d13", day: "D13 · 08/07", title: "Virou comunidade", time: "12:15", format: "Reel + Stories", objective: "Comunidade + FOMO saudável.", channel: "Reels", status: "RASCUNHO",
+    script: ["Olha o tamanho da turma.", "Não fica de fora.", "CTA: responde SEGUNDA."] },
+  { id: "d14", day: "D14 · 09/07", title: "Balanço + gates", time: "10:00", format: "Stories + Card", objective: "Fechar Fase 2 + checar 3 gates.", channel: "Stories", status: "RASCUNHO",
+    script: ["Retrospecto.", "Teaser do pré-lançamento.", "CTA: responde SEGUNDA."] },
+  { id: "d15", day: "D15 · 10/07", title: "Tá chegando", time: "12:15", format: "Reel + Stories", objective: "Ligar antecipação.", channel: "Reels", status: "RASCUNHO",
+    script: ["A 1ª turma vai abrir.", "VIP sabe primeiro e paga diferente.", "CTA: responde SEGUNDA."] },
+  { id: "d16", day: "D16 · 11/07", title: "Onde você vai estar em 21 dias", time: "12:15", format: "Reel + Stories", objective: "Aversão à perda.", channel: "Reels", status: "RASCUNHO",
+    script: ["O tempo passa do mesmo jeito.", "Igual ou um passo na frente?", "CTA: VIP responde SEGUNDA."] },
+  { id: "d17", day: "D17 · 12/07", title: "Por que comigo", time: "12:15", format: "Reel + Stories", objective: "Autoridade + prova.", channel: "Reels", status: "RASCUNHO",
+    script: ["14 anos, método.", "Não é sorte.", "CTA: VIP responde SEGUNDA."] },
+  { id: "d18", day: "D18 · 13/07", title: "Turma limitada de verdade", time: "12:15", format: "Reel + Stories", objective: "Escassez honesta.", channel: "Reels", status: "RASCUNHO",
+    script: ["Acompanho de perto, por isso é limitada.", "Não é marketing.", "CTA: VIP entra primeiro."] },
+  { id: "d19", day: "D19 · 14/07", title: "Véspera — VIP primeiro", time: "12:15", format: "Reel + Stories", objective: "Preparar conversão.", channel: "Reels", status: "RASCUNHO",
+    script: ["A turma abre em breve.", "VIP recebe o link antes.", "CTA: última chamada da VIP."] },
+  { id: "d20", day: "D20 · 15/07", title: "Abriu pra VIP", time: "08:00", format: "Stories + Conversão", objective: "Abertura VIP (se gates verdes).", channel: "Stories", status: "RASCUNHO",
+    script: ["Abriu pra VIP.", "Prova de quem entrou.", "CTA: VIP, confere o Direct."] },
+  { id: "d21", day: "D21 · 16/07", title: "Abertura geral + última chamada", time: "08:00", format: "Stories + Conversão", objective: "Conversão full + escassez real.", channel: "Stories", status: "RASCUNHO",
+    script: ["Abriu pra geral.", "Vagas limitadas de verdade.", "CTA: última chamada, link na bio."] },
 ];
 
 function currency(value: number) {
@@ -1830,17 +1690,10 @@ function ContentByDayPanel({ sel: selProp, onSel }: { sel?: string; onSel?: (id:
   const setSel = onSel ?? setSelInternal;
   const [cbdMsg, setCbdMsg] = useState("");
   const dia = contentCalendar.find((d) => d.id === sel) || contentCalendar[0];
-  const idx = Math.max(0, contentCalendar.findIndex((d) => d.id === sel));
-  const fase =
-    idx <= 2
-      ? { n: "Oportunidade", c: "#d4a23c" }
-      : idx <= 5
-        ? { n: "Transformação", c: "#5fd08a" }
-        : idx <= 8
-          ? { n: "Propriedade", c: "#6fa8ff" }
-          : { n: "Lançamento", c: "#f0c969" };
-  const posts = (dia?.format || "").split(/[+,]/).map((s) => s.trim()).filter(Boolean);
   const plan = dia ? DIA_PLANS[dia.id] : undefined;
+  const faseInfo = plan ? FASES[plan.fase] : null;
+  const fase = faseInfo ? { n: faseInfo.nome, c: faseInfo.cor } : { n: "Aquecimento", c: "#d4a23c" };
+  const posts = (dia?.format || "").split(/[+,]/).map((s) => s.trim()).filter(Boolean);
 
   const acionarCriacao = async () => {
     if (!dia) return;
@@ -1901,6 +1754,8 @@ function ContentByDayPanel({ sel: selProp, onSel }: { sel?: string; onSel?: (id:
             <span className="cbd-time">🕒 {dia.time}</span>
           </div>
           <h3>{dia.title}</h3>
+          {faseInfo ? <p className="cbd-fasewhy"><b>{faseInfo.nome} ({faseInfo.dias}):</b> {faseInfo.significado}</p> : null}
+          {plan?.significado ? <p className="cbd-signif"><b>📌 O que ESTE dia significa:</b> {plan.significado}</p> : null}
           <p className="cbd-obj">{dia.objective}</p>
           <div className="cbd-posts">
             <strong>Posts deste dia:</strong>
@@ -1961,6 +1816,10 @@ function ContentByDayPanel({ sel: selProp, onSel }: { sel?: string; onSel?: (id:
         .cbd-time { font-size: 12px; color: #a3a09a; }
         .cbd-detail h3 { font-size: 17px; font-weight: 800; color: #f5f3ef; margin: 0 0 4px; }
         .cbd-obj { font-size: 13px; color: #a3a09a; margin-bottom: 12px; }
+        .cbd-fasewhy { font-size: 12px; color: #cfccc6; background: rgba(212,162,60,.06); border-left: 2px solid #d4a23c; padding: 7px 10px; border-radius: 6px; margin-bottom: 8px; line-height: 1.45; }
+        .cbd-fasewhy b { color: #f0c969; }
+        .cbd-signif { font-size: 13px; color: #e8e6e1; background: #0f0f12; border: 1px solid #26262c; padding: 9px 11px; border-radius: 8px; margin-bottom: 12px; line-height: 1.5; }
+        .cbd-signif b { color: #5fd08a; }
         .cbd-posts { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; margin-bottom: 12px; }
         .cbd-posts strong { font-size: 12px; color: #d8d5cf; margin-right: 4px; }
         .cbd-post { background: #1d1d22; border: 1px solid #26262c; color: #f0c969; font-size: 12px; font-weight: 600; padding: 5px 11px; border-radius: 100px; }
