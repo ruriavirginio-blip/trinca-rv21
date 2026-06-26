@@ -18,7 +18,7 @@ jobs:
         run: |
           echo "Disparando publish-due às $(date -u) UTC"
           code=$(curl -sS -o /tmp/resp.json -w "%{http_code}" -X POST \
-            -H "x-automation-secret: ${{ secrets.AUTOMATION_API_SECRET }}" \
+            -H "x-automation-secret: ${{ secrets.MONITOR_TOKEN }}" \
             "https://protocolorv.com.br/api/automation/publish-due")
           echo "HTTP $code"; cat /tmp/resp.json || true; echo ""
           if [ "$code" != "200" ]; then echo "::warning::publish-due retornou HTTP $code"; fi
