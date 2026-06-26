@@ -67,6 +67,16 @@ export async function POST(request: NextRequest) {
 
   const results: Array<{ id: string; ok: boolean; reason?: string }> = [];
   for (const c of aPublicar) {
+    // Claim atômico contra disparo duplo (cron externo + GitHub Actions ao mesmo tempo):
+    // só publica quem conseguir mudar 'agendado'/'aprovado' -> 'publicando'. Evita post duplicado.
+    const { data: claimed } = await db
+      .from("content_factory")
+      .update({ status: "publicando" })
+      .eq("id", c.id)
+      .in("status", ["agendado", "aprovado"])
+      .select("id");
+    if (!claimed || claimed.length === 0) continue; // outro disparo já pegou este item
+
     const { caption, slides } = parseLegenda(c.legenda);
     const asset = c.tipo === "carrossel" && slides.length > 1 ? slides.join(",") : c.asset_url;
     const res = await publishByType(c.tipo, asset, caption);

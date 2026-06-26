@@ -1,27 +1,24 @@
 name: Publicar posts agendados (Instagram)
 
-# Dispara a rota /api/cron/publish-due na nuvem a cada ~10 min.
-# Publica automaticamente os posts da fila scheduled_posts cujo horário já chegou.
-# 100% independente do Mac do Ruriá.
+# Disparador na NUVEM do motor oficial de auto-postagem (/api/automation/publish-due).
+# Roda a cada ~10 min e publica os itens da content_factory cujo horário (Brasília) já chegou.
+# 100% independente do Mac do Ruriá. Backup/garantia além do cron externo.
+# A rota é idempotente (claim atômico), então rodar junto com outro cron não duplica post.
 
 on:
   schedule:
     - cron: "*/10 * * * *"   # a cada 10 minutos (UTC)
-  workflow_dispatch:          # permite disparo manual pelo painel do GitHub
+  workflow_dispatch:          # disparo manual pelo painel do GitHub
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - name: Chamar endpoint de publicação
+      - name: Disparar motor de publicação
         run: |
-          echo "Disparando publicador às $(date -u) UTC"
-          code=$(curl -sS -o /tmp/resp.json -w "%{http_code}" \
-            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            "https://protocolorv.com.br/api/cron/publish-due")
-          echo "HTTP $code"
-          cat /tmp/resp.json || true
-          echo ""
-          if [ "$code" != "200" ]; then
-            echo "::warning::Publicador retornou HTTP $code"
-          fi
+          echo "Disparando publish-due às $(date -u) UTC"
+          code=$(curl -sS -o /tmp/resp.json -w "%{http_code}" -X POST \
+            -H "x-automation-secret: ${{ secrets.AUTOMATION_API_SECRET }}" \
+            "https://protocolorv.com.br/api/automation/publish-due")
+          echo "HTTP $code"; cat /tmp/resp.json || true; echo ""
+          if [ "$code" != "200" ]; then echo "::warning::publish-due retornou HTTP $code"; fi
