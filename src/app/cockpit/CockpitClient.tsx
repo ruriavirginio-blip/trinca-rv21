@@ -306,14 +306,13 @@ const contentCalendar: Array<{
   script: string[];
   roteiro?: string;
 }> = [
-  { id: "d1", day: "D1 · 26/06", title: "Você não falhou", time: "07:30", format: "Reel + Stories", objective: "Plantar a ideia e abrir curiosidade. Captar VIP.", channel: "Reels + Stories", status: "RASCUNHO",
-    script: ["Gancho: Se você já tentou e desistiu, você não falhou — o método falhou com você.", "Virada: o TRINCA organiza treino, dieta e constância em passos pequenos.", "CTA: comenta QUERO que eu te chamo no Direct."],
-    roteiro: `[00:00-00:03] CLOSE | "Se você já tentou emagrecer e desistiu... você não falhou."
-[00:03-00:06] CLOSE | "O método é que falhou com você." [PAUSA]
-[00:07-00:18] MEIO CORPO | "A maioria começa segunda animada e na quarta sumiu. Não é fraqueza. É falta de direção."
-[00:18-00:27] CLOSE | "14 anos transformando mulher que já tinha desistido de si mesma. O Protocolo RV funciona porque é feito pra você."
-[00:27-00:32] CLOSE + APONTA | "Comenta QUERO aqui embaixo que eu te chamo no Direct antes de abrir pra geral."
-TEXTO NA TELA: [00:00] "Você não falhou" | [00:03] "O método falhou" | [00:27] "Comenta QUERO"` },
+  { id: "d1", day: "D1 · 26/06", title: "Você esquece de você", time: "07:30", format: "Reel + Stories", objective: "Pattern interrupt com a vida real dela + puxar pro QUIZ. Captar VIP.", channel: "Reels + Stories", status: "RASCUNHO",
+    script: ["Gancho (cena real): você lembra do remédio do filho, da reunião, do aniversário de todo mundo — menos de você.", "Virada (pain-agitate): não é falta de vontade; sempre te deram o plano de outra pessoa.", "Solução/quiz: teste de 40s que monta um protocolo de 21 dias pro SEU corpo/tempo.", "CTA: comenta QUERO que eu mando o teste no direct."],
+    roteiro: `[00:00-00:04] CLOSE | "Você lembra do remédio do seu filho, da reunião do trabalho, do aniversário de todo mundo... mas esquece de VOCÊ, né?"
+[00:04-00:12] MEIO CORPO | "E ainda se cobra por isso. Mas não é falta de vontade. É que sempre te deram o plano de outra pessoa — nunca um que coubesse na SUA vida."
+[00:12-00:22] CLOSE | "Então eu fiz diferente: montei um teste de 40 segundos que cria um protocolo de 21 dias pro seu corpo, seu tempo, sua rotina. Sem dieta de sofrimento."
+[00:22-00:30] CLOSE + APONTA | "Comenta QUERO que eu te mando o teste no direct. Dessa vez é diferente — bora cuidar de você?"
+TEXTO NA TELA: [00:00] "você esquece de VOCÊ" | [00:06] "te deram o plano errado" | [00:14] "faça o teste de 40s" | [00:24] "Comenta QUERO"` },
   { id: "d2", day: "D2 · 27/06", title: "A culpa não é sua", time: "12:15", format: "Reel + Stories", objective: "Tirar o peso da culpa. Gerar confiança.", channel: "Reels", status: "RASCUNHO",
     script: ["Gancho: começou na segunda e parou na quarta?", "Virada: plano que depende de motivação quebra; método diminui decisão.", "CTA: comenta QUERO se cansou de se culpar."],
     roteiro: `[00:00-00:04] CLOSE | "Você começa toda animada na segunda... e na quarta já largou. Adivinha de quem NÃO é a culpa?"
