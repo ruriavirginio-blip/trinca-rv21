@@ -33,7 +33,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { JornadaPanel, AlertasPanel, AcessosPanel } from "./CockpitOperacao";
 import { DIA_PLANS, FASES, CTA_AUTOMACAO_STORY } from "./contentPlan";
 
-type TabKey = "hoje" | "jornada" | "alertas" | "leads" | "vip" | "vendas" | "gastos" | "conteudo" | "comando" | "ia";
+type TabKey = "hoje" | "jornada" | "alertas" | "leads" | "vip" | "vendas" | "gastos" | "conteudo" | "agentes" | "comando" | "ia";
 type ContentStatus = "RASCUNHO" | "APROVADO" | "PUBLICADO" | "REJEITADO";
 
 type Lead = {
@@ -107,6 +107,7 @@ const tabs: Array<{ key: TabKey; label: string; icon: React.ReactNode }> = [
   { key: "vendas", label: "Vendas", icon: <CircleDollarSign size={20} /> },
   { key: "gastos", label: "Gastos", icon: <WalletCards size={20} /> },
   { key: "conteudo", label: "Conteúdo", icon: <CalendarDays size={20} /> },
+  { key: "agentes", label: "Agentes", icon: <Bot size={20} /> },
   { key: "comando", label: "Comando", icon: <LayoutGrid size={20} /> },
   { key: "ia", label: "IA", icon: <Bot size={20} /> },
 ];
@@ -944,6 +945,16 @@ export default function CockpitClient({
           </DashboardSection>
         ) : null}
 
+        {activeTab === "agentes" ? (
+          <DashboardSection
+            title="Agentes Autônomos"
+            description="Os cérebros trabalhando 24/7. Cada agente reporta aqui seu último estado e decisão (dado real)."
+            loading={false}
+          >
+            <AgentesPanel />
+          </DashboardSection>
+        ) : null}
+
         {activeTab === "comando" ? (
           <DashboardSection
             title="Comando Geral"
@@ -1656,6 +1667,106 @@ function VipPanel() {
           </table>
         )}
       </div>
+    </div>
+  );
+}
+
+// Painel Agentes: estado ao vivo dos agentes autônomos (lê /api/agents-status).
+type AgenteRow = {
+  agent: string; nome?: string; tipo?: string; decision?: string; severity?: string;
+  status?: Record<string, unknown>; fonte?: string; updated_at?: string; min_atras?: number | null; vivo?: boolean;
+};
+function AgentesPanel() {
+  const [rows, setRows] = useState<AgenteRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState("");
+
+  async function load() {
+    setLoading(true);
+    setErr("");
+    try {
+      const t = (typeof window !== "undefined" && window.localStorage.getItem(operacaoTokenStorageKey)) || "";
+      const r = await fetch("/api/agents-status", t ? { headers: { authorization: `Bearer ${t}` } } : undefined);
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok || d.error) setErr(d.error || "Não consegui carregar os agentes.");
+      else setRows(Array.isArray(d.agentes) ? d.agentes : []);
+    } catch {
+      setErr("Sem conexão.");
+    }
+    setLoading(false);
+  }
+  useEffect(() => {
+    void load();
+    const id = window.setInterval(() => void load(), 60000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  function tempo(min: number | null | undefined) {
+    if (min === null || min === undefined) return "—";
+    if (min < 1) return "agora";
+    if (min < 60) return `há ${min} min`;
+    const h = Math.round(min / 60);
+    return `há ${h}h`;
+  }
+  const sevColor = (s?: string) => (s === "warning" ? "#f0c969" : s === "error" || s === "critical" ? "#f07a7a" : "#5fd08a");
+
+  return (
+    <div className="agp">
+      <div className="agp-head">
+        <span className="agp-sub">{rows.filter((a) => a.vivo).length}/{rows.length} ativos · atualiza sozinho a cada 1 min</span>
+        <button className="agp-refresh" onClick={() => void load()} disabled={loading}>{loading ? "..." : "↻ Atualizar"}</button>
+      </div>
+      {err ? <p className="agp-err">{err}</p> : null}
+      {!rows.length && !loading && !err ? <p className="agp-empty">Nenhum agente reportou ainda. (Os agentes gravam estado a cada ciclo.)</p> : null}
+      <div className="agp-grid">
+        {rows.map((a) => (
+          <div key={a.agent} className="agp-card">
+            <div className="agp-top">
+              <span className="agp-dot" style={{ background: a.vivo ? "#5fd08a" : "#6f6c66" }} />
+              <b className="agp-nome">{a.nome || a.agent}</b>
+              <span className="agp-time">{tempo(a.min_atras)}</span>
+            </div>
+            <div className="agp-dec" style={{ color: sevColor(a.severity), borderColor: sevColor(a.severity) }}>{a.decision || "—"}</div>
+            {a.status && (a.status.causa || a.status.solucao) ? (
+              <div className="agp-cs">
+                {a.status.causa ? <p><b>Causa:</b> {String(a.status.causa)}</p> : null}
+                {a.status.solucao ? <p><b>Solução:</b> {String(a.status.solucao)}</p> : null}
+              </div>
+            ) : null}
+            {a.status ? (
+              <div className="agp-kv">
+                {Object.entries(a.status)
+                  .filter(([k]) => !["causa", "solucao", "pendencias_ruria"].includes(k))
+                  .slice(0, 6)
+                  .map(([k, v]) => (
+                    <span key={k} className="agp-chip">{k}: <b>{typeof v === "object" ? JSON.stringify(v) : String(v)}</b></span>
+                  ))}
+              </div>
+            ) : null}
+            <div className="agp-foot">fonte: {a.fonte || "—"}</div>
+          </div>
+        ))}
+      </div>
+      <style jsx>{`
+        .agp-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+        .agp-sub { font-size: 12.5px; color: #a3a09a; }
+        .agp-refresh { background: #1a1a1f; border: 1px solid #2a2a31; color: #e8e6e1; font-size: 12px; padding: 6px 12px; border-radius: 8px; cursor: pointer; }
+        .agp-err { color: #f0a3a3; font-size: 13px; }
+        .agp-empty { color: #6f6c66; font-size: 13px; }
+        .agp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+        .agp-card { background: #121215; border: 1px solid #26262c; border-radius: 14px; padding: 14px; }
+        .agp-top { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+        .agp-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+        .agp-nome { font-size: 14px; color: #f5f3ef; flex: 1; }
+        .agp-time { font-size: 11.5px; color: #6f6c66; }
+        .agp-dec { display: inline-block; font-size: 12px; font-weight: 700; padding: 3px 10px; border: 1px solid; border-radius: 100px; margin-bottom: 10px; }
+        .agp-cs { font-size: 12.5px; color: #cfccc6; line-height: 1.45; margin-bottom: 10px; }
+        .agp-cs b { color: #f0c969; }
+        .agp-kv { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+        .agp-chip { font-size: 11px; color: #a3a09a; background: #0f0f12; border: 1px solid #26262c; padding: 3px 8px; border-radius: 6px; }
+        .agp-chip b { color: #e8e6e1; }
+        .agp-foot { font-size: 11px; color: #6f6c66; }
+      `}</style>
     </div>
   );
 }
