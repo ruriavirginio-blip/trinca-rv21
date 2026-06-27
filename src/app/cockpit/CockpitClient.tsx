@@ -162,7 +162,7 @@ const DEPARTMENTS: Department[] = [
   {
     icon: <Zap size={18} />, name: "CONVERSION ENGINE", agent: "Depto 3 · Funil & automação", status: "run",
     domain: "Transformar clique/interação em lead VIP registrado. Roda 24/7.",
-    report: "LIVE: /vip captando (Pixel+CAPI evento Lead, atribuição por ?o=), 3 automações ManyChat (comentário→DM, story→DM, novo-seguidor) e WhatsApp+Claude dinâmico. Verdade ManyChat: enquete NÃO dispara DM; keywords QUERO/EU QUERO/BORA/CUIDA/SEGUNDA. Agulha: % clique→lead e tamanho da lista subindo.",
+    report: "LIVE: /vip captando (Pixel+CAPI evento Lead, atribuição por ?o=), 3 automações ManyChat (comentário→DM, story→DM, novo-seguidor) e WhatsApp+Claude dinâmico. Verdade ManyChat: enquete NÃO dispara DM; keywords QUERO/EU QUERO/BORA/CUIDA. Agulha: % clique→lead e tamanho da lista subindo.",
     skills: ["conversion-funnel-rv", "objection-handling-rv", "trinca-page-cro"],
     conn: ["Supabase", "ManyChat API", "Twilio", "Meta Pixel/CAPI"],
     check: [
@@ -315,12 +315,12 @@ const contentCalendar: Array<{
 [00:22-00:30] CLOSE + APONTA | "Comenta QUERO que eu te mando o teste no direct. Dessa vez é diferente — bora cuidar de você?"
 TEXTO NA TELA: [00:00] "você esquece de VOCÊ" | [00:06] "te deram o plano errado" | [00:14] "faça o teste de 40s" | [00:24] "Comenta QUERO"` },
   { id: "d2", day: "D2 · 27/06", title: "A culpa não é sua", time: "12:15", format: "Reel + Stories", objective: "Tirar o peso da culpa. Gerar confiança.", channel: "Reels", status: "RASCUNHO",
-    script: ["Gancho: começou na segunda e parou na quarta?", "Virada: plano que depende de motivação quebra; método diminui decisão.", "CTA: comenta QUERO se cansou de se culpar."],
+    script: ["Gancho: começou na segunda e parou na quarta?", "Virada: plano que depende de motivação quebra; protocolo diminui decisão.", "CTA: comenta QUERO se cansou de se culpar."],
     roteiro: `[00:00-00:04] CLOSE | "Você começa toda animada na segunda... e na quarta já largou. Adivinha de quem NÃO é a culpa?"
-[00:04-00:15] MEIO CORPO | "Sua. Plano que depende só de motivação quebra. Método bom diminui decisão e encaixa na sua rotina."
+[00:04-00:15] MEIO CORPO | "Sua. Plano que depende só de motivação quebra. Protocolo bom diminui decisão e encaixa na sua rotina."
 [00:15-00:24] CLOSE | "Não é sobre força de vontade. É sobre direção. E isso eu te dou."
 [00:24-00:30] APONTA | "Comenta QUERO que eu te explico no Direct."
-TEXTO NA TELA: "A culpa não é sua" | "É falta de método" | "Comenta QUERO"` },
+TEXTO NA TELA: "A culpa não é sua" | "É falta de protocolo" | "Comenta QUERO"` },
   { id: "d3", day: "D3 · 28/06", title: "15 minutos cabem no seu dia", time: "07:30", format: "Reel + Stories", objective: "Quebrar a objeção de tempo.", channel: "Reels", status: "RASCUNHO",
     script: ["Gancho: 'não tenho tempo' é a desculpa que mais ouço.", "Virada: você não tem 1h, mas tem 15 min.", "CTA: comenta QUERO."],
     roteiro: `[00:00-00:04] CLOSE | "A desculpa que eu mais ouço em 14 anos: 'Ruriá, não tenho tempo'."
@@ -342,9 +342,9 @@ TEXTO NA TELA: "Não é preguiça" | "É sobrecarga" | "Comenta QUERO"` },
 [00:16-00:24] CLOSE | "A 1ª turma tá se formando. Bora junto?"
 [00:24-00:30] APONTA | "Comenta QUERO."` },
   { id: "d6", day: "D6 · 01/07", title: "Constância no fim de semana", time: "10:00", format: "Stories + Recap", objective: "Reforço leve + prova.", channel: "Stories", status: "RASCUNHO",
-    script: ["Fim de semana é treino de constância, não desculpa.", "Prova social.", "CTA: responde SEGUNDA."] },
+    script: ["Fim de semana é treino de constância, não desculpa.", "Prova social.", "CTA: responde QUERO."] },
   { id: "d7", day: "D7 · 02/07", title: "Balanço da Semana 1", time: "10:00", format: "Stories + Card", objective: "Fechar Fase 1 + teaser Fase 2.", channel: "Stories", status: "RASCUNHO",
-    script: ["Retrospecto leve.", "Teaser da próxima fase.", "CTA: responde SEGUNDA."] },
+    script: ["Retrospecto leve.", "Teaser da próxima fase.", "CTA: responde QUERO."] },
   { id: "d8", day: "D8 · 03/07", title: "Voltar a ser você", time: "12:15", format: "Reel + Stories", objective: "Virada de identidade.", channel: "Reels", status: "RASCUNHO",
     script: ["Não é sobre corpo perfeito, é sobre se reconhecer.", "Identidade > vaidade.", "CTA: comenta QUERO."] },
   { id: "d9", day: "D9 · 04/07", title: "Mulheres iguais a você", time: "12:15", format: "Reel + Stories", objective: "Prova social pesada.", channel: "Reels", status: "RASCUNHO",
@@ -352,19 +352,19 @@ TEXTO NA TELA: "Não é preguiça" | "É sobrecarga" | "Comenta QUERO"` },
   { id: "d10", day: "D10 · 05/07", title: "Uma vitória hoje", time: "10:00", format: "Reel + Stories", objective: "Micro-vitória + reciprocidade.", channel: "Reels", status: "RASCUNHO",
     script: ["Dica que funciona já hoje.", "Faça e me conte.", "CTA: responde no Direct."] },
   { id: "d11", day: "D11 · 06/07", title: "O que tem dentro", time: "12:15", format: "Reel + Stories", objective: "Ancoragem de valor (sem preço).", channel: "Reels", status: "RASCUNHO",
-    script: ["Não é 'mais um PDF'.", "Treino + dieta + acompanhamento juntos.", "CTA: responde SEGUNDA."] },
+    script: ["Não é 'mais um PDF'.", "Treino + dieta + acompanhamento juntos.", "CTA: responde QUERO."] },
   { id: "d12", day: "D12 · 07/07", title: "Funciona pra mim?", time: "12:15", format: "Reel + Stories", objective: "Quebrar objeção racional.", channel: "Reels", status: "RASCUNHO",
     script: ["A pergunta que mais aparece.", "Caso parecido respondido.", "CTA: manda 🔥."] },
   { id: "d13", day: "D13 · 08/07", title: "Virou comunidade", time: "12:15", format: "Reel + Stories", objective: "Comunidade + FOMO saudável.", channel: "Reels", status: "RASCUNHO",
-    script: ["Olha o tamanho da turma.", "Não fica de fora.", "CTA: responde SEGUNDA."] },
+    script: ["Olha o tamanho da turma.", "Não fica de fora.", "CTA: responde QUERO."] },
   { id: "d14", day: "D14 · 09/07", title: "Balanço + gates", time: "10:00", format: "Stories + Card", objective: "Fechar Fase 2 + checar 3 gates.", channel: "Stories", status: "RASCUNHO",
-    script: ["Retrospecto.", "Teaser do pré-lançamento.", "CTA: responde SEGUNDA."] },
+    script: ["Retrospecto.", "Teaser do pré-lançamento.", "CTA: responde QUERO."] },
   { id: "d15", day: "D15 · 10/07", title: "Tá chegando", time: "12:15", format: "Reel + Stories", objective: "Ligar antecipação.", channel: "Reels", status: "RASCUNHO",
-    script: ["A 1ª turma vai abrir.", "VIP sabe primeiro e paga diferente.", "CTA: responde SEGUNDA."] },
+    script: ["A 1ª turma vai abrir.", "VIP sabe primeiro e paga diferente.", "CTA: responde QUERO."] },
   { id: "d16", day: "D16 · 11/07", title: "Onde você vai estar em 21 dias", time: "12:15", format: "Reel + Stories", objective: "Aversão à perda.", channel: "Reels", status: "RASCUNHO",
-    script: ["O tempo passa do mesmo jeito.", "Igual ou um passo na frente?", "CTA: VIP responde SEGUNDA."] },
+    script: ["O tempo passa do mesmo jeito.", "Igual ou um passo na frente?", "CTA: VIP responde QUERO."] },
   { id: "d17", day: "D17 · 12/07", title: "Por que comigo", time: "12:15", format: "Reel + Stories", objective: "Autoridade + prova.", channel: "Reels", status: "RASCUNHO",
-    script: ["14 anos, método.", "Não é sorte.", "CTA: VIP responde SEGUNDA."] },
+    script: ["14 anos, protocolo.", "Não é sorte.", "CTA: VIP responde QUERO."] },
   { id: "d18", day: "D18 · 13/07", title: "Turma limitada de verdade", time: "12:15", format: "Reel + Stories", objective: "Escassez honesta.", channel: "Reels", status: "RASCUNHO",
     script: ["Acompanho de perto, por isso é limitada.", "Não é marketing.", "CTA: VIP entra primeiro."] },
   { id: "d19", day: "D19 · 14/07", title: "Véspera — VIP primeiro", time: "12:15", format: "Reel + Stories", objective: "Preparar conversão.", channel: "Reels", status: "RASCUNHO",
@@ -1423,7 +1423,7 @@ function CommandSection({ live, hidePulse }: { live?: LivePulse; hidePulse?: boo
 
 const STRAT_PLAN = [
   { icon: <Users size={16} />, t: "Pra quem anunciar", d: "Mulheres de 25 a 44 anos que já tentaram emagrecer e desistiram. Mães, ocupadas, cansadas de dieta que não encaixa na rotina." },
-  { icon: <Eye size={16} />, t: "O que mostrar no anúncio", d: "A mesma frase da página: \"Você não falhou. O método é que falhou.\" Um vídeo curto seu falando isso + um antes/depois real." },
+  { icon: <Eye size={16} />, t: "O que mostrar no anúncio", d: "A mesma frase da página: \"Você não falhou. O protocolo é que falhou.\" Um vídeo curto seu falando isso + um antes/depois real." },
   { icon: <Target size={16} />, t: "Pra onde mandar o clique", d: "Direto pra página /nova — não pro perfil do Instagram. Quanto menos passos até o formulário, mais barato sai cada lead." },
   { icon: <Zap size={16} />, t: "Quanto investir pra começar", d: "R$20 a R$30 por dia, por uns 5 dias, testando 2 ou 3 anúncios. O que performar melhor a gente aumenta." },
 ];
