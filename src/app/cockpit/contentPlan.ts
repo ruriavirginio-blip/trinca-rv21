@@ -126,7 +126,7 @@ export const DIA_PLANS: Record<string, DiaPlan> = {
     data: "2026-06-26",
     fase: "captacao",
     significado: "Primeiro contato. A lead pensa: 'achei um cara que entende a minha correria'. Plantar a ideia, sem vender nada.",
-    enfase: "Você não falhou — o método falhou com você.",
+    enfase: "Você não falhou — o protocolo falhou com você.",
     trafego: "Tráfego ainda DESLIGADO. Só orgânico até o funil (quiz/DM) estar validado. (Qualquer verba = SIM seu no Telegram.)",
     organico: {
       bomDia:
@@ -156,14 +156,14 @@ export const DIA_PLANS: Record<string, DiaPlan> = {
     data: "2026-06-27",
     fase: "captacao",
     significado: "Tira o peso da culpa. A lead pensa: 'então o problema não era eu'. Isso gera confiança e abre ela pra ouvir.",
-    enfase: "A culpa não é sua — é falta de método.",
+    enfase: "A culpa não é sua — é falta de protocolo.",
     trafego: "Orgânico. (Tráfego só com seu SIM.)",
     organico: {
       bomDia:
         "Opa, bom dia! Você já começou uma dieta na segunda toda animada e na quarta já tinha largado? Senta aí que hoje eu vou tirar uma culpa das suas costas — e não, a culpa não é sua.",
       roteiro: [
         "Story 1 (selfie): a pergunta 'começou segunda, parou quarta?'.",
-        "Story 2 (selfie): 'plano que depende de motivação quebra. Bom método diminui decisão.'",
+        "Story 2 (selfie): 'plano que depende de motivação quebra. Bom protocolo diminui decisão.'",
         "Story 3 (CTA): 'me manda um 🔥 se você cansou de se culpar — eu te respondo no Direct.'",
       ],
       qtd: "4–5 stories + reforço à tarde.",
@@ -459,15 +459,15 @@ export const DIA_PLANS: Record<string, DiaPlan> = {
     id: "d17",
     data: "2026-07-12",
     fase: "pre_lancamento",
-    significado: "Prova final + autoridade. A lead confia que VOCÊ é o cara certo (14 anos, método). Tira o medo de errar a escolha.",
+    significado: "Prova final + autoridade. A lead confia que VOCÊ é o cara certo (14 anos, protocolo). Tira o medo de errar a escolha.",
     enfase: "Por que comigo (autoridade, sem arrogância).",
     trafego: "Antecipação VIP.",
     organico: {
-      bomDia: "Bom dia! 14 anos transformando mulher que já tinha desistido de si mesma. Não é sorte, é método. Deixa eu te mostrar.",
+      bomDia: "Bom dia! 14 anos transformando mulher que já tinha desistido de si mesma. Não é sorte, é protocolo. Deixa eu te mostrar.",
       roteiro: ["Story 1 (selfie): autoridade leve.", "Story 2: prova.", "Story 3 (CTA): 'VIP responde SEGUNDA.'"],
       qtd: "4 stories.",
     },
-    criativos: ["Carrossel 'Por que o Protocolo RV funciona' (método, não milagre)."],
+    criativos: ["Carrossel 'Por que o Protocolo RV funciona' (protocolo, não milagre)."],
     checklist: ["Stories de bom dia.", "Reel D17 autoridade — você grava.", "Eu edito + carrossel.", "Publicar."],
   },
   d18: {
