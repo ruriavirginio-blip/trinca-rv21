@@ -914,7 +914,7 @@ export default function CockpitClient({
         {activeTab === "conteudo" ? (
           <DashboardSection
             title="Conteúdo"
-            description="Clique no dia (D1 = 23/06) e veja todos os posts daquele dia: formato, objetivo e roteiro."
+            description="Clique no dia e veja tudo: reel take-a-take, legenda pronta, capa, stories (horário + ferramenta + link) e contagem regressiva pro lançamento."
             loading={contentQueueLoading}
           >
             <ContentDaySection />
