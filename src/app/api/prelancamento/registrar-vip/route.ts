@@ -60,6 +60,7 @@ export async function POST(request: Request) {
     nome,
     email: emailInformado && isValidEmail(emailInformado) ? emailInformado : vipEmail(instagramUser, whatsapp),
     whatsapp,
+    instagram: instagramUser || null,
     objetivo: objetivoDetectado || "lista-vip-pre-lancamento",
     origem: origemCaptura || "instagram-lista-vip",
     status: "lista-vip",
