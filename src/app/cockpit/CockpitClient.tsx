@@ -31,7 +31,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { JornadaPanel, AlertasPanel, AcessosPanel } from "./CockpitOperacao";
-import { DIA_PLANS, FASES, CTA_AUTOMACAO_STORY, STORIES_SEQUENCIA_PADRAO, STORIES_GUIA } from "./contentPlan";
+import { DIA_PLANS, FASES, CTA_AUTOMACAO_STORY, STORIES_SEQUENCIA_PADRAO, STORIES_GUIA, diasParaLancamento, LANCAMENTO_OFICIAL } from "./contentPlan";
 
 type TabKey = "hoje" | "jornada" | "alertas" | "leads" | "vip" | "vendas" | "gastos" | "conteudo" | "agentes" | "comando" | "ia";
 type ContentStatus = "RASCUNHO" | "APROVADO" | "PUBLICADO" | "REJEITADO";
@@ -1886,17 +1886,29 @@ function ContentByDayPanel({ sel: selProp, onSel }: { sel?: string; onSel?: (id:
             <strong>Posts deste dia:</strong>
             {posts.map((p, i) => <span key={i} className="cbd-post">{p}</span>)}
           </div>
-          {dia.script?.length ? (
-            <div className="cbd-block">
-              <strong>Roteiro (resumo)</strong>
-              <ul>{dia.script.map((s, i) => <li key={i}>{s}</li>)}</ul>
+          {plan ? (
+            <div className="cbd-block" style={{ background: "rgba(240,201,105,.08)", border: "1px solid rgba(240,201,105,.35)", borderRadius: 10, padding: "8px 12px" }}>
+              <b style={{ color: "#f0c969" }}>⏳ Faltam {diasParaLancamento(plan.data)} dias</b>
+              <span style={{ color: "#a3a09a", fontSize: 12.5 }}> pro lançamento oficial ({LANCAMENTO_OFICIAL.split("-").reverse().join("/")}). Exponha isso nos stories (contagem regressiva) e na capa do reel.</span>
             </div>
           ) : null}
-          {dia.roteiro ? (
-            <details className="cbd-roteiro">
-              <summary>📝 Roteiro take-a-take completo</summary>
-              <pre>{dia.roteiro}</pre>
+          {plan?.reelRoteiro ? (
+            <details className="cbd-roteiro" open>
+              <summary>🎬 Roteiro do Reel — take-a-take (você grava)</summary>
+              <pre>{plan.reelRoteiro}</pre>
             </details>
+          ) : null}
+          {plan?.capa ? (
+            <div className="cbd-block">
+              <strong>🖼️ Capa / thumbnail do reel (sincronizada com o roteiro)</strong>
+              <p style={{ fontSize: 13, color: "#cfccc6", margin: "4px 0 0" }}>{plan.capa}</p>
+            </div>
+          ) : null}
+          {plan?.legenda ? (
+            <div className="cbd-block">
+              <strong>📝 Legenda do reel (copia e cola pra postar)</strong>
+              <pre style={{ whiteSpace: "pre-wrap", fontSize: 13, color: "#e8e5df", background: "#0f0f12", border: "1px solid #26262c", borderRadius: 10, padding: 12, marginTop: 4 }}>{plan.legenda}</pre>
+            </div>
           ) : null}
           {plan ? (
             <>
@@ -1920,12 +1932,14 @@ function ContentByDayPanel({ sel: selProp, onSel }: { sel?: string; onSel?: (id:
                       <div key={f.n} style={{ background: "#0f0f12", border: "1px solid #26262c", borderRadius: 8, padding: "9px 11px" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
                           <span style={{ background: "#d4a23c", color: "#1a1206", fontWeight: 800, fontSize: 11, width: 20, height: 20, borderRadius: 5, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{f.n}</span>
+                          <span style={{ color: "#f0c969", fontWeight: 700, fontSize: 12 }}>🕒 {f.horario}</span>
                           <b style={{ fontSize: 13 }}>{f.bloco}</b>
                           <span style={{ marginLeft: "auto", color: cor, border: `1px solid ${cor}55`, fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 100 }}>{tag}</span>
                         </div>
                         <p style={{ fontSize: 12.5, color: "#cfccc6", margin: "2px 0" }}>📄 {f.oQuePostar}{frase ? <span style={{ color: "#f0c969" }}> (frase: “{frase}”)</span> : null}</p>
                         <p style={{ fontSize: 12.5, color: "#cfccc6", margin: "2px 0" }}>🧩 <b>Ferramenta:</b> {f.ferramenta}</p>
                         <p style={{ fontSize: 12.5, color: "#a3a09a", margin: "2px 0" }}>🎯 <b>CTA:</b> {f.cta}</p>
+                        {f.link ? <p style={{ fontSize: 12.5, color: "#7aa2f7", margin: "2px 0" }}>🔗 <b>Link pro story:</b> {f.link}</p> : null}
                       </div>
                     );
                   })}
