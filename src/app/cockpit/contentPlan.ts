@@ -22,6 +22,10 @@ export function diasParaLancamento(iso: string): number {
   return Math.max(0, Math.round((b.getTime() - a.getTime()) / 86400000));
 }
 
+/* Capas/thumbnails geradas (Cloudinary, sem versão = serve a última). 1 capa por dia + card CTA universal. */
+export const capaImgUrl = (id: string) => `https://res.cloudinary.com/drfs4s18a/image/upload/trinca-raw/criativos/capas/${id}_capa.png`;
+export const CTA_CARD_URL = "https://res.cloudinary.com/drfs4s18a/image/upload/trinca-raw/criativos/stories/d2_card_cta.png";
+
 export const FASES: Record<Fase, { nome: string; cor: string; dias: string; significado: string }> = {
   captacao: { nome: "Fase 1 · Captação fria", cor: "#d4a23c", dias: "D1–D7", significado: "Topo. Encher a Lista VIP. Ângulo: o corpo mudou (hormônio/metabolismo/idade) + curiosidade do teste. Sem oferta." },
   aquecimento: { nome: "Fase 2 · Aquecimento", cor: "#5fd08a", dias: "D8–D14", significado: "Meio. 'Isso é pra mim, na MINHA fase'. Identidade + prova (mulher 40+) + como o protocolo se adapta ao corpo dela." },

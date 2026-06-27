@@ -31,7 +31,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { JornadaPanel, AlertasPanel, AcessosPanel } from "./CockpitOperacao";
-import { DIA_PLANS, FASES, CTA_AUTOMACAO_STORY, STORIES_SEQUENCIA_PADRAO, STORIES_GUIA, diasParaLancamento, LANCAMENTO_OFICIAL } from "./contentPlan";
+import { DIA_PLANS, FASES, CTA_AUTOMACAO_STORY, STORIES_SEQUENCIA_PADRAO, STORIES_GUIA, diasParaLancamento, LANCAMENTO_OFICIAL, capaImgUrl, CTA_CARD_URL } from "./contentPlan";
 
 type TabKey = "hoje" | "jornada" | "alertas" | "leads" | "vip" | "vendas" | "gastos" | "conteudo" | "agentes" | "comando" | "ia";
 type ContentStatus = "RASCUNHO" | "APROVADO" | "PUBLICADO" | "REJEITADO";
@@ -1897,10 +1897,20 @@ function ContentByDayPanel({ sel: selProp, onSel }: { sel?: string; onSel?: (id:
               <pre>{plan.reelRoteiro}</pre>
             </details>
           ) : null}
-          {plan?.capa ? (
+          {plan ? (
             <div className="cbd-block">
-              <strong>🖼️ Capa / thumbnail do reel (sincronizada com o roteiro)</strong>
-              <p style={{ fontSize: 13, color: "#cfccc6", margin: "4px 0 0" }}>{plan.capa}</p>
+              <strong>🖼️ Criativos prontos do dia (clica pra abrir/baixar)</strong>
+              <div style={{ display: "flex", gap: 12, marginTop: 10, flexWrap: "wrap" }}>
+                <a href={capaImgUrl(plan.id)} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
+                  <img src={capaImgUrl(plan.id)} alt="capa do dia" loading="lazy" style={{ width: 150, height: 267, objectFit: "cover", borderRadius: 10, border: "1px solid #26262c", display: "block" }} />
+                  <span style={{ display: "block", fontSize: 11, color: "#a3a09a", textAlign: "center", marginTop: 4 }}>Capa / card de dor</span>
+                </a>
+                <a href={CTA_CARD_URL} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
+                  <img src={CTA_CARD_URL} alt="card CTA" loading="lazy" style={{ width: 150, height: 267, objectFit: "cover", borderRadius: 10, border: "1px solid #26262c", display: "block" }} />
+                  <span style={{ display: "block", fontSize: 11, color: "#a3a09a", textAlign: "center", marginTop: 4 }}>Card CTA (teste/QUERO)</span>
+                </a>
+              </div>
+              {plan.capa ? <p style={{ fontSize: 12.5, color: "#8a8a8a", margin: "10px 0 0" }}>Brief da capa: {plan.capa}</p> : null}
             </div>
           ) : null}
           {plan?.legenda ? (
