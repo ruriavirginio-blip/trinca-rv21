@@ -133,16 +133,11 @@ export default function VipQuizPage() {
   const prot = useMemo(() => protocolo(ans), [ans]);
 
   function escolher(qid: string, v: string) {
-    const next = { ...ans, [qid]: v };
-    setAns(next);
-    if (step >= total) return;
-    if (step === total) {
-      setStep(buildingStep);
-    } else {
-      const ns = step + 1;
-      setStep(ns);
-      if (ns > total) setStep(buildingStep);
-    }
+    setAns((prev) => ({ ...prev, [qid]: v }));
+    // step vai de firstQ(1) até total(N) nas perguntas.
+    // Na ÚLTIMA pergunta (step === total) -> tela "montando"; senão -> próxima pergunta.
+    if (step >= total) setStep(buildingStep);
+    else setStep(step + 1);
   }
 
   // avança automaticamente da tela "montando" pro resultado
