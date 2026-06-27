@@ -1466,6 +1466,20 @@ function StrategyPanel() {
         </div>
       </div>
 
+      <div style={{ border: "1px solid rgba(212,162,60,.35)", borderRadius: 12, padding: 14, margin: "4px 0 18px", background: "linear-gradient(165deg,#16140f,#111113)" }}>
+        <strong style={{ color: "#f0c969", fontSize: 14 }}>🎯 ESTRATÉGIA OFICIAL DE TRÁFEGO — TRINCA RV21</strong>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 8, marginTop: 10 }}>
+          <p style={{ fontSize: 13, color: "#cfccc6", margin: 0 }}><b style={{ color: "#5fd08a" }}>STATUS:</b> Tráfego DESLIGADO (fase orgânica). Liga só com SIM do Ruriá no Telegram + gasto explícito.</p>
+          <p style={{ fontSize: 13, color: "#cfccc6", margin: 0 }}><b style={{ color: "#f0c969" }}>A VIRADA:</b> Quando rodou, clique era BARATO (CTR 1,58% · CPC R$0,22). O furo era a página /vip (CPL R$21,89). Corrigido com o QUIZ → re-apontar clique barato pro quiz deve gerar lead barato.</p>
+          <p style={{ fontSize: 13, color: "#cfccc6", margin: 0 }}><b style={{ color: "#7aa2f7" }}>QUANDO LIGAR:</b> 3 portas verdes — (1) quiz convertendo ✅ · (2) Pixel/CAPI Lead ✅ · (3) 1 criativo com sinal orgânico ⏳ (achar o gancho vencedor no reel/stories antes de pagar).</p>
+          <p style={{ fontSize: 13, color: "#cfccc6", margin: 0 }}><b style={{ color: "#f0c969" }}>COMO:</b> Campanha de Conversão otimizada pro evento Lead → manda pro /vip-quiz. 1 conjunto, Advantage+, criativo vencedor. Pixel + CAPI com dedup.</p>
+          <p style={{ fontSize: 13, color: "#cfccc6", margin: 0 }}><b style={{ color: "#5fd08a" }}>VERBA (baixo custo):</b> R$10–15/dia, teto definido pelo Ruriá. Escala SÓ se CPL ≤ R$8 — e com aviso ANTES de aumentar.</p>
+          <p style={{ fontSize: 13, color: "#cfccc6", margin: 0 }}><b style={{ color: "#7aa2f7" }}>PÚBLICO:</b> Mulheres 30–55 BR, amplo + Advantage+ (emagrecimento/saúde feminina/treino em casa). Depois de ~100 leads → Lookalike da própria lista.</p>
+          <p style={{ fontSize: 13, color: "#cfccc6", margin: 0 }}><b style={{ color: "#f07a7a" }}>MÉTRICAS (agente02 vigia):</b> CTR ≥1,5% · CPC · CPL alvo R$3–8 (vermelho &gt;R$18) · quiz→lead. Fora da faixa = alerta automático.</p>
+          <p style={{ fontSize: 13, color: "#a3a09a", margin: 0, borderTop: "1px solid #26262c", paddingTop: 8 }}><b style={{ color: "#f0c969" }}>🔒 GOVERNANÇA:</b> Tráfego = dinheiro do Ruriá. NADA liga/muda/escala sem o SIM dele no Telegram, SEMPRE com orçamento/dia + teto. Agentes propõem; ligar é só com SIM.</p>
+        </div>
+      </div>
+
       <h4 className="strat-h">📣 O plano de campanha</h4>
       <div className="strat-plan">
         {STRAT_PLAN.map((p) => (
