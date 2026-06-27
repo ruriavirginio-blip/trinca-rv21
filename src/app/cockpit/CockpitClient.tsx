@@ -1878,10 +1878,9 @@ function ContentByDayPanel({ sel: selProp, onSel }: { sel?: string; onSel?: (id:
             <span className="cbd-fase" style={{ color: fase.c, borderColor: fase.c }}>{fase.n}</span>
             <span className="cbd-time">🕒 {dia.time}</span>
           </div>
-          <h3>{dia.title}</h3>
+          <h3>{plan?.enfase || dia.title}</h3>
           {faseInfo ? <p className="cbd-fasewhy"><b>{faseInfo.nome} ({faseInfo.dias}):</b> {faseInfo.significado}</p> : null}
           {plan?.significado ? <p className="cbd-signif"><b>📌 O que ESTE dia significa:</b> {plan.significado}</p> : null}
-          <p className="cbd-obj">{dia.objective}</p>
           <div className="cbd-posts">
             <strong>Posts deste dia:</strong>
             {posts.map((p, i) => <span key={i} className="cbd-post">{p}</span>)}
