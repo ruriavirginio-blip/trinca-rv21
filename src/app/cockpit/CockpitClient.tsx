@@ -31,7 +31,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { JornadaPanel, AlertasPanel, AcessosPanel } from "./CockpitOperacao";
-import { DIA_PLANS, FASES, CTA_AUTOMACAO_STORY } from "./contentPlan";
+import { DIA_PLANS, FASES, CTA_AUTOMACAO_STORY, STORIES_SEQUENCIA_PADRAO, STORIES_GUIA } from "./contentPlan";
 
 type TabKey = "hoje" | "jornada" | "alertas" | "leads" | "vip" | "vendas" | "gastos" | "conteudo" | "agentes" | "comando" | "ia";
 type ContentStatus = "RASCUNHO" | "APROVADO" | "PUBLICADO" | "REJEITADO";
@@ -1893,6 +1893,29 @@ function ContentByDayPanel({ sel: selProp, onSel }: { sel?: string; onSel?: (id:
                 <p className="cbd-bomdia" style={{ color: "#f0c969", borderLeft: "2px solid #d4a23c", paddingLeft: 10, marginTop: 6 }}>{CTA_AUTOMACAO_STORY}</p>
                 <ul>{plan.organico.roteiro.map((s, i) => <li key={i}>{s}</li>)}</ul>
                 <span className="cbd-qtd">{plan.organico.qtd}</span>
+              </div>
+              <div className="cbd-block" style={{ border: "1px solid rgba(212,162,60,.3)", borderRadius: 10, padding: 12 }}>
+                <strong>🎬 SEQUÊNCIA DE STORIES DO DIA (passo a passo + ferramenta nativa)</strong>
+                <p style={{ color: "#a3a09a", fontSize: 12.5, margin: "6px 0 10px" }}>{STORIES_GUIA}</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {STORIES_SEQUENCIA_PADRAO.map((f) => {
+                    const cor = f.efeito === "DISPARA_DM" ? "#5fd08a" : f.efeito === "LEVA_AO_LINK" ? "#f0c969" : "#7aa2f7";
+                    const tag = f.efeito === "DISPARA_DM" ? "DISPARA DM" : f.efeito === "LEVA_AO_LINK" ? "LEVA AO QUIZ" : "ALIMENTA ALGORITMO";
+                    const frase = (f.n === 2 || f.n === 5) ? plan.enfase : "";
+                    return (
+                      <div key={f.n} style={{ background: "#0f0f12", border: "1px solid #26262c", borderRadius: 8, padding: "9px 11px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                          <span style={{ background: "#d4a23c", color: "#1a1206", fontWeight: 800, fontSize: 11, width: 20, height: 20, borderRadius: 5, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{f.n}</span>
+                          <b style={{ fontSize: 13 }}>{f.bloco}</b>
+                          <span style={{ marginLeft: "auto", color: cor, border: `1px solid ${cor}55`, fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 100 }}>{tag}</span>
+                        </div>
+                        <p style={{ fontSize: 12.5, color: "#cfccc6", margin: "2px 0" }}>📄 {f.oQuePostar}{frase ? <span style={{ color: "#f0c969" }}> (frase: “{frase}”)</span> : null}</p>
+                        <p style={{ fontSize: 12.5, color: "#cfccc6", margin: "2px 0" }}>🧩 <b>Ferramenta:</b> {f.ferramenta}</p>
+                        <p style={{ fontSize: 12.5, color: "#a3a09a", margin: "2px 0" }}>🎯 <b>CTA:</b> {f.cta}</p>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
               <div className="cbd-block">
                 <strong>🎨 Criativos (o Claude cria pra você)</strong>

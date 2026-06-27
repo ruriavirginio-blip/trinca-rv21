@@ -52,6 +52,73 @@ export type DiaPlan = {
 export const CTA_AUTOMACAO_STORY =
   "🔑 Feche o story pedindo interação que dispara o Direct: \"Responde SEGUNDA aqui (ou manda um 🔥) que eu te chamo no Direct.\" Resposta/reação ACIONAM o ManyChat → DM automática → quiz/VIP. Enquete NÃO dispara — use só pra engajar.";
 
+/* SEQUÊNCIA DE STORIES DO DIA — explícita, reutilizável (a FRASE muda conforme a ênfase do dia).
+   Mistura humano (selfie) + card de design (RV) + ferramenta NATIVA do IG.
+   IMPORTANTE p/ o funil: só RESPOSTA DE TEXTO, REAÇÃO ou LINK levam pro Direct/VIP.
+   Enquete/quiz/slider ALIMENTAM o algoritmo (alcance) mas NÃO disparam DM. */
+export type StoryFrame = {
+  n: number;
+  bloco: string; // o que é o frame
+  oQuePostar: string; // conteúdo (selfie ou card)
+  ferramenta: string; // ferramenta nativa do IG a usar
+  efeito: "DISPARA_DM" | "ALIMENTA_ALGORITMO" | "LEVA_AO_LINK"; // papel no funil
+  cta: string; // como fechar / chamada
+};
+
+export const STORIES_SEQUENCIA_PADRAO: StoryFrame[] = [
+  {
+    n: 1,
+    bloco: "Bom dia (selfie, você)",
+    oQuePostar: "Selfie curto, luz natural, com a pergunta-espelho do dia (use o 'Bom dia' da aba).",
+    ferramenta: "Emoji slider (\"como você acordou hoje? 😴 → 🔥\")",
+    efeito: "ALIMENTA_ALGORITMO",
+    cta: "Sem CTA forte aqui — é conexão. O slider aquece o alcance pros próximos.",
+  },
+  {
+    n: 2,
+    bloco: "Card de dor (design RV)",
+    oQuePostar: "Card animado preto+ouro com a FRASE do dia (a ênfase). Pouco texto, impacto.",
+    ferramenta: "Enquete de 2 opções (ex.: \"Você também esquece de você? SIM / Quase sempre\")",
+    efeito: "ALIMENTA_ALGORITMO",
+    cta: "A enquete gera identificação e empurra alcance. Não pede DM ainda.",
+  },
+  {
+    n: 3,
+    bloco: "Caixinha de perguntas (selfie ou card)",
+    oQuePostar: "\"Me conta: o que mais te trava pra começar?\" — colhe dor real (vira conteúdo + abre conversa).",
+    ferramenta: "Sticker de Perguntas",
+    efeito: "DISPARA_DM",
+    cta: "Responder a caixinha abre o Direct — responda algumas publicamente e puxe a conversa.",
+  },
+  {
+    n: 4,
+    bloco: "Mini-quiz (card)",
+    oQuePostar: "\"Qual seu maior sabotador? Tempo / Culpa / Cansaço\" — diverte e segmenta.",
+    ferramenta: "Sticker de Quiz",
+    efeito: "ALIMENTA_ALGORITMO",
+    cta: "No story seguinte, comente o resultado e leve pro frame 5.",
+  },
+  {
+    n: 5,
+    bloco: "CTA de captação (card RV + botão)",
+    oQuePostar: "\"Quer um protocolo de 21 dias feito pro SEU corpo? Responde QUERO aqui 👇\"",
+    ferramenta: "Sticker de LINK → protocolorv.com.br/vip-quiz  (e peça RESPOSTA de texto 'QUERO')",
+    efeito: "LEVA_AO_LINK",
+    cta: "Aqui é o pulo: RESPOSTA 'QUERO' dispara a DM (ManyChat) E o link leva direto pro quiz. Os dois caminhos pra Lista VIP.",
+  },
+  {
+    n: 6,
+    bloco: "Prova / bastidor (selfie) — opcional",
+    oQuePostar: "Algo humano: treino, rotina, um print de resposta de lead. Gera prova e leveza.",
+    ferramenta: "Contagem regressiva (forte na fase de pré-lançamento) ou reação",
+    efeito: "DISPARA_DM",
+    cta: "\"Manda um 🔥 que eu te chamo no Direct.\" Reação dispara a DM.",
+  },
+];
+
+export const STORIES_GUIA =
+  "Toda manhã, nesta ordem (5–6 stories). Regra de ouro: pelo menos 1 ENQUETE + 1 PERGUNTA/QUIZ (alcance) + 1 CTA QUERO (captação). Só TEXTO, REAÇÃO e LINK levam pro Direct/VIP — enquete/quiz só engajam. A FRASE do frame 2 e 5 muda conforme a ênfase do dia.";
+
 export const DIA_PLANS: Record<string, DiaPlan> = {
   // ===================== FASE 1 · CAPTAÇÃO FRIA (D1–D7) =====================
   d1: {
