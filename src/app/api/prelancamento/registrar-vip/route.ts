@@ -103,13 +103,19 @@ export async function POST(request: Request) {
     /* CAPI best-effort */
   }
 
-  // Motor de nutrição VIP: ao ENTRAR na lista (lead nova), agenda os 3 toques.
-  // Enviados via template aprovado pela Meta (etapa -> TWILIO_CONTENT_SID_VIP_NUTRICAO_*).
-  // So semeia se for lead nova (evita re-semear em re-cadastro).
-  if (!existingLead) {
-    const firstName = nome.split(/\s+/)[0] || "amiga";
+  // Motor de nutrição VIP — LEAN (4 toques, custo mínimo Twilio).
+  // Sequência ancorada no LANCAMENTO_OFICIAL = 2026-07-16.
+  // Só semeia se for lead nova (evita duplicar em re-cadastro).
+  if (!existingLead && whatsapp) {
+    const firstName = nome.split(/\s+/)[0] || "você";
     const nowMs = Date.now();
     const orderId = `VIP-${whatsapp || instagramUser || nowMs}`;
+
+    // Datas fixas de envio (BRT = UTC-3, convertido para UTC)
+    const D_AQUECIMENTO = "2026-07-11T13:00:00.000Z"; // 11/07 10h BRT (D-5)
+    const D_VESPERA     = "2026-07-15T13:00:00.000Z"; // 15/07 10h BRT (D-1)
+    const D_ABERTURA    = "2026-07-16T15:00:00.000Z"; // 16/07 12h BRT (D0 carrinho)
+
     const mk = (etapa: string, enviarEm: string, fallback: string) => ({
       email: lead.email,
       whatsapp,
@@ -121,27 +127,38 @@ export async function POST(request: Request) {
       enviar_em: enviarEm,
       status: "pendente",
       metadata: {
-        sequence: "vip-nutricao",
-        whatsapp_api: { body_variables: { "1": firstName } },
+        sequence: "vip-lancamento",
+        lancamento: "2026-07-16",
+        whatsapp_api: { body_variables: { nome: firstName } },
       },
     });
+
     try {
       await supabase.from("automation_messages").insert([
+        // M1 — Boas-vindas (imediato)
         mk(
-          "vip-nutricao-boas-vindas",
+          "vip-boas-vindas",
           new Date(nowMs).toISOString(),
-          `${firstName}, você entrou na Lista VIP do TRINCA RV21! Vai receber o acesso antes de todo mundo.`,
+          `${firstName}, você está dentro da Lista VIP do TRINCA RV21. Quando o carrinho abrir, você recebe antes de todo mundo. Guarda esse contato.`,
         ),
-        mk(
-          "vip-nutricao-valor",
-          new Date(nowMs + 2 * 24 * 60 * 60 * 1000).toISOString(),
-          `${firstName}, falta pouco pro TRINCA RV21. Resultado vem de direção, não de sacrifício.`,
-        ),
-        mk(
-          "vip-nutricao-vespera",
-          new Date("2026-07-01T13:00:00.000Z").toISOString(),
-          `${firstName}, é amanhã! Você recebe o link de acesso antes de todo mundo.`,
-        ),
+        // M2 — Aquecimento D-5 (só envia se ainda futuro)
+        ...(new Date(D_AQUECIMENTO).getTime() > nowMs ? [mk(
+          "vip-aquecimento",
+          D_AQUECIMENTO,
+          `${firstName}, faltam 5 dias pro TRINCA RV21. 21 dias, 15 minutos por dia. Sem milagre — só protocolo. Fique de olho aqui.`,
+        )] : []),
+        // M3 — Véspera D-1
+        ...(new Date(D_VESPERA).getTime() > nowMs ? [mk(
+          "vip-vespera",
+          D_VESPERA,
+          `${firstName}, é amanhã. O carrinho abre às 12h e fecha em 48h. Você já decidiu — só falta clicar.`,
+        )] : []),
+        // M4 — Carrinho aberto D0 (mensagem de conversão)
+        ...(new Date(D_ABERTURA).getTime() > nowMs ? [mk(
+          "vip-abertura",
+          D_ABERTURA,
+          `${firstName}, abriu agora. Você foi das primeiras a entrar na lista — merece ser das primeiras a garantir. Link: protocolorv.com.br/vip`,
+        )] : []),
       ]);
     } catch {
       /* nutrição é best-effort; não derruba o cadastro VIP */

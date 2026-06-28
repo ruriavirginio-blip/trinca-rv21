@@ -1,0 +1,33 @@
+name: WhatsApp VIP Nurture (a cada 30min)
+
+# Roda a cada 30 minutos e dispara as mensagens pendentes da lista VIP.
+# Custo: 0 — GitHub Actions gratuito. Twilio só cobra quando mensagem é enviada.
+
+on:
+  schedule:
+    - cron: "0,30 * * * *"   # todo :00 e :30 de cada hora UTC
+  workflow_dispatch:           # disparo manual pelo painel GitHub
+
+jobs:
+  send-whatsapp:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Disparar motor WhatsApp
+        run: |
+          echo "Motor WhatsApp às $(date -u) UTC"
+          code=$(curl -sS -o /tmp/wa.json -w "%{http_code}" -X POST \
+            -H "x-automation-secret: ${{ secrets.MONITOR_TOKEN }}" \
+            "https://protocolorv.com.br/api/automation/send-due-whatsapp")
+          echo "HTTP $code"
+          cat /tmp/wa.json; echo ""
+          enviadas=$(python3 -c "import json,sys; d=json.load(open('/tmp/wa.json')); print(d.get('enviadas', 0))" 2>/dev/null || echo "?")
+          falhas=$(python3 -c "import json,sys; d=json.load(open('/tmp/wa.json')); print(d.get('falhas', 0))" 2>/dev/null || echo "0")
+          echo "✅ Enviadas: $enviadas | ❌ Falhas: $falhas"
+          if [ "$falhas" != "0" ] && [ "$falhas" != "?" ]; then
+            echo "::warning::Motor WhatsApp registrou $falhas falha(s). Verifique Twilio e Telegram."
+          fi
+          if [ "$code" = "401" ] || [ "$code" = "503" ]; then
+            echo "::error::Motor WhatsApp retornou HTTP $code — verifique MONITOR_TOKEN e Twilio."
+            exit 1
+          fi
