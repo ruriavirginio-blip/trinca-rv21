@@ -145,7 +145,7 @@ export async function POST(request: Request) {
         ...(new Date(D_AQUECIMENTO).getTime() > nowMs ? [mk(
           "vip-aquecimento",
           D_AQUECIMENTO,
-          `${firstName}, faltam 5 dias pro TRINCA RV21. 21 dias, 15 minutos por dia. Sem milagre — só protocolo. Fique de olho aqui.`,
+          `${firstName}, 5 dias pro TRINCA RV21. Não é mais um desafio genérico da internet — é um protocolo construído pra mulher que já tentou de tudo e não quer tentar de novo no escuro. Já aviso: quem entra, muda.`,
         )] : []),
         // M3 — Véspera D-1
         ...(new Date(D_VESPERA).getTime() > nowMs ? [mk(
