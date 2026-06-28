@@ -96,6 +96,24 @@ export async function publishCarousel(imageUrls: string[], caption = "") {
   return published.id;
 }
 
+/** Valida se o token atual consegue acessar a conta (health check real, não só "tem env var").
+ *  Faz um GET leve na conta IG e retorna { valid, reason, igName }. */
+export async function validateToken(): Promise<{ valid: boolean; reason?: string; igName?: string }> {
+  if (!hasInstagram()) return { valid: false, reason: "Credenciais ausentes (IG_BUSINESS_ACCOUNT_ID / IG_PAGE_ACCESS_TOKEN não configurados)." };
+  const { igId, token } = creds();
+  try {
+    const url = `${GRAPH}/${igId}?fields=id,name,username&access_token=${token}`;
+    const r = await fetch(url);
+    const data = await r.json() as { id?: string; name?: string; username?: string; error?: { message?: string } };
+    if (!r.ok || data.error) {
+      return { valid: false, reason: data.error?.message || `HTTP ${r.status}` };
+    }
+    return { valid: true, igName: data.username || data.name || data.id };
+  } catch (err) {
+    return { valid: false, reason: String(err instanceof Error ? err.message : err) };
+  }
+}
+
 /** Roteia por tipo. asset_url = imagem/vídeo; para carrossel use lista separada por vírgula. */
 export async function publishByType(tipo: string, assetUrl: string, caption = "") {
   if (!hasInstagram()) return { ok: false, reason: "Instagram nao configurado (IG_BUSINESS_ACCOUNT_ID/IG_PAGE_ACCESS_TOKEN)." };

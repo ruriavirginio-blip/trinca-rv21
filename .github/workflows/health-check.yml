@@ -1,0 +1,29 @@
+name: Health Check semanal (Instagram Token)
+
+# Toda segunda-feira às 11h UTC = 08h BRT.
+# Testa se o token do Instagram ainda é válido.
+# Se inválido → alerta no Telegram é disparado pela rota.
+
+on:
+  schedule:
+    - cron: "0 11 * * 1"   # toda segunda, 08h BRT
+  workflow_dispatch:        # disparo manual pelo painel GitHub
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verificar token Instagram
+        run: |
+          echo "Health check às $(date -u) UTC"
+          code=$(curl -sS -o /tmp/hc.json -w "%{http_code}" -X POST \
+            -H "x-automation-secret: ${{ secrets.MONITOR_TOKEN }}" \
+            "https://protocolorv.com.br/api/automation/health-check")
+          echo "HTTP $code"
+          cat /tmp/hc.json; echo ""
+          valid=$(python3 -c "import json,sys; d=json.load(open('/tmp/hc.json')); print(d.get('valid','?'))" 2>/dev/null || echo "?")
+          if [ "$valid" = "False" ] || [ "$valid" = "false" ]; then
+            echo "::error::Token Instagram INVÁLIDO — Telegram alertado. Verifique Business Suite."
+            exit 1
+          fi
+          echo "Token OK — motor operacional."
